@@ -94,10 +94,15 @@ int32_t vlq_t::len() {
     return m_len;
 }
 
-int32_t vlq_t::value() {
+// patched manually to resolve undefined behavior
+int64_t vlq_t::value() {
     if (f_value)
         return m_value;
-    m_value = (((((((groups()->at(0)->value() + ((len() >= 2) ? ((groups()->at(1)->value() << 7)) : (0))) + ((len() >= 3) ? ((groups()->at(2)->value() << 14)) : (0))) + ((len() >= 4) ? ((groups()->at(3)->value() << 21)) : (0))) + ((len() >= 5) ? ((groups()->at(4)->value() << 28)) : (0))) + ((len() >= 6) ? ((groups()->at(5)->value() << 35)) : (0))) + ((len() >= 7) ? ((groups()->at(6)->value() << 42)) : (0))) + ((len() >= 8) ? ((groups()->at(7)->value() << 49)) : (0)));
+    int64_t v = 0;
+    for (size_t i = 0; i < groups()->size(); ++i) {
+        v |= int64_t(groups()->at(i)->value()) << (7*i);
+    }
+    m_value = v;
     f_value = true;
     return m_value;
 }

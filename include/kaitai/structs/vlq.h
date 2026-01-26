@@ -113,7 +113,8 @@ public:
     /**
      * Resulting unsigned value as normal integer
      */
-    int32_t value();
+    // patched manually to resolve undefined behavior
+    int64_t value();
 
 private:
     bool f_sign_bit;
