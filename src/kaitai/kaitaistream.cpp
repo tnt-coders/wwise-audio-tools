@@ -2,6 +2,7 @@
 #include <kaitai/exceptions.h>
 
 #if defined(__APPLE__)
+
 #include <machine/endian.h>
 #include <libkern/OSByteOrder.h>
 #define bswap_16(x) OSSwapInt16(x)
@@ -10,15 +11,29 @@
 #define __BYTE_ORDER    BYTE_ORDER
 #define __BIG_ENDIAN    BIG_ENDIAN
 #define __LITTLE_ENDIAN LITTLE_ENDIAN
-#elif defined(_MSC_VER) // !__APPLE__
-#include <stdlib.h>
-#define __LITTLE_ENDIAN     1234
-#define __BIG_ENDIAN        4321
-#define __BYTE_ORDER        __LITTLE_ENDIAN
+
+#elif defined(_WIN32) // Windows (MSVC)
+
+// Windows is always little-endian
+#define __LITTLE_ENDIAN 1234
+#define __BIG_ENDIAN    4321
+#define __BYTE_ORDER    __LITTLE_ENDIAN
+
 #define bswap_16(x) _byteswap_ushort(x)
 #define bswap_32(x) _byteswap_ulong(x)
 #define bswap_64(x) _byteswap_uint64(x)
-#elif defined(__QNX__) // __QNX__
+
+// endian conversion helpers (glibc-compatible names)
+#define le16toh(x) (x)
+#define le32toh(x) (x)
+#define le64toh(x) (x)
+
+#define be16toh(x) bswap_16(x)
+#define be32toh(x) bswap_32(x)
+#define be64toh(x) bswap_64(x)
+
+#elif defined(__QNX__)
+
 #include <sys/param.h>
 #include <gulliver.h>
 #define bswap_16(x) ENDIAN_RET16(x)
@@ -27,9 +42,12 @@
 #define __BYTE_ORDER    BYTE_ORDER
 #define __BIG_ENDIAN    BIG_ENDIAN
 #define __LITTLE_ENDIAN LITTLE_ENDIAN
-#else // !__APPLE__ or !_MSC_VER or !__QNX__
+
+#else // Linux / BSD
+
 #include <endian.h>
 #include <byteswap.h>
+
 #endif
 
 #include <iostream>

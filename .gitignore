@@ -1,4 +1,5 @@
 build/
+.qtcreator/
 .cache/
 compile_commands.json
 docs/*
