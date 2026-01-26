@@ -84,7 +84,7 @@ install(TARGETS wwtools-bin)
 
 option(DOWNLOAD_CATCH2 "Download Catch2 framework if it won't be found locally" OFF)
 
-find_package(Catch2 3)
+find_package(Catch2 3 QUIET)
 
 if(NOT Catch2_FOUND AND DOWNLOAD_CATCH2)
   include(FetchContent)
@@ -92,7 +92,7 @@ if(NOT Catch2_FOUND AND DOWNLOAD_CATCH2)
   FetchContent_Declare(
     catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2
-    GIT_TAG v3.0.0-preview5
+    GIT_TAG v3.12.0
   )
   
   message("Catch2 v3 not found locally. Fetching it from the git repository...")
