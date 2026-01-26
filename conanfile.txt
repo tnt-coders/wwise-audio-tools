@@ -1,0 +1,9 @@
+[requires]
+ogg/1.3.5
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
