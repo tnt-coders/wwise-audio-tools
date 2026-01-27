@@ -82,9 +82,13 @@ The library provides both static and shared builds (`wwtools-static-lib` and `ww
 
 #### Integrating into Your CMake Project
 
-This library includes all dependencies as submodules, so integration is simple:
+There are two main approaches for integrating this library into your project:
 
-**Option 1: Git Submodule (Recommended)**
+##### Approach 1: Using as a Submodule (Recommended for Development)
+
+This approach builds the library as part of your project. Best for active development or when you need to modify the library.
+
+**Option A: Git Submodule**
 
 ```bash
 git submodule add --recursive https://github.com/tnt-coders/wwise-audio-tools external/wwise-audio-tools
@@ -96,7 +100,7 @@ add_subdirectory(external/wwise-audio-tools)
 target_link_libraries(your_target PRIVATE wwtools::static)
 ```
 
-**Option 2: FetchContent**
+**Option B: FetchContent**
 
 ```cmake
 include(FetchContent)
@@ -112,15 +116,7 @@ FetchContent_MakeAvailable(wwise-audio-tools)
 target_link_libraries(your_target PRIVATE wwtools::static)
 ```
 
-**That's it!** All dependencies are included and will be built automatically.
-
-**Available Targets:**
-
-- `wwtools::static` - Static library (recommended)
-- `wwtools::shared` - Shared/dynamic library
-- Legacy names `wwtools-static-lib` and `wwtools-shared-lib` also work
-
-**Complete Example:**
+**Complete Submodule Example:**
 
 ```cmake
 cmake_minimum_required(VERSION 3.12)
@@ -135,6 +131,63 @@ add_executable(my_app main.cpp)
 # Link - dependencies are automatic!
 target_link_libraries(my_app PRIVATE wwtools::static)
 ```
+
+##### Approach 2: Using an Installed Library (Recommended for Production)
+
+This approach uses a pre-built, installed version of the library. Best for faster builds and when multiple projects share the same library version.
+
+**Step 1: Install the Library**
+
+```bash
+git clone --recursive https://github.com/tnt-coders/wwise-audio-tools
+cd wwise-audio-tools
+
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config=Release
+cmake --install build --prefix /path/to/install
+```
+
+On Linux/macOS, you might install system-wide:
+```bash
+sudo cmake --install build --prefix /usr/local
+```
+
+On Windows with admin privileges:
+```bash
+cmake --install build --prefix "C:\Program Files\wwise-audio-tools"
+```
+
+**Step 2: Use find_package() in Your Project**
+
+```cmake
+cmake_minimum_required(VERSION 3.12)
+project(MyProject)
+
+# Find the installed library
+find_package(wwtools REQUIRED)
+
+# Create your executable
+add_executable(my_app main.cpp)
+
+# Link to the installed library
+target_link_libraries(my_app PRIVATE wwtools::static)
+```
+
+If you installed to a custom location, tell CMake where to find it:
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/install
+```
+
+Or set the `wwtools_DIR` variable:
+```bash
+cmake -S . -B build -Dwwtools_DIR=/path/to/install/lib/cmake/wwtools
+```
+
+**Available Targets:**
+
+- `wwtools::static` - Static library (recommended)
+- `wwtools::shared` - Shared/dynamic library
+- Legacy names `wwtools-static-lib` and `wwtools-shared-lib` also work
 
 #### API Reference
 

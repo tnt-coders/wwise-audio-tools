@@ -132,8 +132,9 @@ install(TARGETS wwtools-bin
     RUNTIME DESTINATION bin
 )
 
-# Install libraries
+# Install libraries with export for find_package() support
 install(TARGETS wwtools-static-lib wwtools-shared-lib
+    EXPORT wwtoolsTargets
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
@@ -145,6 +146,34 @@ install(DIRECTORY include/
     FILES_MATCHING
     PATTERN "*.h"
     PATTERN "*.hpp"
+)
+
+# Install the export set for find_package()
+install(EXPORT wwtoolsTargets
+    FILE wwtoolsTargets.cmake
+    NAMESPACE wwtools::
+    DESTINATION lib/cmake/wwtools
+)
+
+# Generate and install package configuration files
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/wwtoolsConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/wwtoolsConfig.cmake
+    INSTALL_DESTINATION lib/cmake/wwtools
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/wwtoolsConfigVersion.cmake
+    VERSION 1.0.0
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/wwtoolsConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/wwtoolsConfigVersion.cmake
+    DESTINATION lib/cmake/wwtools
 )
 
 option(DOWNLOAD_CATCH2 "Download Catch2 framework if it won't be found locally" OFF)
