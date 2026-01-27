@@ -22,7 +22,6 @@ add_definitions(-DKS_STR_ENCODING_NONE)
 set(SOURCE
     src/ww2ogg/codebook.cpp
     src/ww2ogg/crc.c
-    #src/ww2ogg/packed_codebooks.cpp
     src/ww2ogg/ww2ogg.cpp
     src/ww2ogg/wwriff.cpp
     src/revorb/revorb.cpp
@@ -36,14 +35,14 @@ set(SOURCE
     src/kaitai/structs/wem.cpp
   )
 
-option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" OFF)
+option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
 if(PACKED_CODEBOOKS_AOTUV)
   message("PACKED_CODEBOOKS_AOTUV set as on. Using data from packed_codebooks_aoTuV_603.bin.")
   list(APPEND SOURCE src/ww2ogg/packed_codebooks_aoTuV_603.cpp)
 else()
   message("PACKED_CODEBOOKS_AOTUV not set or set as off. Using data from packed_codebooks.bin.")
-  list(APPEND SOURCE src/ww2ogg/packed_codebooks_aoTuV_603.cpp)
+  list(APPEND SOURCE src/ww2ogg/packed_codebooks.cpp)
 endif()
 
 find_package(Ogg REQUIRED)

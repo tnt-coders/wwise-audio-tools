@@ -7,21 +7,34 @@ Both `ww2ogg` and `revorb` are relatively old and annoying to use repetitively s
 ## Building
 This is meant to be built with CMake, which generates both a static and dynamic library, as well as a simple POC command line tool.  
 
+
+### With Qt Creator IDE:
+If you have Qt Creator you should be able to just open the main `CMakeLists.txt` file as a project and select all default settings. Qt Creator should automatically run the Conan install step for you and everything should build out of the box. 
+
+### From Command Line:
+
 Example build workflow:
 ```
-git clone https://github.com/WolvenKit/wwise-audio-tools
+git clone https://github.com/tnt-coders/wwise-audio-tools
 cmake -B build
 cmake --build build
 ```  
-> Note: This project *does* require `libogg` and `libvorbis` to build, which can be downloaded [here](https://xiph.org/downloads/) or installed from Linux package managers under names something like `libogg-dev` and `libvorbis-dev` or `libogg-devel` and `libvorbis-devel`.  
 
 This will create the command-line tool in the `bin/` directory and the libraries in `lib/`.
 
 ## Usage
-The command-line tool can be run with `./wwise-audio-converter [NAME].wem` which will generate an easily usable `[NAME].ogg` in the same directory. No need to use `revorb`, no need to have a `packed_codebooks.bin`. The library usage will have further documentation soon.
+
+### Command Line Tool:
+The command-line tool can be run with `./wwise-audio-converter [NAME].wem` which will generate an easily usable `[NAME].ogg` in the same directory. No need to use `revorb`, no need to have a `packed_codebooks.bin`.
+
+### Library:
+The library usage will have further documentation soon.
+
+TODO document examples of API and usage
 
 ## Credits
+Credit for initial version of this library goes to the developer team who created the repository this forked from https://github.com/WolvenKit/wwise-audio-tools
 Credit for the `ww2ogg` code goes to [`@hcs64`](https://github.com/hcs64), and to [`Jiri Hruska`](https://hydrogenaud.io/index.php/topic,64328.0.html) for the creation of the original `revorb`.
 
 ## Licensing
-Many files here are licensed individually and are taken from other projects, such as [ww2ogg](https://github.com/hcs64/ww2ogg) and [revorb](https://hydrogenaud.io/index.php/topic,64328.0.html). Other than the `ww2ogg` license, everything else is licensed under MIT.
+Everything else is licensed under MIT, but explicit credit is required to be given to the original developers in the license file.
