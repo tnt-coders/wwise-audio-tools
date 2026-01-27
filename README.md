@@ -7,33 +7,38 @@ Both `ww2ogg` and `revorb` are relatively old and cumbersome to use repetitively
 ## Requirements
 - CMake 3.12 or higher
 - C++17 compatible compiler
-- Conan package manager (for dependency management)
-- Dependencies (automatically handled by Conan):
+- Git (to clone submodules)
+- Dependencies (included as submodules):
   - libogg
   - libvorbis
 
 ## Building
-This project uses CMake to generate both static and dynamic libraries, as well as a command line tool.  
 
-
-### With Qt Creator IDE:
-If you have Qt Creator you should be able to just open the main `CMakeLists.txt` file as a project and select all default settings. Qt Creator should automatically run the Conan install step for you and everything should build out of the box. 
+This project uses CMake and includes all dependencies as git submodules.
 
 ### From Command Line:
 
 ```bash
-git clone https://github.com/tnt-coders/wwise-audio-tools
+git clone --recursive https://github.com/tnt-coders/wwise-audio-tools
 cd wwise-audio-tools
 
-conan install . --build=missing
 cmake -S . -B build
 cmake --build build --config=Release
+```
+
+**Note:** The `--recursive` flag automatically clones the ogg and vorbis submodules. If you already cloned without it:
+```bash
+git submodule update --init --recursive
 ```
 
 This will create:
 - Command-line tool: `build/bin/wwtools` (or `build/bin/wwtools.exe` on Windows)
 - Static library: `build/lib/libwwtools.a` (or `build/lib/wwtools.lib` on Windows)
 - Shared library: `build/lib/libwwtools.so` (or `build/lib/wwtools.dll` on Windows)
+
+### With Qt Creator IDE:
+
+Just open the main `CMakeLists.txt` file as a project and Qt Creator will handle the rest.
 
 ## Usage
 
@@ -75,15 +80,60 @@ For more advanced usage:
 
 The library provides both static and shared builds (`wwtools-static-lib` and `wwtools-shared-lib`). All public API functions are in the `wwtools`, `wwtools::bnk`, `wwtools::w3sc`, and `ww2ogg` namespaces.
 
-#### Linking the Library
+#### Integrating into Your CMake Project
 
-**CMake:**
+This library includes all dependencies as submodules, so integration is simple:
+
+**Option 1: Git Submodule (Recommended)**
+
+```bash
+git submodule add --recursive https://github.com/tnt-coders/wwise-audio-tools external/wwise-audio-tools
+```
+
+In your CMakeLists.txt:
 ```cmake
-# Link against the shared library
-target_link_libraries(your_target wwtools-shared-lib)
+add_subdirectory(external/wwise-audio-tools)
+target_link_libraries(your_target PRIVATE wwtools::static)
+```
 
-# Or link against the static library
-target_link_libraries(your_target wwtools-static-lib)
+**Option 2: FetchContent**
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    wwise-audio-tools
+    GIT_REPOSITORY https://github.com/tnt-coders/wwise-audio-tools
+    GIT_TAG master
+    GIT_SUBMODULES_RECURSE ON
+)
+
+FetchContent_MakeAvailable(wwise-audio-tools)
+target_link_libraries(your_target PRIVATE wwtools::static)
+```
+
+**That's it!** All dependencies are included and will be built automatically.
+
+**Available Targets:**
+
+- `wwtools::static` - Static library (recommended)
+- `wwtools::shared` - Shared/dynamic library
+- Legacy names `wwtools-static-lib` and `wwtools-shared-lib` also work
+
+**Complete Example:**
+
+```cmake
+cmake_minimum_required(VERSION 3.12)
+project(MyProject)
+
+# Add wwise-audio-tools as submodule
+add_subdirectory(external/wwise-audio-tools)
+
+# Create your executable
+add_executable(my_app main.cpp)
+
+# Link - dependencies are automatic!
+target_link_libraries(my_app PRIVATE wwtools::static)
 ```
 
 #### API Reference

@@ -14,14 +14,17 @@ file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-include_directories(
-    include
-    libogg/include
-    libvorbis/include
-    ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
-  )
+# Build dependencies from submodules
+add_subdirectory(external/ogg EXCLUDE_FROM_ALL)
+add_subdirectory(external/vorbis EXCLUDE_FROM_ALL)
 
-add_definitions(-DKS_STR_ENCODING_NONE)
+# Create aliases for consistent naming (Conan uses Ogg::ogg, submodule uses ogg)
+if(NOT TARGET Ogg::ogg)
+    add_library(Ogg::ogg ALIAS ogg)
+endif()
+if(NOT TARGET vorbis::vorbis)
+    add_library(vorbis::vorbis ALIAS vorbis)
+endif()
 
 set(SOURCE
     src/ww2ogg/codebook.cpp
@@ -49,15 +52,58 @@ else()
   list(APPEND SOURCE src/ww2ogg/packed_codebooks.cpp)
 endif()
 
-find_package(Ogg REQUIRED)
-find_package(Vorbis REQUIRED)
+# Dependencies are now built from submodules (see above)
+# If you want to use system/Conan packages instead, comment out the submodule
+# section above and uncomment these lines:
+# find_package(Ogg REQUIRED)
+# find_package(Vorbis REQUIRED)
 
+# Create library targets
 add_library(wwtools-shared-lib SHARED ${SOURCE})
 add_library(wwtools-static-lib STATIC ${SOURCE})
 add_executable(wwtools-bin ${SOURCE} src/main.cpp)
 
-target_link_libraries(wwtools-shared-lib Ogg::ogg vorbis::vorbis)
-target_link_libraries(wwtools-static-lib Ogg::ogg vorbis::vorbis)
+# Add alias targets for easier integration
+add_library(wwtools::shared ALIAS wwtools-shared-lib)
+add_library(wwtools::static ALIAS wwtools-static-lib)
+
+# Configure include directories for library targets
+target_include_directories(wwtools-shared-lib
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
+        ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
+)
+
+target_include_directories(wwtools-static-lib
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
+        ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
+)
+
+target_include_directories(wwtools-bin
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
+        ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
+)
+
+# Add compile definitions
+target_compile_definitions(wwtools-shared-lib PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(wwtools-static-lib PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(wwtools-bin PRIVATE KS_STR_ENCODING_NONE)
+
+# Link dependencies - these will be propagated to consuming targets
+target_link_libraries(wwtools-shared-lib PUBLIC Ogg::ogg vorbis::vorbis)
+target_link_libraries(wwtools-static-lib PUBLIC Ogg::ogg vorbis::vorbis)
 
 set_target_properties(wwtools-bin PROPERTIES OUTPUT_NAME wwtools)
 set_target_properties(wwtools-shared-lib PROPERTIES OUTPUT_NAME wwtools)
@@ -81,9 +127,25 @@ else()
   target_link_libraries(wwtools-bin Ogg::ogg vorbis::vorbis)
 endif()
 
-# To install to the default location, destination directive is unnecessary
-# https://cmake.org/cmake/help/latest/command/install.html#installing-targets
-install(TARGETS wwtools-bin)
+# Installation rules
+install(TARGETS wwtools-bin
+    RUNTIME DESTINATION bin
+)
+
+# Install libraries
+install(TARGETS wwtools-static-lib wwtools-shared-lib
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+# Install headers
+install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
+)
 
 option(DOWNLOAD_CATCH2 "Download Catch2 framework if it won't be found locally" OFF)
 
@@ -107,6 +169,13 @@ endif()
 
 if(Catch2_FOUND)
   add_executable(tests ${SOURCE} tests/wem.cpp)
+  target_include_directories(tests PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/include
+      ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
+      ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
+      ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
+  )
+  target_compile_definitions(tests PRIVATE KS_STR_ENCODING_NONE)
   target_link_libraries(tests PRIVATE Catch2::Catch2WithMain Ogg::ogg vorbis::vorbis)
   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 else()
