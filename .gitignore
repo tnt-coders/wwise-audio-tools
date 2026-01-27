@@ -5,3 +5,4 @@ compile_commands.json
 docs/*
 !docs/Doxyfile
 !docs/doxygen-awesome-css
+CMakeUserPresets.json
