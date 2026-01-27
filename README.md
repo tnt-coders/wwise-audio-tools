@@ -13,11 +13,12 @@ If you have Qt Creator you should be able to just open the main `CMakeLists.txt`
 
 ### From Command Line:
 
-Example build workflow:
 ```
 git clone https://github.com/tnt-coders/wwise-audio-tools
-cmake -B build
-cmake --build build
+
+conan install . --build=missing
+cmake -S . -B build
+cmake --build build --config=Release
 ```  
 
 This will create the command-line tool in the `bin/` directory and the libraries in `lib/`.
