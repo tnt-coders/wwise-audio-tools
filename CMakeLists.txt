@@ -75,7 +75,6 @@ target_include_directories(wwtools-shared-lib
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
         ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
-        ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
 )
 
 target_include_directories(wwtools-static-lib
@@ -85,7 +84,6 @@ target_include_directories(wwtools-static-lib
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
         ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
-        ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
 )
 
 target_include_directories(wwtools-bin
@@ -93,7 +91,6 @@ target_include_directories(wwtools-bin
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
         ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
-        ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
 )
 
 # Add compile definitions
