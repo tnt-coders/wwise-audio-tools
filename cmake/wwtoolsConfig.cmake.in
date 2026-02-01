@@ -10,13 +10,9 @@ find_dependency(Vorbis REQUIRED)
 # Include the exported targets
 include("${CMAKE_CURRENT_LIST_DIR}/wwtoolsTargets.cmake")
 
-# Provide alias targets for compatibility if not already defined
-if(NOT TARGET wwtools::shared AND TARGET wwtools-shared-lib)
-    add_library(wwtools::shared ALIAS wwtools-shared-lib)
-endif()
-
-if(NOT TARGET wwtools::static AND TARGET wwtools-static-lib)
-    add_library(wwtools::static ALIAS wwtools-static-lib)
+# Provide alias target if not already defined
+if(NOT TARGET wwtools::wwtools AND TARGET wwtools-lib)
+    add_library(wwtools::wwtools ALIAS wwtools-lib)
 endif()
 
 check_required_components(wwtools)

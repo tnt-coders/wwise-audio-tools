@@ -49,26 +49,18 @@ endif()
 # find_package(Ogg REQUIRED)
 # find_package(Vorbis REQUIRED)
 
-# Create library targets
-add_library(wwtools-shared-lib SHARED ${SOURCE})
-add_library(wwtools-static-lib STATIC ${SOURCE})
+# Option to build shared or static library (defaults to static)
+option(BUILD_SHARED_LIBS "Build shared libraries instead of static" OFF)
+
+# Create single library target - CMake automatically uses BUILD_SHARED_LIBS
+add_library(wwtools-lib ${SOURCE})
 add_executable(wwtools-bin ${SOURCE} src/main.cpp)
 
-# Add alias targets for easier integration
-add_library(wwtools::shared ALIAS wwtools-shared-lib)
-add_library(wwtools::static ALIAS wwtools-static-lib)
+# Add alias target for easier integration
+add_library(wwtools::wwtools ALIAS wwtools-lib)
 
-# Configure include directories for library targets
-target_include_directories(wwtools-shared-lib
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
-)
-
-target_include_directories(wwtools-static-lib
+# Configure include directories for library target
+target_include_directories(wwtools-lib
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -85,17 +77,14 @@ target_include_directories(wwtools-bin
 )
 
 # Add compile definitions
-target_compile_definitions(wwtools-shared-lib PRIVATE KS_STR_ENCODING_NONE)
-target_compile_definitions(wwtools-static-lib PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(wwtools-lib PRIVATE KS_STR_ENCODING_NONE)
 target_compile_definitions(wwtools-bin PRIVATE KS_STR_ENCODING_NONE)
 
 # Link dependencies - these will be propagated to consuming targets
-target_link_libraries(wwtools-shared-lib PUBLIC Ogg::ogg vorbis::vorbis)
-target_link_libraries(wwtools-static-lib PUBLIC Ogg::ogg vorbis::vorbis)
+target_link_libraries(wwtools-lib PUBLIC Ogg::ogg vorbis::vorbis)
 
 set_target_properties(wwtools-bin PROPERTIES OUTPUT_NAME wwtools)
-set_target_properties(wwtools-shared-lib PROPERTIES OUTPUT_NAME wwtools)
-set_target_properties(wwtools-static-lib PROPERTIES OUTPUT_NAME wwtools)
+set_target_properties(wwtools-lib PROPERTIES OUTPUT_NAME wwtools)
 
 # Standard filesystem library needs additional linking options on older compilers
 # https://en.cppreference.com/w/cpp/filesystem#Notes
@@ -121,7 +110,7 @@ install(TARGETS wwtools-bin
 )
 
 # Install libraries with export for find_package() support
-install(TARGETS wwtools-static-lib wwtools-shared-lib
+install(TARGETS wwtools-lib
     EXPORT wwtoolsTargets
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib

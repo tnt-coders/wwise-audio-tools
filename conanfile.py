@@ -87,18 +87,11 @@ class WwiseAudioToolsConan(ConanFile):
         # Conan will use the installed CMake config files for find_package()
         self.cpp_info.set_property("cmake_find_mode", "both")
         self.cpp_info.set_property("cmake_file_name", "wwtools")
-        self.cpp_info.set_property("cmake_target_name", "wwtools::static" if not self.options.shared else "wwtools::shared")
+        self.cpp_info.set_property("cmake_target_name", "wwtools::wwtools")
 
-        # Define components for both static and shared builds
-        # The actual linking will be handled by the project's CMake config files
-        if self.options.shared:
-            self.cpp_info.components["shared"].set_property("cmake_target_name", "wwtools::shared")
-            self.cpp_info.components["shared"].libs = ["wwtools"]
-            self.cpp_info.components["shared"].requires = ["ogg::ogg", "vorbis::vorbis"]
-        else:
-            self.cpp_info.components["static"].set_property("cmake_target_name", "wwtools::static")
-            self.cpp_info.components["static"].libs = ["wwtools"]
-            self.cpp_info.components["static"].requires = ["ogg::ogg", "vorbis::vorbis"]
+        # Main library component (the actual linking is handled by CMake config files)
+        self.cpp_info.libs = ["wwtools"]
+        self.cpp_info.requires = ["ogg::ogg", "vorbis::vorbis"]
 
         # Define include directories
         self.cpp_info.includedirs = ["include"]
