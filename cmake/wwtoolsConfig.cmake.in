@@ -11,8 +11,8 @@ find_dependency(Vorbis REQUIRED)
 include("${CMAKE_CURRENT_LIST_DIR}/wwtoolsTargets.cmake")
 
 # Provide alias target if not already defined
-if(NOT TARGET wwtools::wwtools AND TARGET wwtools-lib)
-    add_library(wwtools::wwtools ALIAS wwtools-lib)
+if(NOT TARGET wwtools::wwtools AND TARGET wwtools)
+    add_library(wwtools::wwtools ALIAS wwtools)
 endif()
 
 check_required_components(wwtools)

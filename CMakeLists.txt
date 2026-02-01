@@ -52,15 +52,17 @@ endif()
 # Option to build shared or static library (defaults to static)
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static" OFF)
 
-# Create single library target - CMake automatically uses BUILD_SHARED_LIBS
-add_library(wwtools-lib ${SOURCE})
-add_executable(wwtools-bin ${SOURCE} src/main.cpp)
+# Create library target - CMake automatically uses BUILD_SHARED_LIBS
+add_library(wwtools ${SOURCE})
+
+# Create executable target
+add_executable(wwtools-cli ${SOURCE} src/main.cpp)
 
 # Add alias target for easier integration
-add_library(wwtools::wwtools ALIAS wwtools-lib)
+add_library(wwtools::wwtools ALIAS wwtools)
 
 # Configure include directories for library target
-target_include_directories(wwtools-lib
+target_include_directories(wwtools
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -69,7 +71,7 @@ target_include_directories(wwtools-lib
         ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
 )
 
-target_include_directories(wwtools-bin
+target_include_directories(wwtools-cli
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
@@ -77,40 +79,40 @@ target_include_directories(wwtools-bin
 )
 
 # Add compile definitions
-target_compile_definitions(wwtools-lib PRIVATE KS_STR_ENCODING_NONE)
-target_compile_definitions(wwtools-bin PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(wwtools PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(wwtools-cli PRIVATE KS_STR_ENCODING_NONE)
 
 # Link dependencies - these will be propagated to consuming targets
-target_link_libraries(wwtools-lib PUBLIC Ogg::ogg vorbis::vorbis)
+target_link_libraries(wwtools PUBLIC Ogg::ogg vorbis::vorbis)
 
-set_target_properties(wwtools-bin PROPERTIES OUTPUT_NAME wwtools)
-set_target_properties(wwtools-lib PROPERTIES OUTPUT_NAME wwtools)
+# Executable outputs as 'wwtools' (the CLI tool keeps the original name)
+set_target_properties(wwtools-cli PROPERTIES OUTPUT_NAME wwtools)
 
 # Standard filesystem library needs additional linking options on older compilers
 # https://en.cppreference.com/w/cpp/filesystem#Notes
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.1")
-    target_link_libraries(wwtools-bin Ogg::ogg vorbis::vorbis stdc++fs)
+    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis stdc++fs)
   else()
-    target_link_libraries(wwtools-bin Ogg::ogg vorbis::vorbis)
+    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis)
   endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
-    target_link_libraries(wwtools-bin Ogg::ogg vorbis::vorbis c++fs)
+    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis c++fs)
   else()
-    target_link_libraries(wwtools-bin Ogg::ogg vorbis::vorbis)
+    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis)
   endif()
 else()
-  target_link_libraries(wwtools-bin Ogg::ogg vorbis::vorbis)
+  target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis)
 endif()
 
 # Installation rules
-install(TARGETS wwtools-bin
+install(TARGETS wwtools-cli
     RUNTIME DESTINATION bin
 )
 
 # Install libraries with export for find_package() support
-install(TARGETS wwtools-lib
+install(TARGETS wwtools
     EXPORT wwtoolsTargets
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
