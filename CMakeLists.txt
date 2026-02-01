@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 # Required for MSVC to cooperate with Conan 2.X+
 cmake_policy(SET CMP0091 NEW)
 
-project(wwise-audio-tools)
+project(wwise-audio-tools VERSION 1.0.0)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
