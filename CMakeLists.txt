@@ -14,17 +14,8 @@ file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Build dependencies from submodules
-add_subdirectory(external/ogg EXCLUDE_FROM_ALL)
-add_subdirectory(external/vorbis EXCLUDE_FROM_ALL)
-
-# Create aliases for consistent naming (Conan uses Ogg::ogg, submodule uses ogg)
-if(NOT TARGET Ogg::ogg)
-    add_library(Ogg::ogg ALIAS ogg)
-endif()
-if(NOT TARGET vorbis::vorbis)
-    add_library(vorbis::vorbis ALIAS vorbis)
-endif()
+find_package(Ogg REQUIRED)
+find_package(Vorbis REQUIRED)
 
 set(SOURCE
     src/ww2ogg/codebook.cpp
