@@ -5,7 +5,6 @@ import os
 
 
 class WwiseAudioToolsConan(ConanFile):
-    name = "wwtools"
     license = "MIT"
     author = "TNT Coders"
     url = "https://github.com/tnt-coders/wwise-audio-tools"
