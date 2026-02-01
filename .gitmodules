@@ -7,3 +7,6 @@
 [submodule "external/vorbis"]
 	path = external/vorbis
 	url = https://github.com/xiph/vorbis.git
+[submodule "cmake-conan"]
+	path = cmake-conan
+	url = https://github.com/tnt-coders/cmake-conan.git
