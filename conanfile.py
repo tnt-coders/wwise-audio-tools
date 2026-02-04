@@ -36,7 +36,7 @@ class WwiseAudioToolsConan(ConanFile):
 
     def requirements(self):
         """Declare dependencies"""
-        self.requires("cmake-package-buidler/1.0.0") #recipe: https://github.com/tnt-coders/cmake-package-builder.git
+        self.requires("cmake-package-builder/1.0.0") #recipe: https://github.com/tnt-coders/cmake-package-builder.git
         self.requires("ogg/1.3.5")
         self.requires("vorbis/1.3.7")
 
