@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 # Required for MSVC to cooperate with Conan 2.X+
 cmake_policy(SET CMP0091 NEW)
 
-project(WwiseAudioTools VERSION 1.0.0 LANGUAGES CXX)
+project(WwiseAudioTools VERSION 1.0.0 LANGUAGES C CXX)
 
 option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 option(DOWNLOAD_CATCH2 "Download Catch2 framework if it won't be found locally" OFF)
