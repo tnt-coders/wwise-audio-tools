@@ -10,8 +10,6 @@ class WwiseAudioToolsConan(ConanFile):
     url = "https://github.com/tnt-coders/wwise-audio-tools"
     description = "Library and command line tool for converting Wwise WEM files to OGG format"
     topics = ("wwise", "audio", "wem", "ogg", "conversion")
-
-    # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],
@@ -23,8 +21,6 @@ class WwiseAudioToolsConan(ConanFile):
         "fPIC": True,
         "packed_codebooks_aotuv": True,
     }
-
-    # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*", "include/*", "cmake/*"
 
     def config_options(self):
@@ -40,6 +36,7 @@ class WwiseAudioToolsConan(ConanFile):
 
     def requirements(self):
         """Declare dependencies"""
+        self.requires("cmake-package-buidler/1.0.0") #recipe: https://github.com/tnt-coders/cmake-package-builder.git
         self.requires("ogg/1.3.5")
         self.requires("vorbis/1.3.7")
 

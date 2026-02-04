@@ -11,10 +11,10 @@ option(DOWNLOAD_CATCH2 "Download Catch2 framework if it won't be found locally" 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+find_package(PackageBuilder REQUIRED)
 find_package(Ogg REQUIRED)
 find_package(Vorbis REQUIRED)
 
-add_subdirectory(cmake-conan)
 include(PackageBuilder)
 
 # Create the package
@@ -44,37 +44,37 @@ else()
 endif()
 
 # Create library target - CMake automatically uses BUILD_SHARED_LIBS
-package_add_library(wwtools ${SOURCE})
+package_add_library(WwiseAudioTools ${SOURCE})
 
 # Create executable target
-package_add_executable(wwtools-cli ${SOURCE} src/main.cpp)
+package_add_executable(WwiseAudioTools_CLI ${SOURCE} src/main.cpp)
 
 # Add compile definitions
-target_compile_definitions(wwtools PRIVATE KS_STR_ENCODING_NONE)
-target_compile_definitions(wwtools-cli PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(WwiseAudioTools PRIVATE KS_STR_ENCODING_NONE)
+target_compile_definitions(WwiseAudioTools_CLI PRIVATE KS_STR_ENCODING_NONE)
 
 # Link dependencies - these will be propagated to consuming targets
-target_link_libraries(wwtools PUBLIC Ogg::ogg vorbis::vorbis)
+target_link_libraries(WwiseAudioTools PUBLIC Ogg::ogg Vorbis::vorbis)
 
 # Executable outputs as 'wwtools' (the CLI tool keeps the original name)
-set_target_properties(wwtools-cli PROPERTIES OUTPUT_NAME wwtools)
+set_target_properties(WwiseAudioTools_CLI PROPERTIES OUTPUT_NAME wwtools)
 
 # Standard filesystem library needs additional linking options on older compilers
 # https://en.cppreference.com/w/cpp/filesystem#Notes
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.1")
-    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis stdc++fs)
+    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis stdc++fs)
   else()
-    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis)
+    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis)
   endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
-    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis c++fs)
+    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis c++fs)
   else()
-    target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis)
+    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis)
   endif()
 else()
-  target_link_libraries(wwtools-cli Ogg::ogg vorbis::vorbis)
+  target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis)
 endif()
 
 # Install the package
