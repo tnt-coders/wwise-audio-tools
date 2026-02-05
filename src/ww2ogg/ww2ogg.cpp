@@ -5,7 +5,6 @@
  */
 
 #define __STDC_CONSTANT_MACROS
-#include <iostream>
 #include <ostream>
 #include <string>
 

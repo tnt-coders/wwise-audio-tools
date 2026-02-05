@@ -19,12 +19,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstring>
-#include <fstream>
-#include <iostream>
 #include <sstream>
-#include <string>
 
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>

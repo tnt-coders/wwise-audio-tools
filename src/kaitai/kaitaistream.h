@@ -9,8 +9,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <limits>
-#include <stdexcept>
-#include <errno.h>
 
 namespace kaitai {
 
@@ -234,8 +232,8 @@ public:
     typename std::enable_if<
             std::is_integral<I>::value &&
             // check if we don't have something too large like GCC's `__int128_t`
-            std::numeric_limits<I>::max() >= 0 &&
-            std::numeric_limits<I>::max() <= std::numeric_limits<uint64_t>::max(),
+            (std::numeric_limits<I>::max)() >= 0 &&
+            (std::numeric_limits<I>::max)() <= (std::numeric_limits<uint64_t>::max)(),
             std::string
     >::type
 #else
@@ -280,7 +278,7 @@ public:
             //    is in range `[0, 2**64 - 2]`, so adding `1` will not wrap (at most we could get `2**64 - 1 =
             //    0xffff_ffff_ffff_ffff`, which is still in the valid range of `uint64_t`).
 
-            unsigned_to_decimal((std::numeric_limits<uint64_t>::max() - static_cast<uint64_t>(val)) + 1, &buf[1]);
+            unsigned_to_decimal(((std::numeric_limits<uint64_t>::max)() - static_cast<uint64_t>(val)) + 1, &buf[1]);
         } else {
             unsigned_to_decimal(val, buf);
         }

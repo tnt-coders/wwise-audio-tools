@@ -4,11 +4,9 @@
  * @note Modernized to C++23
  */
 
-#include <algorithm>
 #include <cstdint>
 #include <format>
 #include <map>
-#include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>

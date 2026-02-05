@@ -7,10 +7,6 @@
 #ifndef WW2OGG_CODEBOOK_H
 #define WW2OGG_CODEBOOK_H
 
-#include <cstdint>
-#include <cstdlib>
-#include <fstream>
-#include <sstream>
 #include <string>
 
 #include "bitstream.h"

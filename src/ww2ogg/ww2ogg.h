@@ -8,9 +8,7 @@
 #define WW2OGG_WW2OGG_H
 
 #include <ostream>
-#include <span>
 #include <string>
-#include <string_view>
 
 #include "packed_codebooks.h"
 #include "wwriff.h"

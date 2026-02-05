@@ -8,8 +8,8 @@
 #define WW2OGG_WWRIFF_H
 
 #include <cstdint>
-#include <fstream>
-#include <iostream>
+#include <istream>
+#include <ostream>
 #include <sstream>
 #include <string>
 

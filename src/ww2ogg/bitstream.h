@@ -12,8 +12,9 @@
 #endif
 
 #include <cstdint>
-#include <iostream>
+#include <istream>
 #include <limits>
+#include <ostream>
 
 #include "crc.h"
 #include "errors.h"

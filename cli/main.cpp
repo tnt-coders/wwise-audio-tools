@@ -18,12 +18,8 @@
 #include <string_view>
 #include <vector>
 
-#include "kaitai/kaitaistream.h"
-#include "kaitai/structs/bnk.h"
-#include "revorb/revorb.hpp"
 #include "util/rang.hpp"
 #include "ww2ogg/ww2ogg.h"
-#include "ww2ogg/wwriff.h"
 #include "wwtools/bnk.hpp"
 #include "wwtools/wwtools.hpp"
 

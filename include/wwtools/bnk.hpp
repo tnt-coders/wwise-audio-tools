@@ -17,7 +17,6 @@
 #include <string_view>
 #include <vector>
 
-#include "kaitai/kaitaistream.h"
 #include "kaitai/structs/bnk.h"
 
 /**
