@@ -5,11 +5,8 @@ cmake_policy(SET CMP0091 NEW)
 
 project(WwiseAudioTools VERSION 1.0.0 LANGUAGES C CXX)
 
+option(BUILD_CLI "Build command-line interface" ON)
 option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
-option(DOWNLOAD_CATCH2 "Download Catch2 framework if it won't be found locally" OFF)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(PackageBuilder REQUIRED)
 find_package(Ogg REQUIRED)
@@ -26,12 +23,12 @@ set(SOURCE
     src/ww2ogg/ww2ogg.cpp
     src/ww2ogg/wwriff.cpp
     src/revorb/revorb.cpp
-    src/wwtools/wwtools.cpp
-    src/wwtools/bnk.cpp
     src/kaitai/kaitaistream.cpp
     src/kaitai/structs/bnk.cpp
     src/kaitai/structs/vlq.cpp
-    src/kaitai/structs/wem.cpp)
+    src/kaitai/structs/wem.cpp
+    src/wwtools.cpp
+    src/bnk.cpp)
 
 if(PACKED_CODEBOOKS_AOTUV)
   message("PACKED_CODEBOOKS_AOTUV set as on. Using data from packed_codebooks_aoTuV_603.bin.")
@@ -43,14 +40,27 @@ endif()
 
 # Create library target
 package_add_library(WwiseAudioTools ${SOURCE})
-target_compile_definitions(WwiseAudioTools PRIVATE KS_STR_ENCODING_NONE)
-target_link_libraries(WwiseAudioTools PUBLIC Ogg::ogg Vorbis::vorbis)
 
-# Create executable target
-package_add_executable(WwiseAudioTools_CLI src/main.cpp)
-target_compile_definitions(WwiseAudioTools_CLI PRIVATE KS_STR_ENCODING_NONE)
-target_link_libraries(WwiseAudioTools_CLI WwiseAudioTools::WwiseAudioTools)
-set_target_properties(WwiseAudioTools_CLI PROPERTIES OUTPUT_NAME wwtools)
+target_compile_definitions(WwiseAudioTools PRIVATE KS_STR_ENCODING_NONE)
+
+target_compile_features(WwiseAudioTools PUBLIC cxx_std_23)
+
+target_link_libraries(WwiseAudioTools
+    PRIVATE
+        Ogg::ogg
+        Vorbis::vorbis
+)
+
+# CLI
+if(BUILD_CLI)
+    package_add_executable(WwiseAudioTools_CLI cli/main.cpp)
+
+    target_link_libraries(WwiseAudioTools_CLI WwiseAudioTools::WwiseAudioTools)
+
+    set_target_properties(WwiseAudioTools_CLI PROPERTIES
+        OUTPUT_NAME wwtools
+    )
+endif()
 
 # Install the package
 package_install()
