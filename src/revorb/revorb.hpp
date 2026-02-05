@@ -1,13 +1,29 @@
+/**
+ * @file revorb.hpp
+ * @brief OGG Vorbis granule position recomputation
+ * @note Modernized to C++23
+ *
+ * REVORB - Recomputes page granule positions in Ogg Vorbis files.
+ * Based on version 0.2 (2008/06/29) by Jiri Hruska
+ */
+
 #ifndef REVORB_REVORB_H
 #define REVORB_REVORB_H
 
-#include <iostream>
 #include <istream>
 #include <sstream>
-#include <string>
 
 namespace revorb {
-bool revorb(std::istream &indata, std::stringstream &outdata);
+
+/**
+ * @brief Recompute granule positions in an OGG Vorbis stream
+ *
+ * @param indata Input OGG Vorbis stream
+ * @param outdata Output stream with corrected granule positions
+ * @return true on success, false on failure
+ */
+[[nodiscard]] auto revorb(std::istream& indata, std::stringstream& outdata) -> bool;
+
 } // namespace revorb
 
 #endif // REVORB_REVORB_H

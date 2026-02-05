@@ -1,152 +1,147 @@
+/**
+ * @file bitstream.h
+ * @brief Bit-level stream reading/writing for OGG generation
+ * @note Modernized to C++23
+ */
+
 #ifndef WW2OGG_BIT_STREAM_H
 #define WW2OGG_BIT_STREAM_H
 
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS
 #endif
+
+#include <cstdint>
 #include <iostream>
 #include <limits>
-#include <stdint.h>
 
 #include "crc.h"
 #include "errors.h"
 
-// host-endian-neutral integer reading
+// Host-endian-neutral integer reading/writing utilities
 namespace {
-uint32_t read_32_le(unsigned char b[4]) {
+
+[[nodiscard]] inline auto read_32_le(unsigned char b[4]) -> uint32_t {
   uint32_t v = 0;
-  for (int i = 3; i >= 0; i--) {
+  for (int i = 3; i >= 0; --i) {
     v <<= 8;
     v |= b[i];
   }
-
   return v;
 }
 
-uint32_t read_32_le(std::istream &is) {
+[[nodiscard]] inline auto read_32_le(std::istream& is) -> uint32_t {
   char b[4];
   is.read(b, 4);
-
-  return read_32_le(reinterpret_cast<unsigned char *>(b));
+  return read_32_le(reinterpret_cast<unsigned char*>(b));
 }
 
-void write_32_le(unsigned char b[4], uint32_t v) {
-  for (int i = 0; i < 4; i++) {
-    b[i] = v & 0xFF;
+inline void write_32_le(unsigned char b[4], uint32_t v) {
+  for (int i = 0; i < 4; ++i) {
+    b[i] = static_cast<unsigned char>(v & 0xFF);
     v >>= 8;
   }
 }
 
-void write_32_le(std::ostream &os, uint32_t v) {
+inline void write_32_le(std::ostream& os, uint32_t v) {
   char b[4];
-
-  write_32_le(reinterpret_cast<unsigned char *>(b), v);
-
+  write_32_le(reinterpret_cast<unsigned char*>(b), v);
   os.write(b, 4);
 }
 
-uint16_t read_16_le(unsigned char b[2]) {
+[[nodiscard]] inline auto read_16_le(unsigned char b[2]) -> uint16_t {
   uint16_t v = 0;
-  for (int i = 1; i >= 0; i--) {
+  for (int i = 1; i >= 0; --i) {
     v <<= 8;
     v |= b[i];
   }
-
   return v;
 }
 
-uint16_t read_16_le(std::istream &is) {
+[[nodiscard]] inline auto read_16_le(std::istream& is) -> uint16_t {
   char b[2];
   is.read(b, 2);
-
-  return read_16_le(reinterpret_cast<unsigned char *>(b));
+  return read_16_le(reinterpret_cast<unsigned char*>(b));
 }
 
-void write_16_le(unsigned char b[2], uint16_t v) {
-  for (int i = 0; i < 2; i++) {
-    b[i] = v & 0xFF;
+inline void write_16_le(unsigned char b[2], uint16_t v) {
+  for (int i = 0; i < 2; ++i) {
+    b[i] = static_cast<unsigned char>(v & 0xFF);
     v >>= 8;
   }
 }
 
-void write_16_le(std::ostream &os, uint16_t v) {
+inline void write_16_le(std::ostream& os, uint16_t v) {
   char b[2];
-
-  write_16_le(reinterpret_cast<unsigned char *>(b), v);
-
+  write_16_le(reinterpret_cast<unsigned char*>(b), v);
   os.write(b, 2);
 }
 
-uint32_t read_32_be(unsigned char b[4]) {
+[[nodiscard]] inline auto read_32_be(unsigned char b[4]) -> uint32_t {
   uint32_t v = 0;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; ++i) {
     v <<= 8;
     v |= b[i];
   }
-
   return v;
 }
 
-uint32_t read_32_be(std::istream &is) {
+[[nodiscard]] inline auto read_32_be(std::istream& is) -> uint32_t {
   char b[4];
   is.read(b, 4);
-
-  return read_32_be(reinterpret_cast<unsigned char *>(b));
+  return read_32_be(reinterpret_cast<unsigned char*>(b));
 }
 
-void write_32_be(unsigned char b[4], uint32_t v) {
-  for (int i = 3; i >= 0; i--) {
-    b[i] = v & 0xFF;
+inline void write_32_be(unsigned char b[4], uint32_t v) {
+  for (int i = 3; i >= 0; --i) {
+    b[i] = static_cast<unsigned char>(v & 0xFF);
     v >>= 8;
   }
 }
 
-void write_32_be(std::ostream &os, uint32_t v) {
+inline void write_32_be(std::ostream& os, uint32_t v) {
   char b[4];
-
-  write_32_be(reinterpret_cast<unsigned char *>(b), v);
-
+  write_32_be(reinterpret_cast<unsigned char*>(b), v);
   os.write(b, 4);
 }
 
-uint16_t read_16_be(unsigned char b[2]) {
+[[nodiscard]] inline auto read_16_be(unsigned char b[2]) -> uint16_t {
   uint16_t v = 0;
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; ++i) {
     v <<= 8;
     v |= b[i];
   }
-
   return v;
 }
 
-uint16_t read_16_be(std::istream &is) {
+[[nodiscard]] inline auto read_16_be(std::istream& is) -> uint16_t {
   char b[2];
   is.read(b, 2);
-
-  return read_16_be(reinterpret_cast<unsigned char *>(b));
+  return read_16_be(reinterpret_cast<unsigned char*>(b));
 }
 
-void write_16_be(unsigned char b[2], uint16_t v) {
-  for (int i = 1; i >= 0; i--) {
-    b[i] = v & 0xFF;
+inline void write_16_be(unsigned char b[2], uint16_t v) {
+  for (int i = 1; i >= 0; --i) {
+    b[i] = static_cast<unsigned char>(v & 0xFF);
     v >>= 8;
   }
 }
 
-void write_16_be(std::ostream &os, uint16_t v) {
+inline void write_16_be(std::ostream& os, uint16_t v) {
   char b[2];
-
-  write_16_be(reinterpret_cast<unsigned char *>(b), v);
-
+  write_16_be(reinterpret_cast<unsigned char*>(b), v);
   os.write(b, 2);
 }
 
-} // namespace
+} // anonymous namespace
 
 namespace ww2ogg {
-// using an istream, pull off individual bits with get_bit (LSB first)
+
+/**
+ * @brief Bit-level input stream reader (LSB first)
+ */
 class bitstream {
-  std::istream &is;
+  std::istream& is;
 
   unsigned char bit_buffer;
   unsigned int bits_left;
@@ -156,30 +151,35 @@ public:
   class Weird_char_size {};
   class Out_of_bits {};
 
-  bitstream(std::istream &_is)
+  explicit bitstream(std::istream& _is)
       : is(_is), bit_buffer(0), bits_left(0), total_bits_read(0) {
     if (std::numeric_limits<unsigned char>::digits != 8)
       throw Weird_char_size();
   }
-  bool get_bit() {
-    if (bits_left == 0) {
 
+  [[nodiscard]] auto get_bit() -> bool {
+    if (bits_left == 0) {
       int c = is.get();
       if (c == EOF)
         throw Out_of_bits();
-      bit_buffer = c;
+      bit_buffer = static_cast<unsigned char>(c);
       bits_left = 8;
     }
-    total_bits_read++;
-    bits_left--;
+    ++total_bits_read;
+    --bits_left;
     return ((bit_buffer & (0x80 >> bits_left)) != 0);
   }
 
-  unsigned long get_total_bits_read(void) const { return total_bits_read; }
+  [[nodiscard]] auto get_total_bits_read() const -> unsigned long {
+    return total_bits_read;
+  }
 };
 
+/**
+ * @brief Bit-level OGG output stream writer
+ */
 class bitoggstream {
-  std::ostream &os;
+  std::ostream& os;
 
   unsigned char bit_buffer;
   unsigned int bits_stored;
@@ -188,15 +188,14 @@ class bitoggstream {
 
   unsigned int payload_bytes;
   bool first, continued;
-  unsigned char
-      page_buffer[header_bytes + max_segments + segment_size * max_segments];
+  unsigned char page_buffer[header_bytes + max_segments + segment_size * max_segments];
   uint32_t granule;
   uint32_t seqno;
 
 public:
   class Weird_char_size {};
 
-  bitoggstream(std::ostream &_os)
+  explicit bitoggstream(std::ostream& _os)
       : os(_os), bit_buffer(0), bits_stored(0), payload_bytes(0), first(true),
         continued(false), granule(0), seqno(0) {
     if (std::numeric_limits<unsigned char>::digits != 8)
@@ -205,9 +204,9 @@ public:
 
   void put_bit(bool bit) {
     if (bit)
-      bit_buffer |= 1 << bits_stored;
+      bit_buffer |= static_cast<unsigned char>(1 << bits_stored);
 
-    bits_stored++;
+    ++bits_stored;
     if (bits_stored == 8) {
       flush_bits();
     }
@@ -215,7 +214,7 @@ public:
 
   void set_granule(uint32_t g) { granule = g; }
 
-  void flush_bits(void) {
+  void flush_bits() {
     if (bits_stored != 0) {
       if (payload_bytes == segment_size * max_segments) {
         throw parse_error_str("ran out of space in an Ogg packet");
@@ -223,7 +222,7 @@ public:
       }
 
       page_buffer[header_bytes + max_segments + payload_bytes] = bit_buffer;
-      payload_bytes++;
+      ++payload_bytes;
 
       bits_stored = 0;
       bit_buffer = 0;
@@ -242,7 +241,7 @@ public:
         segments = max_segments; // at max eschews the final 0
 
       // move payload back
-      for (unsigned int i = 0; i < payload_bytes; i++) {
+      for (unsigned int i = 0; i < payload_bytes; ++i) {
         page_buffer[header_bytes + segments + i] =
             page_buffer[header_bytes + max_segments + i];
       }
@@ -252,8 +251,8 @@ public:
       page_buffer[2] = 'g';
       page_buffer[3] = 'S';
       page_buffer[4] = 0; // stream_structure_version
-      page_buffer[5] = (continued ? 1 : 0) | (first ? 2 : 0) |
-                       (last ? 4 : 0);       // header_type_flag
+      page_buffer[5] = static_cast<unsigned char>(
+          (continued ? 1 : 0) | (first ? 2 : 0) | (last ? 4 : 0));
       write_32_le(&page_buffer[6], granule); // granule low bits
       write_32_le(&page_buffer[10], 0);      // granule high bits
       if (granule == UINT32_C(0xFFFFFFFF))
@@ -261,15 +260,15 @@ public:
       write_32_le(&page_buffer[14], 1);     // stream serial number
       write_32_le(&page_buffer[18], seqno); // page sequence number
       write_32_le(&page_buffer[22], 0);     // checksum (0 for now)
-      page_buffer[26] = segments;           // segment count
+      page_buffer[26] = static_cast<unsigned char>(segments);
 
       // lacing values
-      for (unsigned int i = 0, bytes_left = payload_bytes; i < segments; i++) {
+      for (unsigned int i = 0, bytes_left = payload_bytes; i < segments; ++i) {
         if (bytes_left >= segment_size) {
           bytes_left -= segment_size;
           page_buffer[27 + i] = segment_size;
         } else {
-          page_buffer[27 + i] = bytes_left;
+          page_buffer[27 + i] = static_cast<unsigned char>(bytes_left);
         }
       }
 
@@ -280,11 +279,11 @@ public:
 
       // output to ostream
       for (unsigned int i = 0; i < header_bytes + segments + payload_bytes;
-           i++) {
-        os.put(page_buffer[i]);
+           ++i) {
+        os.put(static_cast<char>(page_buffer[i]));
       }
 
-      seqno++;
+      ++seqno;
       first = false;
       continued = next_continued;
       payload_bytes = 0;
@@ -294,9 +293,11 @@ public:
   ~bitoggstream() { flush_page(); }
 };
 
-// integer of a certain number of bits, to allow reading just that many
-// bits from the bitstream
-template <unsigned int BIT_SIZE> class Bit_uint {
+/**
+ * @brief Fixed-size bit integer for compile-time sized bit fields
+ */
+template <unsigned int BIT_SIZE>
+class Bit_uint {
   unsigned int total;
 
 public:
@@ -317,34 +318,35 @@ public:
       throw Int_too_big();
   }
 
-  Bit_uint &operator=(unsigned int v) {
+  auto operator=(unsigned int v) -> Bit_uint& {
     if ((v >> (BIT_SIZE - 1U)) > 1U)
       throw Int_too_big();
     total = v;
     return *this;
   }
 
-  operator unsigned int() const { return total; }
+  [[nodiscard]] operator unsigned int() const { return total; }
 
-  friend bitstream &operator>>(bitstream &bstream, Bit_uint &bui) {
+  friend auto operator>>(bitstream& bstream, Bit_uint& bui) -> bitstream& {
     bui.total = 0;
-    for (unsigned int i = 0; i < BIT_SIZE; i++) {
+    for (unsigned int i = 0; i < BIT_SIZE; ++i) {
       if (bstream.get_bit())
         bui.total |= (1U << i);
     }
     return bstream;
   }
 
-  friend bitoggstream &operator<<(bitoggstream &bstream, const Bit_uint &bui) {
-    for (unsigned int i = 0; i < BIT_SIZE; i++) {
+  friend auto operator<<(bitoggstream& bstream, const Bit_uint& bui) -> bitoggstream& {
+    for (unsigned int i = 0; i < BIT_SIZE; ++i) {
       bstream.put_bit((bui.total & (1U << i)) != 0);
     }
     return bstream;
   }
 };
 
-// integer of a run-time specified number of bits
-// bits from the bitstream
+/**
+ * @brief Variable-size bit integer for runtime-sized bit fields
+ */
 class Bit_uintv {
   unsigned int size;
   unsigned int total;
@@ -367,48 +369,53 @@ public:
       throw Int_too_big();
   }
 
-  Bit_uintv &operator=(unsigned int v) {
+  auto operator=(unsigned int v) -> Bit_uintv& {
     if ((v >> (size - 1U)) > 1U)
       throw Int_too_big();
     total = v;
     return *this;
   }
 
-  operator unsigned int() const { return total; }
+  [[nodiscard]] operator unsigned int() const { return total; }
 
-  friend bitstream &operator>>(bitstream &bstream, Bit_uintv &bui) {
+  friend auto operator>>(bitstream& bstream, Bit_uintv& bui) -> bitstream& {
     bui.total = 0;
-    for (unsigned int i = 0; i < bui.size; i++) {
+    for (unsigned int i = 0; i < bui.size; ++i) {
       if (bstream.get_bit())
         bui.total |= (1U << i);
     }
     return bstream;
   }
 
-  friend bitoggstream &operator<<(bitoggstream &bstream, const Bit_uintv &bui) {
-    for (unsigned int i = 0; i < bui.size; i++) {
+  friend auto operator<<(bitoggstream& bstream, const Bit_uintv& bui) -> bitoggstream& {
+    for (unsigned int i = 0; i < bui.size; ++i) {
       bstream.put_bit((bui.total & (1U << i)) != 0);
     }
     return bstream;
   }
 };
 
+/**
+ * @brief Stream buffer backed by a character array
+ */
 class array_streambuf : public std::streambuf {
-  // Intentionally undefined
-  array_streambuf &operator=(const array_streambuf &rhs);
-  array_streambuf(const array_streambuf &rhs);
+  // Non-copyable
+  array_streambuf& operator=(const array_streambuf&) = delete;
+  array_streambuf(const array_streambuf&) = delete;
 
-  char *arr;
+  char* arr;
 
 public:
-  array_streambuf(const char *a, int l) : arr(0) {
+  array_streambuf(const char* a, int l) : arr(nullptr) {
     arr = new char[l];
-    for (int i = 0; i < l; i++)
+    for (int i = 0; i < l; ++i)
       arr[i] = a[i];
     setg(arr, arr, arr + l);
   }
-  ~array_streambuf() { delete[] arr; }
+
+  ~array_streambuf() override { delete[] arr; }
 };
+
 } // namespace ww2ogg
 
 #endif // WW2OGG_BIT_STREAM_H

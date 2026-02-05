@@ -1,77 +1,124 @@
+/**
+ * @file errors.h
+ * @brief Error types for ww2ogg parsing
+ * @note Modernized to C++23
+ */
+
 #ifndef WW2OGG_ERRORS_H
 #define WW2OGG_ERRORS_H
 
-#include <iostream>
+#include <cstddef>
+#include <format>
+#include <ostream>
 #include <string>
+#include <string_view>
 
 namespace ww2ogg {
+
+/**
+ * @brief Error for invalid command-line arguments
+ */
 class Argument_error {
-  std::string errmsg;
+  std::string errmsg_;
 
 public:
-  friend std::ostream &operator<<(std::ostream &os, const Argument_error &ae) {
-    os << "Argument error: " << ae.errmsg;
+  explicit Argument_error(std::string_view str) : errmsg_(str) {}
+
+  friend auto operator<<(std::ostream& os, const Argument_error& ae) -> std::ostream& {
+    os << "Argument error: " << ae.errmsg_;
     return os;
   }
 
-  explicit Argument_error(const char *str) : errmsg(str) {}
+  [[nodiscard]] auto message() const -> std::string_view { return errmsg_; }
 };
 
+/**
+ * @brief Error for file opening failures
+ */
 class file_open_error {
-  std::string filename;
+  std::string filename_;
 
 public:
-  friend std::ostream &operator<<(std::ostream &os, const file_open_error &fe) {
-    os << "Error opening " << fe.filename;
+  explicit file_open_error(std::string_view name) : filename_(name) {}
+
+  friend auto operator<<(std::ostream& os, const file_open_error& fe) -> std::ostream& {
+    os << "Error opening " << fe.filename_;
     return os;
   }
 
-  explicit file_open_error(const std::string &name) : filename(name) {}
+  [[nodiscard]] auto filename() const -> std::string_view { return filename_; }
 };
 
+/**
+ * @brief Base class for parsing errors
+ */
 class parse_error {
 public:
-  virtual void print_self(std::ostream &os) const { os << "unspecified."; }
+  parse_error() = default;
+  parse_error(const parse_error&) = default;
+  parse_error(parse_error&&) = default;
+  auto operator=(const parse_error&) -> parse_error& = default;
+  auto operator=(parse_error&&) -> parse_error& = default;
+  virtual ~parse_error() = default;
 
-  friend std::ostream &operator<<(std::ostream &os, const parse_error &pe) {
+  virtual void print_self(std::ostream& os) const { os << "unspecified."; }
+
+  friend auto operator<<(std::ostream& os, const parse_error& pe) -> std::ostream& {
     os << "Parse error: ";
     pe.print_self(os);
     return os;
   }
-  virtual ~parse_error() {}
 };
 
+/**
+ * @brief Parse error with string message
+ */
 class parse_error_str : public parse_error {
-  std::string str;
+  std::string str_;
 
 public:
-  virtual void print_self(std::ostream &os) const override { os << str; }
+  explicit parse_error_str(std::string_view s) : str_(s) {}
 
-  explicit parse_error_str(std::string s) : str(s) {}
+  void print_self(std::ostream& os) const override { os << str_; }
+
+  [[nodiscard]] auto message() const -> std::string_view { return str_; }
 };
 
+/**
+ * @brief Error for size mismatches during parsing
+ */
 class size_mismatch : public parse_error {
-  const unsigned long real_size, read_size;
+  std::size_t real_size_;
+  std::size_t read_size_;
 
 public:
-  virtual void print_self(std::ostream &os) const override {
-    os << "expected " << real_size << " bits, read " << read_size;
+  size_mismatch(std::size_t real_s, std::size_t read_s)
+      : real_size_(real_s), read_size_(read_s) {}
+
+  void print_self(std::ostream& os) const override {
+    os << std::format("expected {} bits, read {}", real_size_, read_size_);
   }
 
-  size_mismatch(unsigned long real_s, unsigned long read_s)
-      : real_size(real_s), read_size(read_s) {}
+  [[nodiscard]] auto expected_size() const -> std::size_t { return real_size_; }
+  [[nodiscard]] auto actual_size() const -> std::size_t { return read_size_; }
 };
 
+/**
+ * @brief Error for invalid codebook IDs
+ */
 class invalid_id : public parse_error {
-  const int id;
+  int id_;
 
 public:
-  virtual void print_self(std::ostream &os) const override {
-    os << "invalid codebook id " << id << ", try --inline-codebooks";
+  explicit invalid_id(int i) : id_(i) {}
+
+  void print_self(std::ostream& os) const override {
+    os << std::format("invalid codebook id {}, try --inline-codebooks", id_);
   }
 
-  explicit invalid_id(int i) : id(i) {}
+  [[nodiscard]] auto id() const -> int { return id_; }
 };
+
 } // namespace ww2ogg
 
 #endif // WW2OGG_ERRORS_H

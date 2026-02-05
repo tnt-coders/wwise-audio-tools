@@ -1,98 +1,126 @@
+/**
+ * @file codebook.h
+ * @brief Vorbis codebook handling for ww2ogg
+ * @note Modernized to C++23
+ */
+
 #ifndef WW2OGG_CODEBOOK_H
 #define WW2OGG_CODEBOOK_H
 
-#include "bitstream.h"
-#include "errors.h"
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
 
-using namespace std;
+#include "bitstream.h"
+#include "errors.h"
 
-/* stuff from Tremor (lowmem) */
+// Helper functions from Tremor (lowmem)
 namespace {
-int ilog(unsigned int v) {
+
+/**
+ * @brief Integer logarithm base 2
+ */
+[[nodiscard]] inline auto ilog(unsigned int v) -> int {
   int ret = 0;
-  while (v) {
-    ret++;
+  while (v != 0) {
+    ++ret;
     v >>= 1;
   }
-  return (ret);
+  return ret;
 }
 
-unsigned int _book_maptype1_quantvals(unsigned int entries,
-                                      unsigned int dimensions) {
-  /* get us a starting hint, we'll polish it below */
-  int bits = ilog(entries);
-  int vals = entries >> ((bits - 1) * (dimensions - 1) / dimensions);
+/**
+ * @brief Calculate quantization values for maptype 1 codebooks
+ */
+[[nodiscard]] inline auto _book_maptype1_quantvals(unsigned int entries,
+                                                    unsigned int dimensions) -> unsigned int {
+  // Get us a starting hint, we'll polish it below
+  const int bits = ilog(entries);
+  int vals = static_cast<int>(entries >> ((bits - 1) * (dimensions - 1) / dimensions));
 
-  while (1) {
+  while (true) {
     unsigned long acc = 1;
     unsigned long acc1 = 1;
-    unsigned int i;
-    for (i = 0; i < dimensions; i++) {
-      acc *= vals;
-      acc1 *= vals + 1;
+    for (unsigned int i = 0; i < dimensions; ++i) {
+      acc *= static_cast<unsigned long>(vals);
+      acc1 *= static_cast<unsigned long>(vals + 1);
     }
     if (acc <= entries && acc1 > entries) {
-      return (vals);
+      return static_cast<unsigned int>(vals);
+    }
+    if (acc > entries) {
+      --vals;
     } else {
-      if (acc > entries) {
-        vals--;
-      } else {
-        vals++;
-      }
+      ++vals;
     }
   }
 }
 
-} // namespace
+} // anonymous namespace
 
 namespace ww2ogg {
+
+/**
+ * @brief Manages a library of Vorbis codebooks
+ */
 class codebook_library {
-  char *codebook_data;
-  long *codebook_offsets;
+  char* codebook_data;
+  long* codebook_offsets;
   long codebook_count;
 
-  // Intentionally undefined
-  codebook_library &operator=(const codebook_library &rhs);
-  codebook_library(const codebook_library &rhs);
+  // Non-copyable
+  codebook_library(const codebook_library&) = delete;
+  auto operator=(const codebook_library&) -> codebook_library& = delete;
 
 public:
-  codebook_library(std::string indata);
-  codebook_library(void);
+  /**
+   * @brief Construct from codebook data string
+   */
+  explicit codebook_library(std::string indata);
+
+  /**
+   * @brief Construct empty library (for inline codebooks)
+   */
+  codebook_library();
 
   ~codebook_library() {
     delete[] codebook_data;
     delete[] codebook_offsets;
   }
 
-  const char *get_codebook(int i) const {
-    if (!codebook_data || !codebook_offsets) {
+  /**
+   * @brief Get pointer to codebook data
+   */
+  [[nodiscard]] auto get_codebook(int i) const -> const char* {
+    if (codebook_data == nullptr || codebook_offsets == nullptr) {
       throw parse_error_str("codebook library not loaded");
     }
-    if (i >= codebook_count - 1 || i < 0)
-      return NULL;
+    if (i >= codebook_count - 1 || i < 0) {
+      return nullptr;
+    }
     return &codebook_data[codebook_offsets[i]];
   }
 
-  long get_codebook_size(int i) const {
-    if (!codebook_data || !codebook_offsets) {
+  /**
+   * @brief Get size of codebook
+   */
+  [[nodiscard]] auto get_codebook_size(int i) const -> long {
+    if (codebook_data == nullptr || codebook_offsets == nullptr) {
       throw parse_error_str("codebook library not loaded");
     }
-    if (i >= codebook_count - 1 || i < 0)
+    if (i >= codebook_count - 1 || i < 0) {
       return -1;
+    }
     return codebook_offsets[i + 1] - codebook_offsets[i];
   }
 
-  void rebuild(int i, bitoggstream &bos);
-
-  void rebuild(bitstream &bis, unsigned long cb_size, bitoggstream &bos);
-
-  void copy(bitstream &bis, bitoggstream &bos);
+  void rebuild(int i, bitoggstream& bos);
+  void rebuild(bitstream& bis, unsigned long cb_size, bitoggstream& bos);
+  void copy(bitstream& bis, bitoggstream& bos);
 };
+
 } // namespace ww2ogg
 
-#endif // WW2OGG_CODEBOOH_H
+#endif // WW2OGG_CODEBOOK_H

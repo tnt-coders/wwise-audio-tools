@@ -1,26 +1,37 @@
+/**
+ * @file wwriff.h
+ * @brief Wwise RIFF Vorbis file parser
+ * @note Modernized to C++23
+ */
+
 #ifndef WW2OGG_WWRIFF_H
 #define WW2OGG_WWRIFF_H
 
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS
-#endif
-#include "bitstream.h"
-#include "cstdint"
-#include "errors.h"
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
+#include "bitstream.h"
+#include "errors.h"
+
 #define VERSION "0.24"
 
 namespace ww2ogg {
+
+/**
+ * @brief Force specific packet format during conversion
+ */
 enum ForcePacketFormat {
   kNoForcePacketFormat,
   kForceModPackets,
   kForceNoModPackets
 };
 
+/**
+ * @brief Parser and converter for Wwise RIFF Vorbis files
+ */
 class Wwise_RIFF_Vorbis {
   std::string _codebooks_data;
   std::stringstream _indata;
@@ -28,8 +39,7 @@ class Wwise_RIFF_Vorbis {
 
   bool _little_endian;
 
-  long _riff_size;
-  long _fmt_offset, _cue_offset, _LIST_offset, _smpl_offset, _vorb_offset,
+  long _riff_size, _fmt_offset, _cue_offset, _LIST_offset, _smpl_offset, _vorb_offset,
       _data_offset;
   long _fmt_size, _cue_size, _LIST_size, _smpl_size, _vorb_size, _data_size;
 
@@ -60,21 +70,22 @@ class Wwise_RIFF_Vorbis {
   bool _header_triad_present, _old_packet_headers;
   bool _no_granule, _mod_packets;
 
-  uint16_t (*_read_16)(std::istream &is);
-  uint32_t (*_read_32)(std::istream &is);
+  uint16_t (*_read_16)(std::istream& is);
+  uint32_t (*_read_32)(std::istream& is);
 
 public:
-  Wwise_RIFF_Vorbis(const std::string &indata,
-                    const std::string &_codebooks_data, bool inline_codebooks,
+  Wwise_RIFF_Vorbis(const std::string& indata,
+                    const std::string& codebooks_data, bool inline_codebooks,
                     bool full_setup, ForcePacketFormat force_packet_format);
 
-  std::string get_info(void);
+  [[nodiscard]] auto get_info() -> std::string;
 
-  void generate_ogg(std::ostream &os);
-  void generate_ogg_header(bitoggstream &os, bool *&mode_blockflag,
-                           int &mode_bits);
-  void generate_ogg_header_with_triad(bitoggstream &os);
+  void generate_ogg(std::ostream& os);
+  void generate_ogg_header(bitoggstream& os, bool*& mode_blockflag,
+                           int& mode_bits);
+  void generate_ogg_header_with_triad(bitoggstream& os);
 };
+
 } // namespace ww2ogg
 
 #endif // WW2OGG_WWRIFF_H

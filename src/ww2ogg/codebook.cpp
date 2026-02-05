@@ -1,58 +1,68 @@
+/**
+ * @file codebook.cpp
+ * @brief Vorbis codebook library implementation
+ * @note Modernized to C++23
+ */
+
 #define __STDC_CONSTANT_MACROS
+#include <ios>
 #include <sstream>
+#include <string>
 
 #include "ww2ogg/codebook.h"
 
 namespace ww2ogg {
-codebook_library::codebook_library(void)
-    : codebook_data(NULL), codebook_offsets(NULL), codebook_count(0) {}
+
+codebook_library::codebook_library()
+    : codebook_data(nullptr), codebook_offsets(nullptr), codebook_count(0) {}
 
 codebook_library::codebook_library(std::string indata)
-    : codebook_data(NULL), codebook_offsets(NULL), codebook_count(0) {
+    : codebook_data(nullptr), codebook_offsets(nullptr), codebook_count(0) {
   std::stringstream is(indata);
 
-  is.seekg(0, ios::end);
-  long file_size = is.tellg();
+  is.seekg(0, std::ios::end);
+  auto file_size = static_cast<long>(is.tellg());
 
-  is.seekg(file_size - 4, ios::beg);
-  long offset_offset = read_32_le(is);
+  is.seekg(file_size - 4, std::ios::beg);
+  auto offset_offset = static_cast<long>(read_32_le(is));
   codebook_count = (file_size - offset_offset) / 4;
 
   codebook_data = new char[offset_offset];
   codebook_offsets = new long[codebook_count];
 
-  is.seekg(0, ios::beg);
-  for (long i = 0; i < offset_offset; i++) {
-    codebook_data[i] = is.get();
+  is.seekg(0, std::ios::beg);
+  for (long i = 0; i < offset_offset; ++i) {
+    codebook_data[i] = static_cast<char>(is.get());
   }
 
-  for (long i = 0; i < codebook_count; i++) {
-    codebook_offsets[i] = read_32_le(is);
+  for (long i = 0; i < codebook_count; ++i) {
+    codebook_offsets[i] = static_cast<long>(read_32_le(is));
   }
 }
 
-void codebook_library::rebuild(int i, bitoggstream &bos) {
-  const char *cb = get_codebook(i);
-  unsigned long cb_size;
+void codebook_library::rebuild(int i, bitoggstream& bos) {
+  const char* cb = get_codebook(i);
+  unsigned long cb_size = 0;
 
   {
     long signed_cb_size = get_codebook_size(i);
 
-    if (!cb || -1 == signed_cb_size)
+    if (cb == nullptr || signed_cb_size == -1) {
       throw invalid_id(i);
+    }
 
-    cb_size = signed_cb_size;
+    cb_size = static_cast<unsigned long>(signed_cb_size);
   }
 
-  array_streambuf asb(cb, cb_size);
-  istream is(&asb);
+  array_streambuf asb(cb, static_cast<int>(cb_size));
+  std::istream is(&asb);
   bitstream bis(is);
 
   rebuild(bis, cb_size, bos);
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::copy(bitstream &bis, bitoggstream &bos) {
+void codebook_library::copy(bitstream& bis, bitoggstream& bos) {
   /* IN: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
 
   Bit_uint<24> id;
@@ -65,9 +75,6 @@ void codebook_library::copy(bitstream &bis, bitoggstream &bos) {
     throw parse_error_str("invalid codebook identifier");
   }
 
-  // cout << "Codebook with " << dimensions << " dimensions, " << entries << "
-  // entries" << endl;
-
   /* OUT: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
   bos << id << Bit_uint<16>(dimensions) << Bit_uint<24>(entries);
 
@@ -78,8 +85,6 @@ void codebook_library::copy(bitstream &bis, bitoggstream &bos) {
   bis >> ordered;
   bos << ordered;
   if (ordered) {
-    // cout << "Ordered " << endl;
-
     /* IN/OUT: 5 bit initial length */
     Bit_uint<5> initial_length;
     bis >> initial_length;
@@ -93,26 +98,16 @@ void codebook_library::copy(bitstream &bis, bitoggstream &bos) {
       bos << number;
       current_entry += number;
     }
-    if (current_entry > entries)
+    if (current_entry > entries) {
       throw parse_error_str("current_entry out of range");
+    }
   } else {
     /* IN/OUT: 1 bit sparse flag */
     Bit_uint<1> sparse;
     bis >> sparse;
     bos << sparse;
 
-    // cout << "Unordered, ";
-
-    // if (sparse)
-    //{
-    //    cout << "Sparse" << endl;
-    //}
-    // else
-    //{
-    //    cout << "Nonsparse" << endl;
-    //}
-
-    for (unsigned int i = 0; i < entries; i++) {
+    for (unsigned int i = 0; i < entries; ++i) {
       bool present_bool = true;
 
       if (sparse) {
@@ -121,7 +116,7 @@ void codebook_library::copy(bitstream &bis, bitoggstream &bos) {
         bis >> present;
         bos << present;
 
-        present_bool = (0 != present);
+        present_bool = (present != 0);
       }
 
       if (present_bool) {
@@ -140,48 +135,41 @@ void codebook_library::copy(bitstream &bis, bitoggstream &bos) {
   bis >> lookup_type;
   bos << lookup_type;
 
-  if (0 == lookup_type) {
-    // cout << "no lookup table" << endl;
-  } else if (1 == lookup_type) {
-    // cout << "lookup type 1" << endl;
-
+  if (lookup_type == 0) {
+    // no lookup table
+  } else if (lookup_type == 1) {
     /* IN/OUT: 32 bit minimum length, 32 bit maximum length, 4 bit value
      * length-1, 1 bit sequence flag */
-    Bit_uint<32> min, max;
+    Bit_uint<32> min;
+    Bit_uint<32> max;
     Bit_uint<4> value_length;
     Bit_uint<1> sequence_flag;
     bis >> min >> max >> value_length >> sequence_flag;
     bos << min << max << value_length << sequence_flag;
 
     unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
-    for (unsigned int i = 0; i < quantvals; i++) {
+    for (unsigned int i = 0; i < quantvals; ++i) {
       /* IN/OUT: n bit value */
       Bit_uintv val(value_length + 1);
       bis >> val;
       bos << val;
     }
-  } else if (2 == lookup_type) {
+  } else if (lookup_type == 2) {
     throw parse_error_str("didn't expect lookup type 2");
   } else {
     throw parse_error_str("invalid lookup type");
   }
-
-  // cout << "total bits read = " << bis.get_total_bits_read() << endl;
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::rebuild(bitstream &bis, unsigned long cb_size,
-                               bitoggstream &bos) {
+void codebook_library::rebuild(bitstream& bis, unsigned long cb_size,
+                               bitoggstream& bos) {
   /* IN: 4 bit dimensions, 14 bit entry count */
 
   Bit_uint<4> dimensions;
   Bit_uint<14> entries;
 
   bis >> dimensions >> entries;
-
-  // cout << "Codebook " << i << ", " << dimensions << " dimensions, " <<
-  // entries << " entries" << endl; cout << "Codebook with " << dimensions << "
-  // dimensions, " << entries << " entries" << endl;
 
   /* OUT: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
   bos << Bit_uint<24>(0x564342) << Bit_uint<16>(dimensions)
@@ -194,8 +182,6 @@ void codebook_library::rebuild(bitstream &bis, unsigned long cb_size,
   bis >> ordered;
   bos << ordered;
   if (ordered) {
-    // cout << "Ordered " << endl;
-
     /* IN/OUT: 5 bit initial length */
     Bit_uint<5> initial_length;
     bis >> initial_length;
@@ -209,32 +195,23 @@ void codebook_library::rebuild(bitstream &bis, unsigned long cb_size,
       bos << number;
       current_entry += number;
     }
-    if (current_entry > entries)
+    if (current_entry > entries) {
       throw parse_error_str("current_entry out of range");
+    }
   } else {
     /* IN: 3 bit codeword length length, 1 bit sparse flag */
     Bit_uint<3> codeword_length_length;
     Bit_uint<1> sparse;
     bis >> codeword_length_length >> sparse;
 
-    // cout << "Unordered, " << codeword_length_length << " bit lengths, ";
-
-    if (0 == codeword_length_length || 5 < codeword_length_length) {
+    if (codeword_length_length == 0 || codeword_length_length > 5) {
       throw parse_error_str("nonsense codeword length");
     }
 
     /* OUT: 1 bit sparse flag */
     bos << sparse;
-    // if (sparse)
-    //{
-    //    cout << "Sparse" << endl;
-    //}
-    // else
-    //{
-    //    cout << "Nonsparse" << endl;
-    //}
 
-    for (unsigned int i = 0; i < entries; i++) {
+    for (unsigned int i = 0; i < entries; ++i) {
       bool present_bool = true;
 
       if (sparse) {
@@ -243,7 +220,7 @@ void codebook_library::rebuild(bitstream &bis, unsigned long cb_size,
         bis >> present;
         bos << present;
 
-        present_bool = (0 != present);
+        present_bool = (present != 0);
       }
 
       if (present_bool) {
@@ -265,39 +242,37 @@ void codebook_library::rebuild(bitstream &bis, unsigned long cb_size,
   /* OUT: 4 bit lookup type */
   bos << Bit_uint<4>(lookup_type);
 
-  if (0 == lookup_type) {
-    // cout << "no lookup table" << endl;
-  } else if (1 == lookup_type) {
-    // cout << "lookup type 1" << endl;
-
+  if (lookup_type == 0) {
+    // no lookup table
+  } else if (lookup_type == 1) {
     /* IN/OUT: 32 bit minimum length, 32 bit maximum length, 4 bit value
      * length-1, 1 bit sequence flag */
-    Bit_uint<32> min, max;
+    Bit_uint<32> min;
+    Bit_uint<32> max;
     Bit_uint<4> value_length;
     Bit_uint<1> sequence_flag;
     bis >> min >> max >> value_length >> sequence_flag;
     bos << min << max << value_length << sequence_flag;
 
     unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
-    for (unsigned int i = 0; i < quantvals; i++) {
+    for (unsigned int i = 0; i < quantvals; ++i) {
       /* IN/OUT: n bit value */
       Bit_uintv val(value_length + 1);
       bis >> val;
       bos << val;
     }
-  } else if (2 == lookup_type) {
+  } else if (lookup_type == 2) {
     throw parse_error_str("didn't expect lookup type 2");
   } else {
     throw parse_error_str("invalid lookup type");
   }
 
-  // cout << "total bits read = " << bis.get_total_bits_read() << endl;
-
   /* check that we used exactly all bytes */
   /* note: if all bits are used in the last byte there will be one extra 0 byte
    */
-  if (0 != cb_size && bis.get_total_bits_read() / 8 + 1 != cb_size) {
+  if (cb_size != 0 && bis.get_total_bits_read() / 8 + 1 != cb_size) {
     throw size_mismatch(cb_size, bis.get_total_bits_read() / 8 + 1);
   }
 }
+
 } // namespace ww2ogg
