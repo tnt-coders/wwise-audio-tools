@@ -59,7 +59,7 @@ package_install()
 
 find_package(Catch2 QUIET)
 if(Catch2_FOUND)
-  add_executable(tests ${SOURCE} tests/wem.cpp)
+  add_executable(tests tests/wem.cpp)
   target_compile_definitions(tests PRIVATE KS_STR_ENCODING_NONE)
   target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
 
