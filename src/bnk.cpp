@@ -14,7 +14,7 @@
 
 #include "kaitai/kaitaistream.h"
 #include "kaitai/structs/bnk.h"
-#include "wwtools/bnk.hpp"
+#include "wwtools/bnk.h"
 
 namespace {
 

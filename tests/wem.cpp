@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string>
 
-#include "wwtools/wwtools.hpp"
+#include "wwtools/wwtools.h"
 
 namespace {
 

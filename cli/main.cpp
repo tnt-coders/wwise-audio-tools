@@ -11,7 +11,6 @@
 #include <fstream>
 #include <iostream>
 #include <print>
-#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>
@@ -20,8 +19,8 @@
 
 #include "util/rang.hpp"
 #include "ww2ogg/ww2ogg.h"
-#include "wwtools/bnk.hpp"
-#include "wwtools/wwtools.hpp"
+#include "wwtools/bnk.h"
+#include "wwtools/wwtools.h"
 
 namespace fs = std::filesystem;
 

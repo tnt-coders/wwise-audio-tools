@@ -10,7 +10,7 @@
 
 #include "revorb/revorb.hpp"
 #include "ww2ogg/ww2ogg.h"
-#include "wwtools/wwtools.hpp"
+#include "wwtools/wwtools.h"
 
 namespace wwtools {
 
