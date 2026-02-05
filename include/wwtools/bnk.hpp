@@ -17,8 +17,6 @@
 #include <string_view>
 #include <vector>
 
-#include "kaitai/structs/bnk.h"
-
 /**
  * @namespace wwtools::bnk
  * @brief contains helper functions for Wwise Soundbank files
@@ -69,14 +67,6 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
  * @return the event name, or empty string if not found
  */
 [[nodiscard]] auto get_event_name_from_id(std::uint32_t event_id) -> std::string;
-
-/**
- * @brief get a string with the action type from the enum
- *
- * @param action_type an action type to be converted to string
- * @return the string name of the action type
- */
-[[nodiscard]] auto get_event_action_type(bnk_t::action_type_t action_type) -> std::string_view;
 
 } // namespace wwtools::bnk
 

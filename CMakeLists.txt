@@ -9,9 +9,10 @@ option(BUILD_CLI "Build command-line interface" ON)
 option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
 find_package(PackageBuilder REQUIRED)
+find_package(Catch2 REQUIRED)
+find_package(kaitai_struct_cpp_stl_runtime REQUIRED)
 find_package(Ogg REQUIRED)
 find_package(Vorbis REQUIRED)
-find_package(Catch2 REQUIRED)
 
 include(PackageBuilder)
 
@@ -24,12 +25,13 @@ set(SOURCE
     src/ww2ogg/ww2ogg.cpp
     src/ww2ogg/wwriff.cpp
     src/revorb/revorb.cpp
-    src/kaitai/kaitaistream.cpp
+
     src/kaitai/structs/bnk.cpp
     src/kaitai/structs/vlq.cpp
     src/kaitai/structs/wem.cpp
-    src/wwtools.cpp
-    src/bnk.cpp)
+
+    src/bnk.cpp
+    src/wwtools.cpp)
 
 if(PACKED_CODEBOOKS_AOTUV)
     message("PACKED_CODEBOOKS_AOTUV set as on. Using data from packed_codebooks_aoTuV_603.bin.")
@@ -48,6 +50,7 @@ target_compile_features(WwiseAudioTools PUBLIC cxx_std_23)
 
 target_link_libraries(WwiseAudioTools
     PRIVATE
+        kaitai_struct_cpp_stl_runtime::kaitai_struct_cpp_stl_runtime
         Ogg::ogg
         Vorbis::vorbis
 )

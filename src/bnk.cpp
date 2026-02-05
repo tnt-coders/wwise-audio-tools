@@ -73,6 +73,24 @@ template<typename T>
   return parent_id;
 }
 
+/**
+ * @brief Get a string with the action type from the enum
+ */
+[[nodiscard]] auto get_event_action_type(bnk_t::action_type_t action_type) -> std::string_view {
+  switch (action_type) {
+    case bnk_t::ACTION_TYPE_PLAY:   return "play";
+    case bnk_t::ACTION_TYPE_PAUSE:  return "pause";
+    case bnk_t::ACTION_TYPE_STOP:   return "stop";
+    case bnk_t::ACTION_TYPE_RESUME: return "resume";
+    default:
+      // For unknown types, we need to return a stable string
+      // Using a thread_local static for the formatted string
+      thread_local std::string unknown_type;
+      unknown_type = std::to_string(static_cast<int>(action_type));
+      return unknown_type;
+  }
+}
+
 } // anonymous namespace
 
 namespace wwtools::bnk {
@@ -222,21 +240,6 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   }
 
   return std::to_string(didx->objs()->at(index)->id());
-}
-
-[[nodiscard]] auto get_event_action_type(bnk_t::action_type_t action_type) -> std::string_view {
-  switch (action_type) {
-    case bnk_t::ACTION_TYPE_PLAY:   return "play";
-    case bnk_t::ACTION_TYPE_PAUSE:  return "pause";
-    case bnk_t::ACTION_TYPE_STOP:   return "stop";
-    case bnk_t::ACTION_TYPE_RESUME: return "resume";
-    default:
-      // For unknown types, we need to return a stable string
-      // Using a thread_local static for the formatted string
-      thread_local std::string unknown_type;
-      unknown_type = std::to_string(static_cast<int>(action_type));
-      return unknown_type;
-  }
 }
 
 [[nodiscard]] auto get_event_name_from_id([[maybe_unused]] std::uint32_t event_id) -> std::string {
