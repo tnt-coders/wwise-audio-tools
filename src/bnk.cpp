@@ -34,7 +34,7 @@ struct EventSFX {
  * @return Pointer to section data, or nullptr if not found
  */
 template<typename T>
-[[nodiscard]] auto find_section(bnk_t& bnk, std::string_view type) -> T* {
+[[nodiscard]] T* find_section(bnk_t& bnk, std::string_view type) {
   for (const auto& section : *bnk.data()) {
     if (section->type() == type) {
       return static_cast<T*>(section->section_data());
@@ -46,7 +46,7 @@ template<typename T>
 /**
  * @brief Get parent ID from sound structure
  */
-[[nodiscard]] auto get_parent_id(bnk_t::sound_effect_or_voice_t* sfx) -> std::uint32_t {
+[[nodiscard]] std::uint32_t get_parent_id(bnk_t::sound_effect_or_voice_t* sfx) {
   std::uint32_t parent_id_offset = 6;
   const auto& sound_structure = sfx->sound_structure();
 
@@ -76,7 +76,7 @@ template<typename T>
 /**
  * @brief Get a string with the action type from the enum
  */
-[[nodiscard]] auto get_event_action_type(bnk_t::action_type_t action_type) -> std::string_view {
+[[nodiscard]] std::string_view get_event_action_type(bnk_t::action_type_t action_type) {
   switch (action_type) {
     case bnk_t::ACTION_TYPE_PLAY:   return "play";
     case bnk_t::ACTION_TYPE_PAUSE:  return "pause";
@@ -112,7 +112,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   }
 }
 
-[[nodiscard]] auto get_info(std::string_view indata) -> std::string {
+[[nodiscard]] std::string get_info(std::string_view indata) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -135,8 +135,8 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   return result;
 }
 
-[[nodiscard]] auto get_event_id_info(std::string_view indata,
-                                      std::string_view in_event_id) -> std::string {
+[[nodiscard]] std::string get_event_id_info(std::string_view indata,
+                                             std::string_view in_event_id) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -229,8 +229,8 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   return result;
 }
 
-[[nodiscard]] auto get_wem_id_at_index(std::string_view indata,
-                                        std::size_t index) -> std::string {
+[[nodiscard]] std::string get_wem_id_at_index(std::string_view indata,
+                                               std::size_t index) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -242,7 +242,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   return std::to_string(didx->objs()->at(index)->id());
 }
 
-[[nodiscard]] auto get_event_name_from_id([[maybe_unused]] std::uint32_t event_id) -> std::string {
+[[nodiscard]] std::string get_event_name_from_id([[maybe_unused]] std::uint32_t event_id) {
   // TODO: Implement event name lookup
   return {};
 }

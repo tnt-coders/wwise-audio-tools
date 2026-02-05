@@ -35,8 +35,8 @@ enum class ConvertError {
  * @param outpath Output file path
  * @return std::expected with void on success or ConvertError on failure
  */
-[[nodiscard]] auto convert(std::string_view indata, const fs::path& outpath)
-    -> std::expected<void, ConvertError> {
+[[nodiscard]] std::expected<void, ConvertError> convert(
+    std::string_view indata, const fs::path& outpath) {
   auto outdata = wwtools::wem_to_ogg(std::string{indata});
   if (outdata.empty()) {
     return std::unexpected(ConvertError::ConversionFailed);
@@ -79,7 +79,7 @@ struct ParsedFlags {
  * @param args Span of command-line arguments
  * @return ParsedFlags structure with flags and error status
  */
-[[nodiscard]] auto get_flags(std::span<char*> args) -> ParsedFlags {
+[[nodiscard]] ParsedFlags get_flags(std::span<char*> args) {
   ParsedFlags result;
   result.flags.reserve(args.size());
   bool flag_found = false;
@@ -105,8 +105,8 @@ struct ParsedFlags {
  * @param wanted_flag Flag to search for
  * @return true if flag exists
  */
-[[nodiscard]] auto has_flag(const std::vector<std::string>& flags,
-                            std::string_view wanted_flag) -> bool {
+[[nodiscard]] bool has_flag(const std::vector<std::string>& flags,
+                            std::string_view wanted_flag) {
   return std::ranges::contains(flags, wanted_flag);
 }
 
@@ -115,7 +115,7 @@ struct ParsedFlags {
  * @param path File path to read
  * @return File contents as string, or empty on failure
  */
-[[nodiscard]] auto read_file(const fs::path& path) -> std::string {
+[[nodiscard]] std::string read_file(const fs::path& path) {
   std::ifstream file(path, std::ios::binary);
   if (!file) {
     return {};
@@ -131,13 +131,13 @@ struct ParsedFlags {
  * @param new_ext New extension (including dot)
  * @return Path with new extension
  */
-[[nodiscard]] auto replace_extension(const fs::path& path, std::string_view new_ext) -> fs::path {
+[[nodiscard]] fs::path replace_extension(const fs::path& path, std::string_view new_ext) {
   auto result = path;
   result.replace_extension(new_ext);
   return result;
 }
 
-auto main(int argc, char* argv[]) -> int {
+int main(int argc, char* argv[]) {
   // Create span for modern iteration
   std::span args(argv, static_cast<std::size_t>(argc));
 

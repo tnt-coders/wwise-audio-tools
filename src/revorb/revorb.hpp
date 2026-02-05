@@ -22,7 +22,7 @@ namespace revorb {
  * @param outdata Output stream with corrected granule positions
  * @return true on success, false on failure
  */
-[[nodiscard]] auto revorb(std::istream& indata, std::stringstream& outdata) -> bool;
+[[nodiscard]] bool revorb(std::istream& indata, std::stringstream& outdata);
 
 } // namespace revorb
 

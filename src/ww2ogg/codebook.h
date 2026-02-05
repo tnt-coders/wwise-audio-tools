@@ -18,7 +18,7 @@ namespace {
 /**
  * @brief Integer logarithm base 2
  */
-[[nodiscard]] inline auto ilog(unsigned int v) -> int {
+[[nodiscard]] inline int ilog(unsigned int v) {
   int ret = 0;
   while (v != 0) {
     ++ret;
@@ -30,8 +30,8 @@ namespace {
 /**
  * @brief Calculate quantization values for maptype 1 codebooks
  */
-[[nodiscard]] inline auto _book_maptype1_quantvals(unsigned int entries,
-                                                    unsigned int dimensions) -> unsigned int {
+[[nodiscard]] inline unsigned int _book_maptype1_quantvals(unsigned int entries,
+                                                            unsigned int dimensions) {
   // Get us a starting hint, we'll polish it below
   const int bits = ilog(entries);
   int vals = static_cast<int>(entries >> ((bits - 1) * (dimensions - 1) / dimensions));
@@ -68,7 +68,7 @@ class codebook_library {
 
   // Non-copyable
   codebook_library(const codebook_library&) = delete;
-  auto operator=(const codebook_library&) -> codebook_library& = delete;
+  codebook_library& operator=(const codebook_library&) = delete;
 
 public:
   /**
@@ -89,7 +89,7 @@ public:
   /**
    * @brief Get pointer to codebook data
    */
-  [[nodiscard]] auto get_codebook(int i) const -> const char* {
+  [[nodiscard]] const char* get_codebook(int i) const {
     if (codebook_data == nullptr || codebook_offsets == nullptr) {
       throw parse_error_str("codebook library not loaded");
     }
@@ -102,7 +102,7 @@ public:
   /**
    * @brief Get size of codebook
    */
-  [[nodiscard]] auto get_codebook_size(int i) const -> long {
+  [[nodiscard]] long get_codebook_size(int i) const {
     if (codebook_data == nullptr || codebook_offsets == nullptr) {
       throw parse_error_str("codebook library not loaded");
     }

@@ -28,7 +28,7 @@ namespace wwtools {
  * @param indata WEM file data
  * @return OGG file data (empty string on failure)
  */
-[[nodiscard]] auto wem_to_ogg(std::string_view indata) -> std::string;
+[[nodiscard]] std::string wem_to_ogg(std::string_view indata);
 
 } // namespace wwtools
 

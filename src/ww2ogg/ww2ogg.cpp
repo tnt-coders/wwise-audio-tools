@@ -15,9 +15,9 @@
 
 namespace ww2ogg {
 
-[[nodiscard]] auto ww2ogg(const std::string& indata, std::ostream& outdata,
+[[nodiscard]] bool ww2ogg(const std::string& indata, std::ostream& outdata,
                           unsigned char* codebooks_data, bool inline_codebooks,
-                          bool full_setup, ForcePacketFormat force_packet_format) -> bool {
+                          bool full_setup, ForcePacketFormat force_packet_format) {
   try {
     std::string codebooks_data_s(
         reinterpret_cast<char*>(codebooks_data),
@@ -34,9 +34,9 @@ namespace ww2ogg {
   return true;
 }
 
-[[nodiscard]] auto wem_info(const std::string& indata, unsigned char* codebooks_data,
-                            bool inline_codebooks, bool full_setup,
-                            ForcePacketFormat force_packet_format) -> std::string {
+[[nodiscard]] std::string wem_info(const std::string& indata, unsigned char* codebooks_data,
+                                   bool inline_codebooks, bool full_setup,
+                                   ForcePacketFormat force_packet_format) {
   std::string codebooks_data_s(
       reinterpret_cast<char*>(codebooks_data),
       packed_codebooks_bin_len);

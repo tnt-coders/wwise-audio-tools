@@ -14,7 +14,7 @@
 
 namespace wwtools {
 
-[[nodiscard]] auto wem_to_ogg(std::string_view indata) -> std::string {
+[[nodiscard]] std::string wem_to_ogg(std::string_view indata) {
   std::stringstream wem_out;
   std::stringstream revorb_out;
 

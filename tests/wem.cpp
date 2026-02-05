@@ -13,7 +13,7 @@
 
 namespace {
 
-[[nodiscard]] auto convert(const std::string& path) -> std::string {
+[[nodiscard]] std::string convert(const std::string& path) {
   std::ifstream filein(path, std::ios::binary);
 
   // Reserve memory upfront

@@ -24,12 +24,12 @@ class Argument_error {
 public:
   explicit Argument_error(std::string_view str) : errmsg_(str) {}
 
-  friend auto operator<<(std::ostream& os, const Argument_error& ae) -> std::ostream& {
+  friend std::ostream& operator<<(std::ostream& os, const Argument_error& ae) {
     os << "Argument error: " << ae.errmsg_;
     return os;
   }
 
-  [[nodiscard]] auto message() const -> std::string_view { return errmsg_; }
+  [[nodiscard]] std::string_view message() const { return errmsg_; }
 };
 
 /**
@@ -41,12 +41,12 @@ class file_open_error {
 public:
   explicit file_open_error(std::string_view name) : filename_(name) {}
 
-  friend auto operator<<(std::ostream& os, const file_open_error& fe) -> std::ostream& {
+  friend std::ostream& operator<<(std::ostream& os, const file_open_error& fe) {
     os << "Error opening " << fe.filename_;
     return os;
   }
 
-  [[nodiscard]] auto filename() const -> std::string_view { return filename_; }
+  [[nodiscard]] std::string_view filename() const { return filename_; }
 };
 
 /**
@@ -57,13 +57,13 @@ public:
   parse_error() = default;
   parse_error(const parse_error&) = default;
   parse_error(parse_error&&) = default;
-  auto operator=(const parse_error&) -> parse_error& = default;
-  auto operator=(parse_error&&) -> parse_error& = default;
+  parse_error& operator=(const parse_error&) = default;
+  parse_error& operator=(parse_error&&) = default;
   virtual ~parse_error() = default;
 
   virtual void print_self(std::ostream& os) const { os << "unspecified."; }
 
-  friend auto operator<<(std::ostream& os, const parse_error& pe) -> std::ostream& {
+  friend std::ostream& operator<<(std::ostream& os, const parse_error& pe) {
     os << "Parse error: ";
     pe.print_self(os);
     return os;
@@ -81,7 +81,7 @@ public:
 
   void print_self(std::ostream& os) const override { os << str_; }
 
-  [[nodiscard]] auto message() const -> std::string_view { return str_; }
+  [[nodiscard]] std::string_view message() const { return str_; }
 };
 
 /**
@@ -99,8 +99,8 @@ public:
     os << std::format("expected {} bits, read {}", real_size_, read_size_);
   }
 
-  [[nodiscard]] auto expected_size() const -> std::size_t { return real_size_; }
-  [[nodiscard]] auto actual_size() const -> std::size_t { return read_size_; }
+  [[nodiscard]] std::size_t expected_size() const { return real_size_; }
+  [[nodiscard]] std::size_t actual_size() const { return read_size_; }
 };
 
 /**
@@ -116,7 +116,7 @@ public:
     os << std::format("invalid codebook id {}, try --inline-codebooks", id_);
   }
 
-  [[nodiscard]] auto id() const -> int { return id_; }
+  [[nodiscard]] int id() const { return id_; }
 };
 
 } // namespace ww2ogg

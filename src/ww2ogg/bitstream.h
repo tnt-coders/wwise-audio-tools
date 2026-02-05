@@ -22,7 +22,7 @@
 // Host-endian-neutral integer reading/writing utilities
 namespace {
 
-[[nodiscard]] inline auto read_32_le(unsigned char b[4]) -> uint32_t {
+[[nodiscard]] inline uint32_t read_32_le(unsigned char b[4]) {
   uint32_t v = 0;
   for (int i = 3; i >= 0; --i) {
     v <<= 8;
@@ -31,7 +31,7 @@ namespace {
   return v;
 }
 
-[[nodiscard]] inline auto read_32_le(std::istream& is) -> uint32_t {
+[[nodiscard]] inline uint32_t read_32_le(std::istream& is) {
   char b[4];
   is.read(b, 4);
   return read_32_le(reinterpret_cast<unsigned char*>(b));
@@ -50,7 +50,7 @@ inline void write_32_le(std::ostream& os, uint32_t v) {
   os.write(b, 4);
 }
 
-[[nodiscard]] inline auto read_16_le(unsigned char b[2]) -> uint16_t {
+[[nodiscard]] inline uint16_t read_16_le(unsigned char b[2]) {
   uint16_t v = 0;
   for (int i = 1; i >= 0; --i) {
     v <<= 8;
@@ -59,7 +59,7 @@ inline void write_32_le(std::ostream& os, uint32_t v) {
   return v;
 }
 
-[[nodiscard]] inline auto read_16_le(std::istream& is) -> uint16_t {
+[[nodiscard]] inline uint16_t read_16_le(std::istream& is) {
   char b[2];
   is.read(b, 2);
   return read_16_le(reinterpret_cast<unsigned char*>(b));
@@ -78,7 +78,7 @@ inline void write_16_le(std::ostream& os, uint16_t v) {
   os.write(b, 2);
 }
 
-[[nodiscard]] inline auto read_32_be(unsigned char b[4]) -> uint32_t {
+[[nodiscard]] inline uint32_t read_32_be(unsigned char b[4]) {
   uint32_t v = 0;
   for (int i = 0; i < 4; ++i) {
     v <<= 8;
@@ -87,7 +87,7 @@ inline void write_16_le(std::ostream& os, uint16_t v) {
   return v;
 }
 
-[[nodiscard]] inline auto read_32_be(std::istream& is) -> uint32_t {
+[[nodiscard]] inline uint32_t read_32_be(std::istream& is) {
   char b[4];
   is.read(b, 4);
   return read_32_be(reinterpret_cast<unsigned char*>(b));
@@ -106,7 +106,7 @@ inline void write_32_be(std::ostream& os, uint32_t v) {
   os.write(b, 4);
 }
 
-[[nodiscard]] inline auto read_16_be(unsigned char b[2]) -> uint16_t {
+[[nodiscard]] inline uint16_t read_16_be(unsigned char b[2]) {
   uint16_t v = 0;
   for (int i = 0; i < 2; ++i) {
     v <<= 8;
@@ -115,7 +115,7 @@ inline void write_32_be(std::ostream& os, uint32_t v) {
   return v;
 }
 
-[[nodiscard]] inline auto read_16_be(std::istream& is) -> uint16_t {
+[[nodiscard]] inline uint16_t read_16_be(std::istream& is) {
   char b[2];
   is.read(b, 2);
   return read_16_be(reinterpret_cast<unsigned char*>(b));
@@ -158,7 +158,7 @@ public:
       throw Weird_char_size();
   }
 
-  [[nodiscard]] auto get_bit() -> bool {
+  [[nodiscard]] bool get_bit() {
     if (bits_left == 0) {
       int c = is.get();
       if (c == EOF)
@@ -171,7 +171,7 @@ public:
     return ((bit_buffer & (0x80 >> bits_left)) != 0);
   }
 
-  [[nodiscard]] auto get_total_bits_read() const -> unsigned long {
+  [[nodiscard]] unsigned long get_total_bits_read() const {
     return total_bits_read;
   }
 };
@@ -319,7 +319,7 @@ public:
       throw Int_too_big();
   }
 
-  auto operator=(unsigned int v) -> Bit_uint& {
+  Bit_uint& operator=(unsigned int v) {
     if ((v >> (BIT_SIZE - 1U)) > 1U)
       throw Int_too_big();
     total = v;
@@ -328,7 +328,7 @@ public:
 
   [[nodiscard]] operator unsigned int() const { return total; }
 
-  friend auto operator>>(bitstream& bstream, Bit_uint& bui) -> bitstream& {
+  friend bitstream& operator>>(bitstream& bstream, Bit_uint& bui) {
     bui.total = 0;
     for (unsigned int i = 0; i < BIT_SIZE; ++i) {
       if (bstream.get_bit())
@@ -337,7 +337,7 @@ public:
     return bstream;
   }
 
-  friend auto operator<<(bitoggstream& bstream, const Bit_uint& bui) -> bitoggstream& {
+  friend bitoggstream& operator<<(bitoggstream& bstream, const Bit_uint& bui) {
     for (unsigned int i = 0; i < BIT_SIZE; ++i) {
       bstream.put_bit((bui.total & (1U << i)) != 0);
     }
@@ -370,7 +370,7 @@ public:
       throw Int_too_big();
   }
 
-  auto operator=(unsigned int v) -> Bit_uintv& {
+  Bit_uintv& operator=(unsigned int v) {
     if ((v >> (size - 1U)) > 1U)
       throw Int_too_big();
     total = v;
@@ -379,7 +379,7 @@ public:
 
   [[nodiscard]] operator unsigned int() const { return total; }
 
-  friend auto operator>>(bitstream& bstream, Bit_uintv& bui) -> bitstream& {
+  friend bitstream& operator>>(bitstream& bstream, Bit_uintv& bui) {
     bui.total = 0;
     for (unsigned int i = 0; i < bui.size; ++i) {
       if (bstream.get_bit())
@@ -388,7 +388,7 @@ public:
     return bstream;
   }
 
-  friend auto operator<<(bitoggstream& bstream, const Bit_uintv& bui) -> bitoggstream& {
+  friend bitoggstream& operator<<(bitoggstream& bstream, const Bit_uintv& bui) {
     for (unsigned int i = 0; i < bui.size; ++i) {
       bstream.put_bit((bui.total & (1U << i)) != 0);
     }

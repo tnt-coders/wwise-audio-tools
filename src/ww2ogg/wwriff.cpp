@@ -44,11 +44,11 @@ public:
     }
   }
 
-  [[nodiscard]] auto header_size() const -> long { return _no_granule ? 2 : 6; }
-  [[nodiscard]] auto offset() const -> long { return _offset + header_size(); }
-  [[nodiscard]] auto size() const -> uint16_t { return _size; }
-  [[nodiscard]] auto granule() const -> uint32_t { return _absolute_granule; }
-  [[nodiscard]] auto next_offset() const -> long { return _offset + header_size() + _size; }
+  [[nodiscard]] long header_size() const { return _no_granule ? 2 : 6; }
+  [[nodiscard]] long offset() const { return _offset + header_size(); }
+  [[nodiscard]] uint16_t size() const { return _size; }
+  [[nodiscard]] uint32_t granule() const { return _absolute_granule; }
+  [[nodiscard]] long next_offset() const { return _offset + header_size() + _size; }
 };
 
 /**
@@ -73,11 +73,11 @@ public:
     }
   }
 
-  [[nodiscard]] auto header_size() const -> long { return 8; }
-  [[nodiscard]] auto offset() const -> long { return _offset + header_size(); }
-  [[nodiscard]] auto size() const -> uint32_t { return _size; }
-  [[nodiscard]] auto granule() const -> uint32_t { return _absolute_granule; }
-  [[nodiscard]] auto next_offset() const -> long { return _offset + header_size() + static_cast<long>(_size); }
+  [[nodiscard]] long header_size() const { return 8; }
+  [[nodiscard]] long offset() const { return _offset + header_size(); }
+  [[nodiscard]] uint32_t size() const { return _size; }
+  [[nodiscard]] uint32_t granule() const { return _absolute_granule; }
+  [[nodiscard]] long next_offset() const { return _offset + header_size() + static_cast<long>(_size); }
 };
 
 /**
@@ -91,8 +91,8 @@ class Vorbis_packet_header {
 public:
   explicit Vorbis_packet_header(uint8_t t) : type(t) {}
 
-  friend auto operator<<(bitoggstream& bstream,
-                         const Vorbis_packet_header& vph) -> bitoggstream& {
+  friend bitoggstream& operator<<(bitoggstream& bstream,
+                                const Vorbis_packet_header& vph) {
     Bit_uint<8> t(vph.type);
     bstream << t;
 
@@ -384,7 +384,7 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
   }
 }
 
-auto Wwise_RIFF_Vorbis::get_info() -> std::string {
+std::string Wwise_RIFF_Vorbis::get_info() {
   std::stringstream info_ss;
   if (_little_endian) {
     info_ss << "RIFF WAVE";

@@ -78,7 +78,7 @@ public:
                     const std::string& codebooks_data, bool inline_codebooks,
                     bool full_setup, ForcePacketFormat force_packet_format);
 
-  [[nodiscard]] auto get_info() -> std::string;
+  [[nodiscard]] std::string get_info();
 
   void generate_ogg(std::ostream& os);
   void generate_ogg_header(bitoggstream& os, bool*& mode_blockflag,

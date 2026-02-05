@@ -94,9 +94,9 @@ public:
 
 namespace revorb {
 
-[[nodiscard]] auto copy_headers(std::stringstream& fi, ogg_sync_state* si,
+[[nodiscard]] bool copy_headers(std::stringstream& fi, ogg_sync_state* si,
                                 ogg_stream_state* is, std::stringstream& outdata,
-                                ogg_stream_state* os, vorbis_info* vi) -> bool {
+                                ogg_stream_state* os, vorbis_info* vi) {
   char* buffer = ogg_sync_buffer(si, kBufferSize);
 
   fi.read(buffer, kBufferSize);
@@ -185,7 +185,7 @@ namespace revorb {
   return true;
 }
 
-[[nodiscard]] auto revorb(std::istream& indata, std::stringstream& outdata) -> bool {
+[[nodiscard]] bool revorb(std::istream& indata, std::stringstream& outdata) {
   g_failed = false;
 
   std::stringstream indata_ss;
