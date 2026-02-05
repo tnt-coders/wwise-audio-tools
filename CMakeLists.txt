@@ -27,12 +27,10 @@ set(SOURCE
     src/ww2ogg/wwriff.cpp
     src/revorb/revorb.cpp
     src/wwtools/wwtools.cpp
-    src/wwtools/w3sc.cpp
     src/wwtools/bnk.cpp
     src/kaitai/kaitaistream.cpp
     src/kaitai/structs/bnk.cpp
     src/kaitai/structs/vlq.cpp
-    src/kaitai/structs/w3sc.cpp
     src/kaitai/structs/wem.cpp)
 
 if(PACKED_CODEBOOKS_AOTUV)
