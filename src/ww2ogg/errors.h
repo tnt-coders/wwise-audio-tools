@@ -1,11 +1,10 @@
+#pragma once
+
 /**
  * @file errors.h
  * @brief Error types for ww2ogg parsing
  * @note Modernized to C++23
  */
-
-#ifndef WW2OGG_ERRORS_H
-#define WW2OGG_ERRORS_H
 
 #include <cstddef>
 #include <format>
@@ -120,5 +119,3 @@ public:
 };
 
 } // namespace ww2ogg
-
-#endif // WW2OGG_ERRORS_H

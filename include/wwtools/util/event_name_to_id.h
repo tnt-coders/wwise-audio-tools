@@ -1,7 +1,4 @@
-// TODO: convert to map
-
-#ifndef WWTOOLS_UTIL_EVENT_NAME_TO_ID_HPP
-#define WWTOOLS_UTIL_EVENT_NAME_TO_ID_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -13,6 +10,7 @@ struct Event {
     std::string bnk_name;
 };
 
+// TODO: convert to map
 const std::vector<Event> events{{
 {
 	"amb_qu_EXT_EM_crowd_medium_arena_1_fight_30m",
@@ -28925,5 +28923,3 @@ const std::vector<Event> events{{
 	"sign_axii"
 },
 }};
-
-#endif //WWTOOLS_UTIL_EVENT_NAME_TO_ID_HPP

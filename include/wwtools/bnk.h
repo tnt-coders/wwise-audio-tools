@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @file bnk.hpp
  * @author Abheek Dhawan (abheekd at protonmail dot com)
@@ -8,9 +10,6 @@
  * @copyright Copyright (c) 2022 RED Modding Tools
  *
  */
-
-#ifndef WWTOOLS_BNK_HPP
-#define WWTOOLS_BNK_HPP
 
 #include <cstdint>
 #include <string>
@@ -69,5 +68,3 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
 [[nodiscard]] std::string get_event_name_from_id(std::uint32_t event_id);
 
 } // namespace wwtools::bnk
-
-#endif // WWTOOLS_BNK_HPP

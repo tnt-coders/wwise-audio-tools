@@ -1,14 +1,12 @@
+#pragma once
+
 /**
  * @file write.hpp
  * @brief Endian-aware data writing utilities
  * @note Modernized to C++23
  */
 
-#ifndef WWTOOLS_UTIL_WRITE_HPP
-#define WWTOOLS_UTIL_WRITE_HPP
-
 #include <array>
-#include <bit>
 #include <cstddef>
 #include <cstring>
 #include <ostream>
@@ -105,5 +103,3 @@ inline void raw_data(const char* data, std::size_t size, std::ostream& os) {
 }
 
 } // namespace wwtools::util::write
-
-#endif // WWTOOLS_UTIL_WRITE_HPP

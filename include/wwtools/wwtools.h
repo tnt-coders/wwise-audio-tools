@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @file wwtools.hpp
  * @author Abheek Dhawan (abheekd at protonmail dot com)
@@ -8,9 +10,6 @@
  * @copyright Copyright (c) 2022 RED Modding Tools
  *
  */
-
-#ifndef WWTOOLS_WWTOOLS_HPP
-#define WWTOOLS_WWTOOLS_HPP
 
 #include <string>
 #include <string_view>
@@ -31,5 +30,3 @@ namespace wwtools {
 [[nodiscard]] std::string wem_to_ogg(std::string_view indata);
 
 } // namespace wwtools
-
-#endif // WWTOOLS_WWTOOLS_HPP

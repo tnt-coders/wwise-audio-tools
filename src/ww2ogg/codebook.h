@@ -1,11 +1,10 @@
+#pragma once
+
 /**
  * @file codebook.h
  * @brief Vorbis codebook handling for ww2ogg
  * @note Modernized to C++23
  */
-
-#ifndef WW2OGG_CODEBOOK_H
-#define WW2OGG_CODEBOOK_H
 
 #include <string>
 
@@ -118,5 +117,3 @@ public:
 };
 
 } // namespace ww2ogg
-
-#endif // WW2OGG_CODEBOOK_H

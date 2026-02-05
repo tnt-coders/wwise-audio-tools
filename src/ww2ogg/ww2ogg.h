@@ -1,11 +1,10 @@
+#pragma once
+
 /**
  * @file ww2ogg.h
  * @brief WEM to OGG conversion interface
  * @note Modernized to C++23
  */
-
-#ifndef WW2OGG_WW2OGG_H
-#define WW2OGG_WW2OGG_H
 
 #include <ostream>
 #include <string>
@@ -52,5 +51,3 @@ namespace ww2ogg {
     ForcePacketFormat force_packet_format = kNoForcePacketFormat);
 
 } // namespace ww2ogg
-
-#endif // WW2OGG_WW2OGG_H

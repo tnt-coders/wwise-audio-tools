@@ -1,11 +1,10 @@
+#pragma once
+
 /**
  * @file bitstream.h
  * @brief Bit-level stream reading/writing for OGG generation
  * @note Modernized to C++23
  */
-
-#ifndef WW2OGG_BIT_STREAM_H
-#define WW2OGG_BIT_STREAM_H
 
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS
@@ -418,5 +417,3 @@ public:
 };
 
 } // namespace ww2ogg
-
-#endif // WW2OGG_BIT_STREAM_H

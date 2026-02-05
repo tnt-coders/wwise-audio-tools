@@ -8,7 +8,7 @@
 #include <string>
 #include <string_view>
 
-#include "revorb/revorb.hpp"
+#include "revorb/revorb.h"
 #include "ww2ogg/ww2ogg.h"
 #include "wwtools/wwtools.h"
 

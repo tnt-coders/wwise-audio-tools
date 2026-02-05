@@ -1,11 +1,10 @@
+#pragma once
+
 /**
  * @file wwriff.h
  * @brief Wwise RIFF Vorbis file parser
  * @note Modernized to C++23
  */
-
-#ifndef WW2OGG_WWRIFF_H
-#define WW2OGG_WWRIFF_H
 
 #include <cstdint>
 #include <istream>
@@ -14,7 +13,6 @@
 #include <string>
 
 #include "bitstream.h"
-#include "errors.h"
 
 #define VERSION "0.24"
 
@@ -87,5 +85,3 @@ public:
 };
 
 } // namespace ww2ogg
-
-#endif // WW2OGG_WWRIFF_H

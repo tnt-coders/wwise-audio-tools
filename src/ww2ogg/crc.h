@@ -1,5 +1,4 @@
-#ifndef WW2OGG_CRC_H
-#define WW2OGG_CRC_H
+#pragma once
 
 #include <stdint.h>
 
@@ -12,5 +11,3 @@ uint32_t checksum(unsigned char *data, int bytes);
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-
-#endif // WW2OGG_CRC_H
