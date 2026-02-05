@@ -15,9 +15,8 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <vector>
 
-#include "util/rang.hpp"
+#include <rang.hpp>
 #include "ww2ogg/ww2ogg.h"
 #include "wwtools/bnk.h"
 #include "wwtools/wwtools.h"

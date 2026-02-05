@@ -12,6 +12,7 @@ find_package(PackageBuilder REQUIRED)
 find_package(Catch2 REQUIRED)
 find_package(kaitai_struct_cpp_stl_runtime REQUIRED)
 find_package(Ogg REQUIRED)
+find_package(rang REQUIRED)
 find_package(Vorbis REQUIRED)
 
 include(PackageBuilder)
@@ -59,7 +60,10 @@ target_link_libraries(WwiseAudioTools
 if(BUILD_CLI)
     package_add_executable(WwiseAudioTools_CLI cli/main.cpp)
 
-    target_link_libraries(WwiseAudioTools_CLI WwiseAudioTools::WwiseAudioTools)
+    target_link_libraries(WwiseAudioTools_CLI
+        PRIVATE
+            rang::rang
+            WwiseAudioTools::WwiseAudioTools)
 
     set_target_properties(WwiseAudioTools_CLI PROPERTIES
         OUTPUT_NAME wwtools

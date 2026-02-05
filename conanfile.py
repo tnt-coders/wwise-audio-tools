@@ -35,6 +35,7 @@ class WwiseAudioToolsConan(ConanFile):
         self.requires("catch2/3.12.0")
         self.requires("kaitai_struct_cpp_stl_runtime/0.11")
         self.requires("ogg/1.3.5")
+        self.requires("rang/3.2")
         self.requires("vorbis/1.3.7")
 
     def layout(self):
