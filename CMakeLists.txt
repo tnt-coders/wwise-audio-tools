@@ -11,6 +11,7 @@ option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin inst
 find_package(PackageBuilder REQUIRED)
 find_package(Ogg REQUIRED)
 find_package(Vorbis REQUIRED)
+find_package(Catch2 REQUIRED)
 
 include(PackageBuilder)
 
@@ -31,11 +32,11 @@ set(SOURCE
     src/bnk.cpp)
 
 if(PACKED_CODEBOOKS_AOTUV)
-  message("PACKED_CODEBOOKS_AOTUV set as on. Using data from packed_codebooks_aoTuV_603.bin.")
-  list(APPEND SOURCE src/ww2ogg/packed_codebooks_aoTuV_603.cpp)
+    message("PACKED_CODEBOOKS_AOTUV set as on. Using data from packed_codebooks_aoTuV_603.bin.")
+    list(APPEND SOURCE src/ww2ogg/packed_codebooks_aoTuV_603.cpp)
 else()
-  message("PACKED_CODEBOOKS_AOTUV not set or set as off. Using data from packed_codebooks.bin.")
-  list(APPEND SOURCE src/ww2ogg/packed_codebooks.cpp)
+    message("PACKED_CODEBOOKS_AOTUV not set or set as off. Using data from packed_codebooks.bin.")
+    list(APPEND SOURCE src/ww2ogg/packed_codebooks.cpp)
 endif()
 
 # Create library target
@@ -65,16 +66,13 @@ endif()
 # Install the package
 package_install()
 
-find_package(Catch2 QUIET)
-if(Catch2_FOUND)
-  add_executable(tests tests/wem.cpp)
-  target_compile_definitions(tests PRIVATE KS_STR_ENCODING_NONE)
-  target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
+# Add tests
+add_executable(tests tests/wem.cpp)
+target_compile_definitions(tests PRIVATE KS_STR_ENCODING_NONE)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
 
-  add_custom_command(TARGET tests POST_BUILD
+# Copy test data to test location
+add_custom_command(TARGET tests POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata
     $<TARGET_FILE_DIR:tests>/testdata)
-else()
-  message("Catch2 v3 was not found and not dowloaded. Testing target won't be available.")
-endif()
