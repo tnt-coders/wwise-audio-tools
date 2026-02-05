@@ -24,10 +24,10 @@ std::string convert(std::string path) {
 		return outdata;
 }
 
-TEST_CASE( "Compare WEM converted with the Wwise Audio Tools to those converted with the individual standalone tools ", "[wwise-audio-tools]") {
+TEST_CASE("Compare WEM converted with the WwiseAudioTools to those converted with the individual standalone tools ", "[wwise-audio-tools]") {
 	std::ifstream ogg_in("testdata/wem/test1.ogg", std::ios::binary);
 	std::stringstream ogg_in_s;
 	ogg_in_s << ogg_in.rdbuf();
 
-	REQUIRE( convert("testdata/wem/test1.wem") == ogg_in_s.str() );
+    REQUIRE(convert("testdata/wem/test1.wem") == ogg_in_s.str());
 }

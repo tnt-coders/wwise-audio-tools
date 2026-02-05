@@ -43,72 +43,30 @@ else()
   list(APPEND SOURCE src/ww2ogg/packed_codebooks.cpp)
 endif()
 
-# Create library target - CMake automatically uses BUILD_SHARED_LIBS
+# Create library target
 package_add_library(WwiseAudioTools ${SOURCE})
-
-# Create executable target
-package_add_executable(WwiseAudioTools_CLI ${SOURCE} src/main.cpp)
-
-# Add compile definitions
 target_compile_definitions(WwiseAudioTools PRIVATE KS_STR_ENCODING_NONE)
-target_compile_definitions(WwiseAudioTools_CLI PRIVATE KS_STR_ENCODING_NONE)
-
-# Link dependencies - these will be propagated to consuming targets
 target_link_libraries(WwiseAudioTools PUBLIC Ogg::ogg Vorbis::vorbis)
 
-# Executable outputs as 'wwtools' (the CLI tool keeps the original name)
+# Create executable target
+package_add_executable(WwiseAudioTools_CLI src/main.cpp)
+target_compile_definitions(WwiseAudioTools_CLI PRIVATE KS_STR_ENCODING_NONE)
+target_link_libraries(WwiseAudioTools_CLI WwiseAudioTools::WwiseAudioTools)
 set_target_properties(WwiseAudioTools_CLI PROPERTIES OUTPUT_NAME wwtools)
-
-# Standard filesystem library needs additional linking options on older compilers
-# https://en.cppreference.com/w/cpp/filesystem#Notes
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.1")
-    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis stdc++fs)
-  else()
-    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis)
-  endif()
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
-    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis c++fs)
-  else()
-    target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis)
-  endif()
-else()
-  target_link_libraries(WwiseAudioTools_CLI Ogg::ogg Vorbis::vorbis)
-endif()
 
 # Install the package
 package_install()
 
-find_package(Catch2 3 QUIET)
-
-if(NOT Catch2_FOUND AND DOWNLOAD_CATCH2)
-  include(FetchContent)
-
-  FetchContent_Declare(
-    catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2
-    GIT_TAG v3.12.0
-  )
-  
-  message("Catch2 v3 not found locally. Fetching it from the git repository...")
-  FetchContent_MakeAvailable(catch2)
-  set(FETCHCONTENT_UPDATES_DISCONNECTED_CATCH2 ON) # don't update
-
-  set(Catch2_FOUND TRUE)
-endif()
-
+find_package(Catch2 QUIET)
 if(Catch2_FOUND)
   add_executable(tests ${SOURCE} tests/wem.cpp)
-  target_include_directories(tests PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}/include
-      ${CMAKE_CURRENT_SOURCE_DIR}/libogg/include
-      ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/include
-      ${CMAKE_CURRENT_BINARY_DIR}/libogg/include
-  )
   target_compile_definitions(tests PRIVATE KS_STR_ENCODING_NONE)
-  target_link_libraries(tests PRIVATE Catch2::Catch2WithMain Ogg::ogg vorbis::vorbis)
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+  target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
+
+  add_custom_command(TARGET tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata
+    $<TARGET_FILE_DIR:tests>/testdata)
 else()
   message("Catch2 v3 was not found and not dowloaded. Testing target won't be available.")
 endif()

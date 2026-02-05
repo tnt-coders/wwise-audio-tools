@@ -32,6 +32,7 @@ class WwiseAudioToolsConan(ConanFile):
 
     def requirements(self):
         self.requires("cmake-package-builder/1.0.0") #recipe: https://github.com/tnt-coders/cmake-package-builder.git
+        self.requires("catch2/3.12.0")
         self.requires("ogg/1.3.5")
         self.requires("vorbis/1.3.7")
 
@@ -41,7 +42,6 @@ class WwiseAudioToolsConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["PACKED_CODEBOOKS_AOTUV"] = self.options.packed_codebooks_aotuv
-        tc.variables["DOWNLOAD_CATCH2"] = False
         tc.generate()
 
         deps = CMakeDeps(self)
