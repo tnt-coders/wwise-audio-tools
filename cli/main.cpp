@@ -18,7 +18,7 @@
 
 #include <rang.hpp>
 #include "ww2ogg/ww2ogg.h"
-#include "wwtools/bnk.h"
+#include "bnk.h"
 #include "wwtools/wwtools.h"
 
 namespace fs = std::filesystem;

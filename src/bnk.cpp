@@ -14,7 +14,7 @@
 
 #include "kaitai/kaitaistream.h"
 #include "kaitai/structs/bnk.h"
-#include "wwtools/bnk.h"
+#include "bnk.h"
 
 namespace {
 
@@ -91,6 +91,26 @@ template<typename T>
   }
 }
 
+/**
+ * @brief Look up an event name from the STID section
+ * @param stid_data The STID section data (can be nullptr)
+ * @param event_id The event ID to look up
+ * @return The event name, or empty string if not found or STID section is missing
+ */
+[[nodiscard]] std::string lookup_event_name(bnk_t::stid_data_t* stid_data, std::uint32_t event_id) {
+  if (!stid_data) {
+    return {};
+  }
+
+  for (const auto* stid_obj : *stid_data->objs()) {
+    if (stid_obj->id() == event_id) {
+      return stid_obj->name();
+    }
+  }
+
+  return {};
+}
+
 } // anonymous namespace
 
 namespace wwtools::bnk {
@@ -144,6 +164,9 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   if (!hirc_data) {
     return {};
   }
+
+  // Load STID section for event name lookup (may be nullptr if not present)
+  auto* stid_data = find_section<bnk_t::stid_data_t>(bnk, "STID");
 
   const bool all_event_ids = in_event_id.empty();
   std::size_t num_events = 0;
@@ -213,7 +236,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   result += std::format("{} of them point to files in this BNK\n\n", event_to_event_sfxs.size());
 
   for (const auto& [event_id, event_sfxs] : event_to_event_sfxs) {
-    auto event_name = get_event_name_from_id(event_id);
+    auto event_name = lookup_event_name(stid_data, event_id);
     result += std::format("{} ({})\n", event_id,
                           event_name.empty() ? "can't find name" : event_name);
 
@@ -243,7 +266,10 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
 }
 
 [[nodiscard]] std::string get_event_name_from_id([[maybe_unused]] std::uint32_t event_id) {
-  // TODO: Implement event name lookup
+  // This function signature is maintained for API compatibility, but it cannot
+  // look up event names without the BNK file data. Event name lookup is now
+  // performed within get_event_id_info() using the STID section.
+  // If you need event name lookup, use get_event_id_info() instead.
   return {};
 }
 
