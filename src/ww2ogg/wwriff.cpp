@@ -174,7 +174,7 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
 
     char chunk_type[4];
     _indata.read(chunk_type, 4);
-    uint32_t chunk_size = _read_32(_indata);
+    const uint32_t chunk_size = _read_32(_indata);
 
     if (std::memcmp(chunk_type, "fmt ", 4) == 0) {
       _fmt_offset = chunk_offset + 8;
@@ -301,7 +301,7 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
     _no_granule = true;
 
     _indata.seekg(_vorb_offset + 0x4, std::ios::beg);
-    uint32_t mod_signal = _read_32(_indata);
+    const uint32_t mod_signal = _read_32(_indata);
 
     if (mod_signal != 0x4A && mod_signal != 0x4B && mod_signal != 0x69 &&
         mod_signal != 0x70) {
@@ -546,7 +546,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
     // codebook count
     Bit_uint<8> codebook_count_less1;
     ss >> codebook_count_less1;
-    unsigned int codebook_count = codebook_count_less1 + 1;
+    const unsigned int codebook_count = codebook_count_less1 + 1;
     os << codebook_count_less1;
 
     // rebuild codebooks
@@ -603,7 +603,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
       // floor count
       Bit_uint<6> floor_count_less1;
       ss >> floor_count_less1;
-      unsigned int floor_count = floor_count_less1 + 1;
+      const unsigned int floor_count = floor_count_less1 + 1;
       os << floor_count_less1;
 
       // rebuild floors
@@ -659,7 +659,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
             ss >> subclass_book_plus1;
             os << subclass_book_plus1;
 
-            int subclass_book = static_cast<int>(subclass_book_plus1) - 1;
+            const int subclass_book = static_cast<int>(subclass_book_plus1) - 1;
             if (subclass_book >= 0 &&
                 static_cast<unsigned int>(subclass_book) >= codebook_count) {
               throw parse_error_str("invalid floor1 subclass book");
@@ -676,7 +676,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
         os << rangebits;
 
         for (unsigned int j = 0; j < floor1_partitions; ++j) {
-          unsigned int current_class_number = floor1_partition_class_list[j];
+          const unsigned int current_class_number = floor1_partition_class_list[j];
           for (unsigned int k = 0;
                k < floor1_class_dimensions_list[current_class_number]; ++k) {
             Bit_uintv X(rangebits);
@@ -692,7 +692,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
       // residue count
       Bit_uint<6> residue_count_less1;
       ss >> residue_count_less1;
-      unsigned int residue_count = residue_count_less1 + 1;
+      const unsigned int residue_count = residue_count_less1 + 1;
       os << residue_count_less1;
 
       // rebuild residues
@@ -713,7 +713,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 
         ss >> residue_begin >> residue_end >> residue_partition_size_less1 >>
             residue_classifications_less1 >> residue_classbook;
-        unsigned int residue_classifications = residue_classifications_less1 + 1;
+        const unsigned int residue_classifications = residue_classifications_less1 + 1;
         os << residue_begin << residue_end << residue_partition_size_less1
            << residue_classifications_less1 << residue_classbook;
 
@@ -761,7 +761,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
       // mapping count
       Bit_uint<6> mapping_count_less1;
       ss >> mapping_count_less1;
-      unsigned int mapping_count = mapping_count_less1 + 1;
+      const unsigned int mapping_count = mapping_count_less1 + 1;
       os << mapping_count_less1;
 
       for (unsigned int i = 0; i < mapping_count; ++i) {
@@ -790,7 +790,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
         if (square_polar_flag) {
           Bit_uint<8> coupling_steps_less1;
           ss >> coupling_steps_less1;
-          unsigned int coupling_steps = coupling_steps_less1 + 1;
+          const unsigned int coupling_steps = coupling_steps_less1 + 1;
           os << coupling_steps_less1;
 
           for (unsigned int j = 0; j < coupling_steps; ++j) {
@@ -852,7 +852,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
       // mode count
       Bit_uint<6> mode_count_less1;
       ss >> mode_count_less1;
-      unsigned int mode_count = mode_count_less1 + 1;
+      const unsigned int mode_count = mode_count_less1 + 1;
       os << mode_count_less1;
 
       mode_blockflag = new bool[mode_count];
@@ -988,7 +988,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
             // mod_packets always goes with 6-byte headers
             Packet audio_packet(_indata, next_offset, _little_endian,
                                 _no_granule);
-            uint32_t next_packet_size = audio_packet.size();
+            const uint32_t next_packet_size = audio_packet.size();
             if (next_packet_size > 0) {
               _indata.seekg(audio_packet.offset());
 
@@ -1058,7 +1058,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
     // copy information packet
     {
       Packet_8 information_packet(_indata, offset, _little_endian);
-      uint32_t size = information_packet.size();
+      const uint32_t size = information_packet.size();
 
       if (information_packet.granule() != 0) {
         throw parse_error_str("information packet granule != 0");
@@ -1087,7 +1087,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
     // copy comment packet
     {
       Packet_8 comment_packet(_indata, offset, _little_endian);
-      uint16_t size = static_cast<uint16_t>(comment_packet.size());
+      const uint16_t size = static_cast<uint16_t>(comment_packet.size());
 
       if (comment_packet.granule() != 0) {
         throw parse_error_str("comment packet granule != 0");
@@ -1141,7 +1141,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
       // codebook count
       Bit_uint<8> codebook_count_less1;
       ss >> codebook_count_less1;
-      unsigned int codebook_count = codebook_count_less1 + 1;
+      const unsigned int codebook_count = codebook_count_less1 + 1;
       os << codebook_count_less1;
 
       codebook_library cbl;

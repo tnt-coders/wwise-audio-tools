@@ -216,7 +216,7 @@ namespace revorb {
         if (res == 0) {
           char* buffer = ogg_sync_buffer(&sync_in, kBufferSize);
           indata_ss.read(buffer, kBufferSize);
-          auto numread = indata_ss.gcount();
+          const auto numread = indata_ss.gcount();
           if (numread > 0) {
             ogg_sync_wrote(&sync_in, static_cast<long>(numread));
           } else {
@@ -243,7 +243,7 @@ namespace revorb {
               continue;
             }
 
-            int bs = vorbis_packet_blocksize(&vi, &packet);
+            const int bs = vorbis_packet_blocksize(&vi, &packet);
             if (lastbs != 0) {
               granpos += (lastbs + bs) / 4;
             }

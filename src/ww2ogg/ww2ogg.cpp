@@ -19,7 +19,7 @@ namespace ww2ogg {
                           unsigned char* codebooks_data, bool inline_codebooks,
                           bool full_setup, ForcePacketFormat force_packet_format) {
   try {
-    std::string codebooks_data_s(
+    const std::string codebooks_data_s(
         reinterpret_cast<char*>(codebooks_data),
         packed_codebooks_bin_len);
     Wwise_RIFF_Vorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup,
@@ -37,7 +37,7 @@ namespace ww2ogg {
 [[nodiscard]] std::string wem_info(const std::string& indata, unsigned char* codebooks_data,
                                    bool inline_codebooks, bool full_setup,
                                    ForcePacketFormat force_packet_format) {
-  std::string codebooks_data_s(
+  const std::string codebooks_data_s(
       reinterpret_cast<char*>(codebooks_data),
       packed_codebooks_bin_len);
   Wwise_RIFF_Vorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup,

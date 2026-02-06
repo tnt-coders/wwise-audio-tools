@@ -20,10 +20,10 @@ codebook_library::codebook_library(std::string indata)
   std::stringstream is(indata);
 
   is.seekg(0, std::ios::end);
-  auto file_size = static_cast<long>(is.tellg());
+  const auto file_size = static_cast<long>(is.tellg());
 
   is.seekg(file_size - 4, std::ios::beg);
-  auto offset_offset = static_cast<long>(read_32_le(is));
+  const auto offset_offset = static_cast<long>(read_32_le(is));
   codebook_count = (file_size - offset_offset) / 4;
 
   codebook_data = new char[offset_offset];
@@ -44,7 +44,7 @@ void codebook_library::rebuild(int i, bitoggstream& bos) {
   unsigned long cb_size = 0;
 
   {
-    long signed_cb_size = get_codebook_size(i);
+    const long signed_cb_size = get_codebook_size(i);
 
     if (cb == nullptr || signed_cb_size == -1) {
       throw invalid_id(i);
@@ -146,7 +146,7 @@ void codebook_library::copy(bitstream& bis, bitoggstream& bos) {
     bis >> min >> max >> value_length >> sequence_flag;
     bos << min << max << value_length << sequence_flag;
 
-    unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
+    const unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
     for (unsigned int i = 0; i < quantvals; ++i) {
       /* IN/OUT: n bit value */
       Bit_uintv val(value_length + 1);
@@ -253,7 +253,7 @@ void codebook_library::rebuild(bitstream& bis, unsigned long cb_size,
     bis >> min >> max >> value_length >> sequence_flag;
     bos << min << max << value_length << sequence_flag;
 
-    unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
+    const unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
     for (unsigned int i = 0; i < quantvals; ++i) {
       /* IN/OUT: n bit value */
       Bit_uintv val(value_length + 1);

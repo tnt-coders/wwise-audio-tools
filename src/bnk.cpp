@@ -54,7 +54,7 @@ template<typename T>
     return 0;
   }
 
-  auto num_effects = static_cast<std::uint8_t>(sound_structure.at(1));
+  const auto num_effects = static_cast<std::uint8_t>(sound_structure.at(1));
   if (num_effects > 0) {
     parent_id_offset++;                    // bit mask for bypassed effects
     parent_id_offset += num_effects * 7;   // 7 bytes for each effect
@@ -236,7 +236,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   result += std::format("{} of them point to files in this BNK\n\n", event_to_event_sfxs.size());
 
   for (const auto& [event_id, event_sfxs] : event_to_event_sfxs) {
-    auto event_name = lookup_event_name(stid_data, event_id);
+    const auto event_name = lookup_event_name(stid_data, event_id);
     result += std::format("{} ({})\n", event_id,
                           event_name.empty() ? "can't find name" : event_name);
 

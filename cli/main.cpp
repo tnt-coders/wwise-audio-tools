@@ -37,7 +37,7 @@ enum class ConvertError {
  */
 [[nodiscard]] std::expected<void, ConvertError> convert(
     std::string_view indata, const fs::path& outpath) {
-  auto outdata = wwtools::wem_to_ogg(std::string{indata});
+  const auto outdata = wwtools::wem_to_ogg(std::string{indata});
   if (outdata.empty()) {
     return std::unexpected(ConvertError::ConversionFailed);
   }
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
   // Create span for modern iteration
   std::span args(argv, static_cast<std::size_t>(argc));
 
-  auto [flags, has_error] = get_flags(args);
+  const auto [flags, has_error] = get_flags(args);
   if (has_error) {
     return EXIT_FAILURE;
   }
@@ -163,13 +163,13 @@ int main(int argc, char* argv[]) {
       wem_exists = true;
       std::println("Converting {}...", entry.path().string());
 
-      auto indata = read_file(entry.path());
+      const auto indata = read_file(entry.path());
       if (indata.empty()) {
         std::println(stderr, "Failed to read {}", entry.path().string());
         return EXIT_FAILURE;
       }
 
-      auto outpath = replace_extension(entry.path(), ".ogg");
+      const auto outpath = replace_extension(entry.path(), ".ogg");
 
       if (auto result = convert(indata, outpath); !result) {
         std::println(stderr, "Failed to convert {}", entry.path().string());
@@ -188,12 +188,12 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  std::string_view command = args[1];
+  const std::string_view command = args[1];
 
   // WEM command handling
   if (command == "wem") {
-    fs::path path = args[2];
-    auto indata = read_file(path);
+    const fs::path path = args[2];
+    const auto indata = read_file(path);
 
     if (indata.empty()) {
       std::println(stderr, "Failed to read {}", path.string());
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
       return EXIT_SUCCESS;
     }
 
-    auto outpath = replace_extension(path, ".ogg");
+    const auto outpath = replace_extension(path, ".ogg");
     std::println("Extracting {}...", outpath.string());
 
     if (auto result = convert(indata, outpath); !result) {
@@ -222,10 +222,10 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    std::string_view subcommand = args[2];
-    fs::path bnk_path = args[3];
+    const std::string_view subcommand = args[2];
+    const fs::path bnk_path = args[3];
 
-    auto indata = read_file(bnk_path);
+    const auto indata = read_file(bnk_path);
     if (indata.empty()) {
       std::println(stderr, "Failed to read {}", bnk_path.string());
       return EXIT_FAILURE;
@@ -255,7 +255,7 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> wems;
     wwtools::bnk::extract(indata, wems);
 
-    auto outdir = replace_extension(bnk_path, "");
+    const auto outdir = replace_extension(bnk_path, "");
     fs::create_directory(outdir);
 
     const bool noconvert = has_flag(flags, "no-convert");
@@ -265,11 +265,11 @@ int main(int argc, char* argv[]) {
       const auto& wem = wems[idx];
 
       // Re-read file to get WEM ID (consider optimizing this in the future)
-      auto id_data = read_file(bnk_path);
-      auto wem_id = wwtools::bnk::get_wem_id_at_index(id_data, static_cast<int>(idx));
+      const auto id_data = read_file(bnk_path);
+      const auto wem_id = wwtools::bnk::get_wem_id_at_index(id_data, static_cast<int>(idx));
 
-      fs::path outpath = outdir / wem_id;
-      auto full_outpath = outpath.string() + std::string{file_extension};
+      const fs::path outpath = outdir / wem_id;
+      const auto full_outpath = outpath.string() + std::string{file_extension};
 
       std::cout << rang::fg::cyan << "[" << (idx + 1) << "/" << wems.size() << "] "
                 << rang::fg::reset << "Extracting " << full_outpath << "...\n";
