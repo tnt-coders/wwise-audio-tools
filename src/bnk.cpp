@@ -273,4 +273,48 @@ void extract(const std::string_view indata, std::vector<std::string>& outdata) {
   return {};
 }
 
+[[nodiscard]] std::vector<std::uint32_t> get_wem_ids(const std::string_view indata) {
+  kaitai::kstream ks(std::string{indata});
+  bnk_t bnk(&ks);
+
+  std::vector<std::uint32_t> ids;
+
+  auto* didx = find_section<bnk_t::didx_data_t>(bnk, "DIDX");
+  if (!didx) {
+    return ids;
+  }
+
+  ids.reserve(didx->objs()->size());
+  for (const auto& obj : *didx->objs()) {
+    ids.push_back(obj->id());
+  }
+
+  return ids;
+}
+
+[[nodiscard]] std::vector<std::uint32_t> get_streamed_wem_ids(const std::string_view indata) {
+  kaitai::kstream ks(std::string{indata});
+  bnk_t bnk(&ks);
+
+  std::vector<std::uint32_t> ids;
+
+  auto* hirc_data = find_section<bnk_t::hirc_data_t>(bnk, "HIRC");
+  if (!hirc_data) {
+    return ids;
+  }
+
+  for (const auto& obj : *hirc_data->objs()) {
+    if (obj->type() != bnk_t::OBJECT_TYPE_SOUND_EFFECT_OR_VOICE) {
+      continue;
+    }
+
+    auto* sfx = static_cast<bnk_t::sound_effect_or_voice_t*>(obj->object_data());
+    if (sfx->included_or_streamed() != 0) {
+      ids.push_back(sfx->audio_file_id());
+    }
+  }
+
+  return ids;
+}
+
 } // namespace wwtools::bnk

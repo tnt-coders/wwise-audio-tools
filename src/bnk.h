@@ -67,4 +67,23 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
  */
 [[nodiscard]] std::string get_event_name_from_id(std::uint32_t event_id);
 
+/**
+ * @brief get all WEM IDs referenced by the soundbank's DIDX section
+ *
+ * @param indata std::string_view with the BNK content
+ * @return vector of WEM IDs
+ */
+[[nodiscard]] std::vector<std::uint32_t> get_wem_ids(std::string_view indata);
+
+/**
+ * @brief get the set of WEM IDs that are streamed (not fully embedded)
+ *
+ * Parses the HIRC section to find Sound Effect/Voice objects and checks
+ * the included_or_streamed field. WEM IDs with non-zero values are streamed.
+ *
+ * @param indata std::string_view with the BNK content
+ * @return set of WEM IDs that are streamed
+ */
+[[nodiscard]] std::vector<std::uint32_t> get_streamed_wem_ids(std::string_view indata);
+
 } // namespace wwtools::bnk

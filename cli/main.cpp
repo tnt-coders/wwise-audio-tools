@@ -250,36 +250,72 @@ int main(const int argc, char* argv[]) {
     }
 
     // Extract subcommand
-    std::vector<std::string> wems;
-    wwtools::bnk::extract(indata, wems);
-
-    const auto outdir = replace_extension(bnk_path, "");
-    fs::create_directory(outdir);
-
+    const auto wems = wwtools::bnk_extract(indata);
     const bool noconvert = has_flag(flags, "no-convert");
-    const std::string_view file_extension = noconvert ? ".wem" : ".ogg";
 
-    for (std::size_t idx = 0; idx < wems.size(); ++idx) {
-      const auto& wem = wems[idx];
+    // --no-convert: extract raw embedded data to subdirectory
+    if (noconvert) {
+      const auto outdir = replace_extension(bnk_path, "");
+      fs::create_directory(outdir);
 
-      // Re-read file to get WEM ID (consider optimizing this in the future)
-      const auto id_data = read_file(bnk_path);
-      const auto wem_id = wwtools::bnk::get_wem_id_at_index(id_data, static_cast<int>(idx));
+      for (std::size_t i = 0; i < wems.size(); ++i) {
+        const auto outpath = outdir / (std::to_string(wems[i].id) + ".wem");
 
-      const fs::path outpath = outdir / wem_id;
-      const auto full_outpath = outpath.string() + std::string{file_extension};
+        std::cout << rang::fg::cyan << "[" << (i + 1) << "/" << wems.size() << "] "
+                  << rang::fg::reset << "Extracting " << outpath.string() << "...\n";
 
-      std::cout << rang::fg::cyan << "[" << (idx + 1) << "/" << wems.size() << "] "
-                << rang::fg::reset << "Extracting " << full_outpath << "...\n";
+        std::ofstream of(outpath, std::ios::binary);
+        of << wems[i].data;
+      }
+      return EXIT_SUCCESS;
+    }
 
-      if (noconvert) {
-        std::ofstream of(full_outpath, std::ios::binary);
-        of << wem;
-      } else {
+    // Convert mode: handle both embedded and streamed WEMs
+    const auto bnk_dir = bnk_path.parent_path();
+    const auto bnk_stem = bnk_path.stem().string();
+
+    for (std::size_t i = 0; i < wems.size(); ++i) {
+      const auto wem_id_str = std::to_string(wems[i].id);
+      const auto out_name = (wems.size() == 1)
+          ? bnk_stem + ".ogg"
+          : bnk_stem + "_" + wem_id_str + ".ogg";
+      const auto outpath = bnk_dir / out_name;
+
+      if (!wems[i].streamed) {
+        // Fully embedded WEM - convert directly
+        std::cout << rang::fg::cyan << "[" << (i + 1) << "/" << wems.size() << "] "
+                  << rang::fg::reset << "Converting " << outpath.string() << "...\n";
+
         try {
-          convert(wem, full_outpath);
+          convert(wems[i].data, outpath);
         } catch (const std::exception& e) {
-          std::println(stderr, "Failed to convert {}: {}", full_outpath, e.what());
+          std::println(stderr, "Failed to convert: {}", e.what());
+        }
+      } else {
+        // Streamed WEM - look for external .wem file
+        const auto external_wem = bnk_dir / (wem_id_str + ".wem");
+        if (!fs::exists(external_wem)) {
+          std::cout << rang::fg::cyan << "[" << (i + 1) << "/" << wems.size() << "] "
+                    << rang::fg::reset;
+          std::println(stderr, "WEM {} is streamed but {} not found",
+                       wem_id_str, external_wem.string());
+          continue;
+        }
+
+        std::cout << rang::fg::cyan << "[" << (i + 1) << "/" << wems.size() << "] "
+                  << rang::fg::reset << "Converting " << external_wem.string()
+                  << " -> " << outpath.string() << "...\n";
+
+        const auto wem_data = read_file(external_wem);
+        if (wem_data.empty()) {
+          std::println(stderr, "Failed to read {}", external_wem.string());
+          continue;
+        }
+
+        try {
+          convert(wem_data, outpath);
+        } catch (const std::exception& e) {
+          std::println(stderr, "Failed to convert {}: {}", external_wem.string(), e.what());
         }
       }
     }

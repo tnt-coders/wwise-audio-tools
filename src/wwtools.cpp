@@ -1,14 +1,18 @@
 /**
  * @file wwtools.cpp
- * @brief Implementation of WEM to OGG conversion
+ * @brief Implementation of public API functions
  * @note Modernized to C++23
  */
 
+#include <algorithm>
+#include <cstdint>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
+#include "bnk.h"
 #include "revorb/revorb.h"
 #include "ww2ogg/ww2ogg.h"
 #include "wwtools/wwtools.h"
@@ -28,6 +32,27 @@ namespace wwtools {
   }
 
   return revorb_out.str();
+}
+
+[[nodiscard]] std::vector<BnkWem> bnk_extract(const std::string_view indata) {
+  const auto ids = bnk::get_wem_ids(indata);
+  const auto streamed_ids = bnk::get_streamed_wem_ids(indata);
+
+  std::vector<std::string> raw_wems;
+  bnk::extract(indata, raw_wems);
+
+  std::vector<BnkWem> result;
+  result.reserve(ids.size());
+
+  for (std::size_t i = 0; i < ids.size(); ++i) {
+    result.push_back({
+      .id = ids[i],
+      .streamed = std::ranges::contains(streamed_ids, ids[i]),
+      .data = (i < raw_wems.size()) ? std::move(raw_wems[i]) : std::string{},
+    });
+  }
+
+  return result;
 }
 
 } // namespace wwtools
