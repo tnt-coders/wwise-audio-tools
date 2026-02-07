@@ -1,6 +1,10 @@
 # Wwise Audio Tools
 This repository provides a static and dynamic library as well as a command line tool for converting Wwise WEM files to OGG format.
 
+## ⚠️ Active Development Notice
+
+This project is under active development. The information in this README may not reflect the current state of the codebase. Please check the latest commits and issues for the most up-to-date information.
+
 ## About
 Both `ww2ogg` and `revorb` are relatively old and cumbersome to use repetitively. This project maintains support for these tools while making them easier to use and integrate into other applications.
 
