@@ -1,6 +1,6 @@
 # Wwise Audio Tools
 
-[![Build](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/ci.yml)
+[![Build](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build.yml)
 
 This repository provides a static and dynamic library as well as a command line tool for converting Wwise WEM files to OGG format.
 
