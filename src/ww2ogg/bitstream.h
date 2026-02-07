@@ -202,7 +202,7 @@ public:
       throw Weird_char_size();
   }
 
-  void put_bit(bool bit) {
+  void put_bit(const bool bit) {
     if (bit)
       bit_buffer |= static_cast<unsigned char>(1 << bits_stored);
 
@@ -212,7 +212,7 @@ public:
     }
   }
 
-  void set_granule(uint32_t g) { granule = g; }
+  void set_granule(const uint32_t g) { granule = g; }
 
   void flush_bits() {
     if (bits_stored != 0) {
@@ -229,7 +229,7 @@ public:
     }
   }
 
-  void flush_page(bool next_continued = false, bool last = false) {
+  void flush_page(const bool next_continued = false, const bool last = false) {
     if (payload_bytes != segment_size * max_segments) {
       flush_bits();
     }
@@ -310,7 +310,7 @@ public:
       throw Too_many_bits();
   }
 
-  explicit Bit_uint(unsigned int v) : total(v) {
+  explicit Bit_uint(const unsigned int v) : total(v) {
     if (BIT_SIZE >
         static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
       throw Too_many_bits();
@@ -355,13 +355,13 @@ public:
   class Too_many_bits {};
   class Int_too_big {};
 
-  explicit Bit_uintv(unsigned int s) : size(s), total(0) {
+  explicit Bit_uintv(const unsigned int s) : size(s), total(0) {
     if (s >
         static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
       throw Too_many_bits();
   }
 
-  Bit_uintv(unsigned int s, unsigned int v) : size(s), total(v) {
+  Bit_uintv(const unsigned int s, const unsigned int v) : size(s), total(v) {
     if (size >
         static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
       throw Too_many_bits();
@@ -406,7 +406,7 @@ class array_streambuf : public std::streambuf {
   char* arr;
 
 public:
-  array_streambuf(const char* a, int l) : arr(nullptr) {
+  array_streambuf(const char* const a, const int l) : arr(nullptr) {
     arr = new char[l];
     for (int i = 0; i < l; ++i)
       arr[i] = a[i];

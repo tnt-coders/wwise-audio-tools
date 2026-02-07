@@ -29,8 +29,8 @@ namespace {
 /**
  * @brief Calculate quantization values for maptype 1 codebooks
  */
-[[nodiscard]] inline unsigned int _book_maptype1_quantvals(unsigned int entries,
-                                                            unsigned int dimensions) {
+[[nodiscard]] inline unsigned int _book_maptype1_quantvals(const unsigned int entries,
+                                                            const unsigned int dimensions) {
   // Get us a starting hint, we'll polish it below
   const int bits = ilog(entries);
   int vals = static_cast<int>(entries >> ((bits - 1) * (dimensions - 1) / dimensions));

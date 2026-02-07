@@ -15,7 +15,7 @@ namespace ww2ogg {
 codebook_library::codebook_library()
     : codebook_data(nullptr), codebook_offsets(nullptr), codebook_count(0) {}
 
-codebook_library::codebook_library(std::string indata)
+codebook_library::codebook_library(const std::string indata)
     : codebook_data(nullptr), codebook_offsets(nullptr), codebook_count(0) {
   std::stringstream is(indata);
 
@@ -39,7 +39,7 @@ codebook_library::codebook_library(std::string indata)
   }
 }
 
-void codebook_library::rebuild(int i, bitoggstream& bos) {
+void codebook_library::rebuild(const int i, bitoggstream& bos) {
   const char* cb = get_codebook(i);
   unsigned long cb_size = 0;
 
@@ -161,7 +161,7 @@ void codebook_library::copy(bitstream& bis, bitoggstream& bos) {
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::rebuild(bitstream& bis, unsigned long cb_size,
+void codebook_library::rebuild(bitstream& bis, const unsigned long cb_size,
                                bitoggstream& bos) {
   /* IN: 4 bit dimensions, 14 bit entry count */
 

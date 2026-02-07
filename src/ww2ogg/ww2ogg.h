@@ -23,9 +23,10 @@ namespace ww2ogg {
  * @param inline_codebooks Whether to use inline codebooks
  * @param full_setup Whether to use full setup header
  * @param force_packet_format Force specific packet format
- * @return true on success, false on failure
+ * @throws ww2ogg::parse_error on malformed WEM data
+ * @throws ww2ogg::file_open_error on file access failure
  */
-[[nodiscard]] bool ww2ogg(
+void ww2ogg(
     const std::string& indata,
     std::ostream& outdata,
     unsigned char* codebooks_data = packed_codebooks_bin,

@@ -76,7 +76,7 @@ template<typename T>
 /**
  * @brief Get a string with the action type from the enum
  */
-[[nodiscard]] std::string_view get_event_action_type(bnk_t::action_type_t action_type) {
+[[nodiscard]] std::string_view get_event_action_type(const bnk_t::action_type_t action_type) {
   switch (action_type) {
     case bnk_t::ACTION_TYPE_PLAY:   return "play";
     case bnk_t::ACTION_TYPE_PAUSE:  return "pause";
@@ -97,7 +97,7 @@ template<typename T>
  * @param event_id The event ID to look up
  * @return The event name, or empty string if not found or STID section is missing
  */
-[[nodiscard]] std::string lookup_event_name(bnk_t::stid_data_t* stid_data, std::uint32_t event_id) {
+[[nodiscard]] std::string lookup_event_name(bnk_t::stid_data_t* stid_data, const std::uint32_t event_id) {
   if (!stid_data) {
     return {};
   }
@@ -115,7 +115,7 @@ template<typename T>
 
 namespace wwtools::bnk {
 
-void extract(std::string_view indata, std::vector<std::string>& outdata) {
+void extract(const std::string_view indata, std::vector<std::string>& outdata) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -132,7 +132,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   }
 }
 
-[[nodiscard]] std::string get_info(std::string_view indata) {
+[[nodiscard]] std::string get_info(const std::string_view indata) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -155,8 +155,8 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   return result;
 }
 
-[[nodiscard]] std::string get_event_id_info(std::string_view indata,
-                                             std::string_view in_event_id) {
+[[nodiscard]] std::string get_event_id_info(const std::string_view indata,
+                                             const std::string_view in_event_id) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -252,8 +252,8 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   return result;
 }
 
-[[nodiscard]] std::string get_wem_id_at_index(std::string_view indata,
-                                               std::size_t index) {
+[[nodiscard]] std::string get_wem_id_at_index(const std::string_view indata,
+                                               const std::size_t index) {
   kaitai::kstream ks(std::string{indata});
   bnk_t bnk(&ks);
 
@@ -265,7 +265,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata) {
   return std::to_string(didx->objs()->at(index)->id());
 }
 
-[[nodiscard]] std::string get_event_name_from_id([[maybe_unused]] std::uint32_t event_id) {
+[[nodiscard]] std::string get_event_name_from_id([[maybe_unused]] const std::uint32_t event_id) {
   // This function signature is maintained for API compatibility, but it cannot
   // look up event names without the BNK file data. Event name lookup is now
   // performed within get_event_id_info() using the STID section.

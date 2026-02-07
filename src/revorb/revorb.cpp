@@ -38,10 +38,10 @@ class OggStreamGuard {
   bool initialized_;
 
 public:
-  explicit OggStreamGuard(ogg_stream_state* stream)
+  explicit OggStreamGuard(ogg_stream_state* const stream)
       : stream_(stream), initialized_(false) {}
 
-  void init(int serialno) {
+  void init(const int serialno) {
     ogg_stream_init(stream_, serialno);
     initialized_ = true;
   }
@@ -68,7 +68,7 @@ class VorbisCommentGuard {
   bool initialized_;
 
 public:
-  explicit VorbisCommentGuard(vorbis_comment* vc)
+  explicit VorbisCommentGuard(vorbis_comment* const vc)
       : vc_(vc), initialized_(false) {}
 
   void init() {

@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <print>
 #include <span>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -23,31 +23,20 @@
 
 namespace fs = std::filesystem;
 
-// Modern error type for conversion results
-enum class ConvertError {
-  ConversionFailed,
-  FileWriteFailed
-};
-
 /**
  * @brief Convert WEM data to OGG and write to file
  * @param indata Input WEM data
  * @param outpath Output file path
- * @return std::expected with void on success or ConvertError on failure
+ * @throws std::exception on conversion or file write failure
  */
-[[nodiscard]] std::expected<void, ConvertError> convert(
-    std::string_view indata, const fs::path& outpath) {
+void convert(const std::string_view indata, const fs::path& outpath) {
   const auto outdata = wwtools::wem_to_ogg(std::string{indata});
-  if (outdata.empty()) {
-    return std::unexpected(ConvertError::ConversionFailed);
-  }
 
   std::ofstream fout(outpath, std::ios::binary);
   if (!fout) {
-    return std::unexpected(ConvertError::FileWriteFailed);
+    throw std::runtime_error("failed to open output file");
   }
   fout << outdata;
-  return {};
 }
 
 /**
@@ -55,8 +44,8 @@ enum class ConvertError {
  * @param extra_message Error message to display (optional)
  * @param filename Program name for usage display
  */
-void print_help(std::string_view extra_message = {},
-                std::string_view filename = "wwtools") {
+void print_help(const std::string_view extra_message = {},
+                const std::string_view filename = "wwtools") {
   if (!extra_message.empty()) {
     std::cout << rang::fg::red << extra_message << rang::fg::reset << "\n\n";
   }
@@ -79,7 +68,7 @@ struct ParsedFlags {
  * @param args Span of command-line arguments
  * @return ParsedFlags structure with flags and error status
  */
-[[nodiscard]] ParsedFlags get_flags(std::span<char*> args) {
+[[nodiscard]] ParsedFlags get_flags(const std::span<char*> args) {
   ParsedFlags result;
   result.flags.reserve(args.size());
   bool flag_found = false;
@@ -106,7 +95,7 @@ struct ParsedFlags {
  * @return true if flag exists
  */
 [[nodiscard]] bool has_flag(const std::vector<std::string>& flags,
-                            std::string_view wanted_flag) {
+                            const std::string_view wanted_flag) {
   return std::ranges::contains(flags, wanted_flag);
 }
 
@@ -131,13 +120,13 @@ struct ParsedFlags {
  * @param new_ext New extension (including dot)
  * @return Path with new extension
  */
-[[nodiscard]] fs::path replace_extension(const fs::path& path, std::string_view new_ext) {
+[[nodiscard]] fs::path replace_extension(const fs::path& path, const std::string_view new_ext) {
   auto result = path;
   result.replace_extension(new_ext);
   return result;
 }
 
-int main(int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
   // Create span for modern iteration
   std::span args(argv, static_cast<std::size_t>(argc));
 
@@ -171,8 +160,10 @@ int main(int argc, char* argv[]) {
 
       const auto outpath = replace_extension(entry.path(), ".ogg");
 
-      if (auto result = convert(indata, outpath); !result) {
-        std::println(stderr, "Failed to convert {}", entry.path().string());
+      try {
+        convert(indata, outpath);
+      } catch (const std::exception& e) {
+        std::println(stderr, "Failed to convert {}: {}", entry.path().string(), e.what());
         return EXIT_FAILURE;
       }
     }
@@ -201,15 +192,22 @@ int main(int argc, char* argv[]) {
     }
 
     if (has_flag(flags, "info")) {
-      std::print("{}", ww2ogg::wem_info(indata));
+      try {
+        std::print("{}", ww2ogg::wem_info(indata));
+      } catch (const std::exception& e) {
+        std::println(stderr, "Failed to read WEM info for {}: {}", path.string(), e.what());
+        return EXIT_FAILURE;
+      }
       return EXIT_SUCCESS;
     }
 
     const auto outpath = replace_extension(path, ".ogg");
-    std::println("Extracting {}...", outpath.string());
+    std::println("Converting {}...", outpath.string());
 
-    if (auto result = convert(indata, outpath); !result) {
-      std::println(stderr, "Failed to convert {}", path.string());
+    try {
+      convert(indata, outpath);
+    } catch (const std::exception& e) {
+      std::println(stderr, "Failed to convert {}: {}", path.string(), e.what());
       return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -277,9 +275,12 @@ int main(int argc, char* argv[]) {
       if (noconvert) {
         std::ofstream of(full_outpath, std::ios::binary);
         of << wem;
-      } else if (auto result = convert(wem, full_outpath); !result) {
-        std::println("Failed to convert {}", full_outpath);
-        // Don't return error because others may succeed
+      } else {
+        try {
+          convert(wem, full_outpath);
+        } catch (const std::exception& e) {
+          std::println(stderr, "Failed to convert {}: {}", full_outpath, e.what());
+        }
       }
     }
     return EXIT_SUCCESS;

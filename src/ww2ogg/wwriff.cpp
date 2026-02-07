@@ -27,7 +27,7 @@ class Packet {
   bool _no_granule;
 
 public:
-  Packet(std::stringstream& i, long o, bool little_endian, bool no_granule = false)
+  Packet(std::stringstream& i, const long o, const bool little_endian, const bool no_granule = false)
       : _offset(o), _size(0), _absolute_granule(0), _no_granule(no_granule) {
     i.seekg(_offset);
 
@@ -60,7 +60,7 @@ class Packet_8 {
   uint32_t _absolute_granule;
 
 public:
-  Packet_8(std::stringstream& i, long o, bool little_endian)
+  Packet_8(std::stringstream& i, const long o, const bool little_endian)
       : _offset(o), _size(0), _absolute_granule(0) {
     i.seekg(_offset);
 
@@ -89,7 +89,7 @@ class Vorbis_packet_header {
   static constexpr char vorbis_str[6] = {'v', 'o', 'r', 'b', 'i', 's'};
 
 public:
-  explicit Vorbis_packet_header(uint8_t t) : type(t) {}
+  explicit Vorbis_packet_header(const uint8_t t) : type(t) {}
 
   friend bitoggstream& operator<<(bitoggstream& bstream,
                                 const Vorbis_packet_header& vph) {
@@ -107,8 +107,8 @@ public:
 
 Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
                                      const std::string& codebooks_data,
-                                     bool inline_codebooks, bool full_setup,
-                                     ForcePacketFormat force_packet_format)
+                                     const bool inline_codebooks, const bool full_setup,
+                                     const ForcePacketFormat force_packet_format)
     : _codebooks_data(codebooks_data),
       _indata(indata), _file_size(-1),
       _little_endian(true), _riff_size(-1), _fmt_offset(-1), _cue_offset(-1),
@@ -154,7 +154,11 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
     _riff_size = static_cast<long>(_read_32(_indata)) + 8;
 
     if (_riff_size > _file_size) {
-      throw parse_error_str("RIFF truncated");
+      throw parse_error_str(
+          "RIFF truncated (header claims " + std::to_string(_riff_size) +
+          " bytes but only " + std::to_string(_file_size) +
+          " available, this is likely a streaming/prefetch WEM"
+          " that requires the full .wem file)");
     }
 
     _indata.read(reinterpret_cast<char*>(wave_head), 4);
