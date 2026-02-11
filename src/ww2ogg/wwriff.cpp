@@ -5,10 +5,13 @@
  */
 
 #define __STDC_CONSTANT_MACROS
+#include <array>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "ww2ogg/bitstream.h"
 #include "ww2ogg/codebook.h"
@@ -86,7 +89,7 @@ public:
 class Vorbis_packet_header {
   uint8_t type;
 
-  static constexpr char vorbis_str[6] = {'v', 'o', 'r', 'b', 'i', 's'};
+  static constexpr std::array<char, 6> vorbis_str = {'v', 'o', 'r', 'b', 'i', 's'};
 
 public:
   explicit Vorbis_packet_header(const uint8_t t) : type(t) {}
@@ -110,18 +113,8 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
                                      const bool inline_codebooks, const bool full_setup,
                                      const ForcePacketFormat force_packet_format)
     : _codebooks_data(codebooks_data),
-      _indata(indata), _file_size(-1),
-      _little_endian(true), _riff_size(-1), _fmt_offset(-1), _cue_offset(-1),
-      _LIST_offset(-1), _smpl_offset(-1), _vorb_offset(-1), _data_offset(-1),
-      _fmt_size(-1), _cue_size(-1), _LIST_size(-1), _smpl_size(-1),
-      _vorb_size(-1), _data_size(-1), _channels(0), _sample_rate(0),
-      _avg_bytes_per_second(0), _ext_unk(0), _subtype(0), _cue_count(0),
-      _loop_count(0), _loop_start(0), _loop_end(0), _sample_count(0),
-      _setup_packet_offset(0), _first_audio_packet_offset(0), _uid(0),
-      _blocksize_0_pow(0), _blocksize_1_pow(0),
-      _inline_codebooks(inline_codebooks), _full_setup(full_setup),
-      _header_triad_present(false), _old_packet_headers(false),
-      _no_granule(false), _mod_packets(false), _read_16(nullptr), _read_32(nullptr) {
+      _indata(indata),
+      _inline_codebooks(inline_codebooks), _full_setup(full_setup) {
 
   _indata.seekg(0, std::ios::end);
   _file_size = static_cast<long>(_indata.tellg());
@@ -439,7 +432,7 @@ std::string Wwise_RIFF_Vorbis::get_info() {
 }
 
 void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
-                                            bool*& mode_blockflag,
+                                            std::unique_ptr<bool[]>& mode_blockflag,
                                             int& mode_bits) {
   // generate identification packet
   {
@@ -484,9 +477,9 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 
     os << vhead;
 
-    static const char vendor[] =
-        "converted from Audiokinetic Wwise by ww2ogg " VERSION;
-    Bit_uint<32> vendor_size(static_cast<unsigned int>(std::strlen(vendor)));
+    static const std::string vendor =
+        std::string("converted from Audiokinetic Wwise by ww2ogg ") + VERSION;
+    Bit_uint<32> vendor_size(static_cast<unsigned int>(vendor.size()));
 
     os << vendor_size;
     for (unsigned int i = 0; i < vendor_size; ++i) {
@@ -620,7 +613,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
         ss >> floor1_partitions;
         os << floor1_partitions;
 
-        auto* floor1_partition_class_list = new unsigned int[floor1_partitions];
+        std::vector<unsigned int> floor1_partition_class_list(floor1_partitions);
 
         unsigned int maximum_class = 0;
         for (unsigned int j = 0; j < floor1_partitions; ++j) {
@@ -635,7 +628,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
           }
         }
 
-        auto* floor1_class_dimensions_list = new unsigned int[maximum_class + 1];
+        std::vector<unsigned int> floor1_class_dimensions_list(maximum_class + 1);
 
         for (unsigned int j = 0; j <= maximum_class; ++j) {
           Bit_uint<3> class_dimensions_less1;
@@ -689,8 +682,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
           }
         }
 
-        delete[] floor1_class_dimensions_list;
-        delete[] floor1_partition_class_list;
+
       }
 
       // residue count
@@ -725,7 +717,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
           throw parse_error_str("invalid residue classbook");
         }
 
-        auto* residue_cascade = new unsigned int[residue_classifications];
+        std::vector<unsigned int> residue_cascade(residue_classifications);
 
         for (unsigned int j = 0; j < residue_classifications; ++j) {
           Bit_uint<5> high_bits(0);
@@ -759,7 +751,8 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
           }
         }
 
-        delete[] residue_cascade;
+
+
       }
 
       // mapping count
@@ -859,7 +852,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
       const unsigned int mode_count = mode_count_less1 + 1;
       os << mode_count_less1;
 
-      mode_blockflag = new bool[mode_count];
+      mode_blockflag = std::make_unique<bool[]>(mode_count);
       mode_bits = ilog(mode_count - 1);
 
       for (unsigned int i = 0; i < mode_count; ++i) {
@@ -902,7 +895,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
   bitoggstream os(oss);
 
-  bool* mode_blockflag = nullptr;
+  std::unique_ptr<bool[]> mode_blockflag;
   int mode_bits = 0;
   bool prev_blockflag = false;
 
@@ -957,7 +950,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
       if (_mod_packets) {
         // need to rebuild packet type and window info
 
-        if (mode_blockflag == nullptr) {
+        if (!mode_blockflag) {
           throw parse_error_str("didn't load mode_blockflag");
         }
 
@@ -965,24 +958,22 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
         Bit_uint<1> packet_type(0);
         os << packet_type;
 
-        Bit_uintv* mode_number_p = nullptr;
-        Bit_uintv* remainder_p = nullptr;
+        Bit_uintv mode_number(mode_bits);
+        Bit_uintv remainder(8 - mode_bits);
 
         {
           // collect mode number from first byte
           bitstream ss(_indata);
 
           // IN/OUT: N bit mode number (max 6 bits)
-          mode_number_p = new Bit_uintv(mode_bits);
-          ss >> *mode_number_p;
-          os << *mode_number_p;
+          ss >> mode_number;
+          os << mode_number;
 
           // IN: remaining bits of first (input) byte
-          remainder_p = new Bit_uintv(8 - mode_bits);
-          ss >> *remainder_p;
+          ss >> remainder;
         }
 
-        if (mode_blockflag[*mode_number_p]) {
+        if (mode_blockflag[mode_number]) {
           // long window, peek at next frame
 
           _indata.seekg(next_offset);
@@ -1017,12 +1008,10 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
           _indata.seekg(offset + 1);
         }
 
-        prev_blockflag = mode_blockflag[*mode_number_p];
-        delete mode_number_p;
+        prev_blockflag = mode_blockflag[mode_number];
 
         // OUT: remaining bits of first (input) byte
-        os << *remainder_p;
-        delete remainder_p;
+        os << remainder;
       } else {
         // nothing unusual for first byte
         int v = _indata.get();
@@ -1051,7 +1040,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
     }
   }
 
-  delete[] mode_blockflag;
+  mode_blockflag.reset();
 }
 
 void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {

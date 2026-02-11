@@ -7,6 +7,7 @@
  */
 
 #include <string>
+#include <vector>
 
 #include "bitstream.h"
 #include "errors.h"
@@ -61,38 +62,38 @@ namespace ww2ogg {
  * @brief Manages a library of Vorbis codebooks
  */
 class codebook_library {
-  char* codebook_data;
-  long* codebook_offsets;
-  long codebook_count;
+  std::vector<char> codebook_data;
+  std::vector<long> codebook_offsets;
 
   // Non-copyable
   codebook_library(const codebook_library&) = delete;
   codebook_library& operator=(const codebook_library&) = delete;
 
 public:
+  // Movable
+  codebook_library(codebook_library&&) = default;
+  codebook_library& operator=(codebook_library&&) = default;
+
   /**
    * @brief Construct from codebook data string
    */
-  explicit codebook_library(std::string indata);
+  explicit codebook_library(const std::string& indata);
 
   /**
    * @brief Construct empty library (for inline codebooks)
    */
   codebook_library();
 
-  ~codebook_library() {
-    delete[] codebook_data;
-    delete[] codebook_offsets;
-  }
+  ~codebook_library() = default;
 
   /**
    * @brief Get pointer to codebook data
    */
   [[nodiscard]] const char* get_codebook(int i) const {
-    if (codebook_data == nullptr || codebook_offsets == nullptr) {
+    if (codebook_data.empty() || codebook_offsets.empty()) {
       throw parse_error_str("codebook library not loaded");
     }
-    if (i >= codebook_count - 1 || i < 0) {
+    if (i >= static_cast<int>(codebook_offsets.size()) - 1 || i < 0) {
       return nullptr;
     }
     return &codebook_data[codebook_offsets[i]];
@@ -102,10 +103,10 @@ public:
    * @brief Get size of codebook
    */
   [[nodiscard]] long get_codebook_size(int i) const {
-    if (codebook_data == nullptr || codebook_offsets == nullptr) {
+    if (codebook_data.empty() || codebook_offsets.empty()) {
       throw parse_error_str("codebook library not loaded");
     }
-    if (i >= codebook_count - 1 || i < 0) {
+    if (i >= static_cast<int>(codebook_offsets.size()) - 1 || i < 0) {
       return -1;
     }
     return codebook_offsets[i + 1] - codebook_offsets[i];

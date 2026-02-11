@@ -12,11 +12,9 @@
 
 namespace ww2ogg {
 
-codebook_library::codebook_library()
-    : codebook_data(nullptr), codebook_offsets(nullptr), codebook_count(0) {}
+codebook_library::codebook_library() = default;
 
-codebook_library::codebook_library(const std::string indata)
-    : codebook_data(nullptr), codebook_offsets(nullptr), codebook_count(0) {
+codebook_library::codebook_library(const std::string& indata) {
   std::stringstream is(indata);
 
   is.seekg(0, std::ios::end);
@@ -24,10 +22,10 @@ codebook_library::codebook_library(const std::string indata)
 
   is.seekg(file_size - 4, std::ios::beg);
   const auto offset_offset = static_cast<long>(read_32_le(is));
-  codebook_count = (file_size - offset_offset) / 4;
+  const auto codebook_count = (file_size - offset_offset) / 4;
 
-  codebook_data = new char[offset_offset];
-  codebook_offsets = new long[codebook_count];
+  codebook_data.resize(offset_offset);
+  codebook_offsets.resize(codebook_count);
 
   is.seekg(0, std::ios::beg);
   for (long i = 0; i < offset_offset; ++i) {

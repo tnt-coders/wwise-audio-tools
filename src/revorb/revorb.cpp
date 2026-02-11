@@ -28,8 +28,6 @@ namespace {
 
 constexpr int kBufferSize = 4096;
 
-bool g_failed = false;
-
 /**
  * @brief RAII wrapper for ogg_stream_state
  */
@@ -55,9 +53,11 @@ public:
 
   ~OggStreamGuard() { clear(); }
 
-  // Non-copyable
+  // Non-copyable, non-movable
   OggStreamGuard(const OggStreamGuard&) = delete;
   OggStreamGuard& operator=(const OggStreamGuard&) = delete;
+  OggStreamGuard(OggStreamGuard&&) = delete;
+  OggStreamGuard& operator=(OggStreamGuard&&) = delete;
 };
 
 /**
@@ -85,9 +85,11 @@ public:
 
   ~VorbisCommentGuard() { clear(); }
 
-  // Non-copyable
+  // Non-copyable, non-movable
   VorbisCommentGuard(const VorbisCommentGuard&) = delete;
   VorbisCommentGuard& operator=(const VorbisCommentGuard&) = delete;
+  VorbisCommentGuard(VorbisCommentGuard&&) = delete;
+  VorbisCommentGuard& operator=(VorbisCommentGuard&&) = delete;
 };
 
 } // anonymous namespace
@@ -186,7 +188,7 @@ namespace revorb {
 }
 
 [[nodiscard]] bool revorb(std::istream& indata, std::stringstream& outdata) {
-  g_failed = false;
+  bool failed = false;
 
   std::stringstream indata_ss;
   indata_ss << indata.rdbuf();
@@ -226,7 +228,7 @@ namespace revorb {
         }
 
         if (res < 0) {
-          g_failed = true;
+          failed = true;
         } else {
           if (ogg_page_eos(&page) != 0) {
             eos = 1;
@@ -239,7 +241,7 @@ namespace revorb {
               break;
             }
             if (res < 0) {
-              g_failed = true;
+              failed = true;
               continue;
             }
 
@@ -286,7 +288,7 @@ namespace revorb {
 
     ogg_stream_clear(&stream_out);
   } else {
-    g_failed = true;
+    failed = true;
   }
 
   vorbis_info_clear(&vi);
@@ -294,7 +296,7 @@ namespace revorb {
   ogg_sync_clear(&sync_in);
   ogg_sync_clear(&sync_out);
 
-  return !g_failed;
+  return !failed;
 }
 
 } // namespace revorb

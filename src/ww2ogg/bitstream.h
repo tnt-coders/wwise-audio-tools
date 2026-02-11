@@ -10,10 +10,12 @@
 #define __STDC_CONSTANT_MACROS
 #endif
 
+#include <array>
 #include <cstdint>
 #include <istream>
 #include <limits>
 #include <ostream>
+#include <vector>
 
 #include "crc.h"
 #include "errors.h"
@@ -188,7 +190,7 @@ class bitoggstream {
 
   unsigned int payload_bytes;
   bool first, continued;
-  unsigned char page_buffer[header_bytes + max_segments + segment_size * max_segments];
+  std::array<unsigned char, header_bytes + max_segments + segment_size * max_segments> page_buffer{};
   uint32_t granule;
   uint32_t seqno;
 
@@ -218,7 +220,6 @@ public:
     if (bits_stored != 0) {
       if (payload_bytes == segment_size * max_segments) {
         throw parse_error_str("ran out of space in an Ogg packet");
-        flush_page(true);
       }
 
       page_buffer[header_bytes + max_segments + payload_bytes] = bit_buffer;
@@ -275,7 +276,7 @@ public:
       // checksum
       write_32_le(
           &page_buffer[22],
-          checksum(page_buffer, header_bytes + segments + payload_bytes));
+          checksum(page_buffer.data(), header_bytes + segments + payload_bytes));
 
       // output to ostream
       for (unsigned int i = 0; i < header_bytes + segments + payload_bytes;
@@ -290,7 +291,12 @@ public:
     }
   }
 
-  ~bitoggstream() { flush_page(); }
+  ~bitoggstream() noexcept {
+    try {
+      flush_page();
+    } catch (...) {
+    }
+  }
 };
 
 /**
@@ -399,21 +405,20 @@ public:
  * @brief Stream buffer backed by a character array
  */
 class array_streambuf : public std::streambuf {
-  // Non-copyable
+  // Non-copyable, non-movable
   array_streambuf& operator=(const array_streambuf&) = delete;
   array_streambuf(const array_streambuf&) = delete;
+  array_streambuf(array_streambuf&&) = delete;
+  array_streambuf& operator=(array_streambuf&&) = delete;
 
-  char* arr;
+  std::vector<char> arr;
 
 public:
-  array_streambuf(const char* const a, const int l) : arr(nullptr) {
-    arr = new char[l];
-    for (int i = 0; i < l; ++i)
-      arr[i] = a[i];
-    setg(arr, arr, arr + l);
+  array_streambuf(const char* const a, const int l) : arr(a, a + l) {
+    setg(arr.data(), arr.data(), arr.data() + arr.size());
   }
 
-  ~array_streambuf() override { delete[] arr; }
+  ~array_streambuf() override = default;
 };
 
 } // namespace ww2ogg
