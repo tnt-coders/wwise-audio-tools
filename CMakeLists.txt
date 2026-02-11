@@ -8,6 +8,9 @@ project(WwiseAudioTools VERSION 1.0.0 LANGUAGES C CXX)
 option(BUILD_CLI "Build command-line interface" ON)
 option(PACKED_CODEBOOKS_AOTUV "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
+# Add project configuration
+add_subdirectory(project-config)
+
 find_package(PackageBuilder REQUIRED)
 find_package(Catch2 REQUIRED)
 find_package(kaitai_struct_cpp_stl_runtime REQUIRED)
