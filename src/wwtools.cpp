@@ -27,7 +27,7 @@ namespace wwtools {
   ww2ogg::ww2ogg(std::string{indata}, wem_out);
 
   // Fix granule positions in the OGG stream
-  if (!revorb::revorb(wem_out, revorb_out)) {
+  if (!revorb::Revorb(wem_out, revorb_out)) {
     throw std::runtime_error("revorb failed to fix OGG granule positions");
   }
 
