@@ -13,7 +13,7 @@
 
 namespace {
 
-[[nodiscard]] std::string convert(const std::string& path) {
+[[nodiscard]] std::string Convert(const std::string& path) {
   std::ifstream filein(path, std::ios::binary);
 
   // Reserve memory upfront
@@ -36,5 +36,5 @@ TEST_CASE("Compare WEM converted with WwiseAudioTools to those converted with st
   std::stringstream ogg_in_s;
   ogg_in_s << ogg_in.rdbuf();
 
-  REQUIRE(convert("testdata/wem/test1.wem") == ogg_in_s.str());
+  REQUIRE(Convert("testdata/wem/test1.wem") == ogg_in_s.str());
 }

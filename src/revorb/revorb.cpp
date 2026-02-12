@@ -26,32 +26,32 @@
 
 namespace {
 
-constexpr int kBufferSize = 4096;
+constexpr int g_k_buffer_size = 4096;
 
 /**
  * @brief RAII wrapper for ogg_stream_state
  */
 class OggStreamGuard {
-  ogg_stream_state* stream_;
-  bool initialized_;
+  ogg_stream_state* m_stream;
+  bool initialized_{false};
 
 public:
   explicit OggStreamGuard(ogg_stream_state* const stream)
-      : stream_(stream), initialized_(false) {}
+      : m_stream(stream) {}
 
-  void init(const int serialno) {
-    ogg_stream_init(stream_, serialno);
+  void Init(const int serialno) {
+    ogg_stream_init(m_stream, serialno);
     initialized_ = true;
   }
 
-  void clear() {
+  void Clear() {
     if (initialized_) {
-      ogg_stream_clear(stream_);
+      ogg_stream_clear(m_stream);
       initialized_ = false;
     }
   }
 
-  ~OggStreamGuard() { clear(); }
+  ~OggStreamGuard() { Clear(); }
 
   // Non-copyable, non-movable
   OggStreamGuard(const OggStreamGuard&) = delete;
@@ -64,26 +64,26 @@ public:
  * @brief RAII wrapper for vorbis_comment
  */
 class VorbisCommentGuard {
-  vorbis_comment* vc_;
-  bool initialized_;
+  vorbis_comment* m_vc;
+  bool initialized_{false};
 
 public:
   explicit VorbisCommentGuard(vorbis_comment* const vc)
-      : vc_(vc), initialized_(false) {}
+      : m_vc(vc) {}
 
-  void init() {
-    vorbis_comment_init(vc_);
+  void Init() {
+    vorbis_comment_init(m_vc);
     initialized_ = true;
   }
 
-  void clear() {
+  void Clear() {
     if (initialized_) {
-      vorbis_comment_clear(vc_);
+      vorbis_comment_clear(m_vc);
       initialized_ = false;
     }
   }
 
-  ~VorbisCommentGuard() { clear(); }
+  ~VorbisCommentGuard() { Clear(); }
 
   // Non-copyable, non-movable
   VorbisCommentGuard(const VorbisCommentGuard&) = delete;
@@ -96,12 +96,12 @@ public:
 
 namespace revorb {
 
-[[nodiscard]] bool copy_headers(std::stringstream& fi, ogg_sync_state* si,
+[[nodiscard]] bool CopyHeaders(std::stringstream& fi, ogg_sync_state* si,
                                 ogg_stream_state* is, std::stringstream& outdata,
                                 ogg_stream_state* os, vorbis_info* vi) {
-  char* buffer = ogg_sync_buffer(si, kBufferSize);
+  char* buffer = ogg_sync_buffer(si, g_k_buffer_size);
 
-  fi.read(buffer, kBufferSize);
+  fi.read(buffer, g_k_buffer_size);
   auto numread = fi.gcount();
 
   ogg_sync_wrote(si, static_cast<long>(numread));
@@ -144,8 +144,8 @@ namespace revorb {
     int res = ogg_sync_pageout(si, &page);
 
     if (res == 0) {
-      buffer = ogg_sync_buffer(si, kBufferSize);
-      fi.read(buffer, kBufferSize);
+      buffer = ogg_sync_buffer(si, g_k_buffer_size);
+      fi.read(buffer, g_k_buffer_size);
       numread = fi.gcount();
       if (numread == 0 && i < 2) {
         vorbis_comment_clear(&vc);
@@ -153,7 +153,7 @@ namespace revorb {
         ogg_stream_clear(os);
         return false;
       }
-      ogg_sync_wrote(si, kBufferSize);
+      ogg_sync_wrote(si, g_k_buffer_size);
       continue;
     }
 
@@ -187,7 +187,7 @@ namespace revorb {
   return true;
 }
 
-[[nodiscard]] bool revorb(std::istream& indata, std::stringstream& outdata) {
+[[nodiscard]] bool Revorb(std::istream& indata, std::stringstream& outdata) {
   bool failed = false;
 
   std::stringstream indata_ss;
@@ -206,7 +206,7 @@ namespace revorb {
   ogg_packet packet{};
   ogg_page page{};
 
-  if (copy_headers(indata_ss, &sync_in, &stream_in, outdata, &stream_out, &vi)) {
+  if (CopyHeaders(indata_ss, &sync_in, &stream_in, outdata, &stream_out, &vi)) {
     ogg_int64_t granpos = 0;
     ogg_int64_t packetnum = 0;
     int lastbs = 0;
@@ -216,8 +216,8 @@ namespace revorb {
       while (eos == 0) {
         int res = ogg_sync_pageout(&sync_in, &page);
         if (res == 0) {
-          char* buffer = ogg_sync_buffer(&sync_in, kBufferSize);
-          indata_ss.read(buffer, kBufferSize);
+          char* buffer = ogg_sync_buffer(&sync_in, g_k_buffer_size);
+          indata_ss.read(buffer, g_k_buffer_size);
           const auto numread = indata_ss.gcount();
           if (numread > 0) {
             ogg_sync_wrote(&sync_in, static_cast<long>(numread));

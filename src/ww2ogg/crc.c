@@ -3,7 +3,7 @@
 #include "ww2ogg/crc.h"
 
 /* from Tremor (lowmem) */
-static uint32_t crc_lookup[256] = {
+static uint32_t g_crc_lookup[256] = {
     0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,
     0x1a864db2, 0x1e475005, 0x2608edb8, 0x22c9f00f, 0x2f8ad6d6, 0x2b4bcb61,
     0x350c9b64, 0x31cd86d3, 0x3c8ea00a, 0x384fbdbd, 0x4c11db70, 0x48d0c6c7,
@@ -50,10 +50,10 @@ static uint32_t crc_lookup[256] = {
 
 uint32_t checksum(unsigned char *data, int bytes) {
   uint32_t crc_reg = 0;
-  int i;
+  int i = 0;
 
   for (i = 0; i < bytes; ++i)
-    crc_reg = (crc_reg << 8) ^ crc_lookup[((crc_reg >> 24) & 0xff) ^ data[i]];
+    crc_reg = (crc_reg << 8) ^ g_crc_lookup[((crc_reg >> 24) & 0xff) ^ data[i]];
 
   return crc_reg;
 }

@@ -11,6 +11,8 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <utility>
 #include <vector>
 
 #include "ww2ogg/bitstream.h"
@@ -24,48 +26,48 @@ namespace ww2ogg {
  * @brief Modern 2 or 6 byte packet header
  */
 class Packet {
-  long _offset;
-  uint16_t _size;
-  uint32_t _absolute_granule;
-  bool _no_granule;
+  long m_offset;
+  uint16_t _size{0};
+  uint32_t _absolute_granule{0};
+  bool m_no_granule;
 
 public:
   Packet(std::stringstream& i, const long o, const bool little_endian, const bool no_granule = false)
-      : _offset(o), _size(0), _absolute_granule(0), _no_granule(no_granule) {
-    i.seekg(_offset);
+      : m_offset(o),  m_no_granule(no_granule) {
+    i.seekg(m_offset);
 
     if (little_endian) {
       _size = read_16_le(i);
-      if (!_no_granule) {
+      if (!m_no_granule) {
         _absolute_granule = read_32_le(i);
       }
     } else {
       _size = read_16_be(i);
-      if (!_no_granule) {
+      if (!m_no_granule) {
         _absolute_granule = read_32_be(i);
       }
     }
   }
 
-  [[nodiscard]] long header_size() const { return _no_granule ? 2 : 6; }
-  [[nodiscard]] long offset() const { return _offset + header_size(); }
-  [[nodiscard]] uint16_t size() const { return _size; }
-  [[nodiscard]] uint32_t granule() const { return _absolute_granule; }
-  [[nodiscard]] long next_offset() const { return _offset + header_size() + _size; }
+  [[nodiscard]] long HeaderSize() const { return m_no_granule ? 2 : 6; }
+  [[nodiscard]] long Offset() const { return m_offset + HeaderSize(); }
+  [[nodiscard]] uint16_t Size() const { return _size; }
+  [[nodiscard]] uint32_t Granule() const { return _absolute_granule; }
+  [[nodiscard]] long NextOffset() const { return m_offset + HeaderSize() + _size; }
 };
 
 /**
  * @brief Old 8 byte packet header
  */
-class Packet_8 {
-  long _offset;
-  uint32_t _size;
-  uint32_t _absolute_granule;
+class Packet8 {
+  long m_offset;
+  uint32_t _size{0};
+  uint32_t _absolute_granule{0};
 
 public:
-  Packet_8(std::stringstream& i, const long o, const bool little_endian)
-      : _offset(o), _size(0), _absolute_granule(0) {
-    i.seekg(_offset);
+  Packet8(std::stringstream& i, const long o, const bool little_endian)
+      : m_offset(o) {
+    i.seekg(m_offset);
 
     if (little_endian) {
       _size = read_32_le(i);
@@ -76,31 +78,31 @@ public:
     }
   }
 
-  [[nodiscard]] long header_size() const { return 8; }
-  [[nodiscard]] long offset() const { return _offset + header_size(); }
-  [[nodiscard]] uint32_t size() const { return _size; }
-  [[nodiscard]] uint32_t granule() const { return _absolute_granule; }
-  [[nodiscard]] long next_offset() const { return _offset + header_size() + static_cast<long>(_size); }
+  [[nodiscard]] long HeaderSize() const { return 8; }
+  [[nodiscard]] long Offset() const { return m_offset + HeaderSize(); }
+  [[nodiscard]] uint32_t Size() const { return _size; }
+  [[nodiscard]] uint32_t Granule() const { return _absolute_granule; }
+  [[nodiscard]] long NextOffset() const { return m_offset + HeaderSize() + static_cast<long>(_size); }
 };
 
 /**
  * @brief Vorbis packet header writer
  */
-class Vorbis_packet_header {
-  uint8_t type;
+class VorbisPacketHeader {
+  uint8_t m_type;
 
-  static constexpr std::array<char, 6> vorbis_str = {'v', 'o', 'r', 'b', 'i', 's'};
+  static constexpr std::array<char, 6> g_vorbis_str = {'v', 'o', 'r', 'b', 'i', 's'};
 
 public:
-  explicit Vorbis_packet_header(const uint8_t t) : type(t) {}
+  explicit VorbisPacketHeader(const uint8_t t) : m_type(t) {}
 
   friend bitoggstream& operator<<(bitoggstream& bstream,
-                                const Vorbis_packet_header& vph) {
-    Bit_uint<8> t(vph.type);
+                                const VorbisPacketHeader& vph) {
+    Bit_uint<8> t(vph.m_type);
     bstream << t;
 
     for (unsigned int i = 0; i < 6; ++i) {
-      Bit_uint<8> c(static_cast<unsigned int>(vorbis_str[i]));
+      Bit_uint<8> c(static_cast<unsigned int>(g_vorbis_str[i]));
       bstream << c;
     }
 
@@ -109,10 +111,10 @@ public:
 };
 
 Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
-                                     const std::string& codebooks_data,
+                                     std::string  codebooks_data,
                                      const bool inline_codebooks, const bool full_setup,
                                      const ForcePacketFormat force_packet_format)
-    : _codebooks_data(codebooks_data),
+    : _codebooks_data(std::move(codebooks_data)),
       _indata(indata),
       _inline_codebooks(inline_codebooks), _full_setup(full_setup) {
 
@@ -436,7 +438,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
                                             int& mode_bits) {
   // generate identification packet
   {
-    Vorbis_packet_header vhead(1);
+    VorbisPacketHeader vhead(1);
 
     os << vhead;
 
@@ -473,17 +475,17 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 
   // generate comment packet
   {
-    Vorbis_packet_header vhead(3);
+    VorbisPacketHeader vhead(3);
 
     os << vhead;
 
-    static const std::string vendor =
+    static const std::string g_vendor =
         std::string("converted from Audiokinetic Wwise by ww2ogg ") + VERSION;
-    Bit_uint<32> vendor_size(static_cast<unsigned int>(vendor.size()));
+    Bit_uint<32> vendor_size(static_cast<unsigned int>(g_vendor.size()));
 
     os << vendor_size;
     for (unsigned int i = 0; i < vendor_size; ++i) {
-      Bit_uint<8> c(static_cast<unsigned int>(vendor[i]));
+      Bit_uint<8> c(static_cast<unsigned int>(g_vendor[i]));
       os << c;
     }
 
@@ -527,15 +529,15 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 
   // generate setup packet
   {
-    Vorbis_packet_header vhead(5);
+    VorbisPacketHeader vhead(5);
 
     os << vhead;
 
     Packet setup_packet(_indata, _data_offset + static_cast<long>(_setup_packet_offset),
                         _little_endian, _no_granule);
 
-    _indata.seekg(setup_packet.offset());
-    if (setup_packet.granule() != 0) {
+    _indata.seekg(setup_packet.Offset());
+    if (setup_packet.Granule() != 0) {
       throw parse_error_str("setup packet granule != 0");
     }
     bitstream ss(_indata);
@@ -591,7 +593,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
     os << dummy_time_value;
 
     if (_full_setup) {
-      while (ss.get_total_bits_read() < setup_packet.size() * 8u) {
+      while (ss.get_total_bits_read() < setup_packet.Size() * 8u) {
         Bit_uint<1> bitly;
         ss >> bitly;
         os << bitly;
@@ -658,7 +660,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 
             const int subclass_book = static_cast<int>(subclass_book_plus1) - 1;
             if (subclass_book >= 0 &&
-                static_cast<unsigned int>(subclass_book) >= codebook_count) {
+                std::cmp_greater_equal(subclass_book, codebook_count)) {
               throw parse_error_str("invalid floor1 subclass book");
             }
           }
@@ -676,9 +678,9 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
           const unsigned int current_class_number = floor1_partition_class_list[j];
           for (unsigned int k = 0;
                k < floor1_class_dimensions_list[current_class_number]; ++k) {
-            Bit_uintv X(rangebits);
-            ss >> X;
-            os << X;
+            Bit_uintv x(rangebits);
+            ss >> x;
+            os << x;
           }
         }
 
@@ -881,11 +883,11 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
 
     os.flush_page();
 
-    if ((ss.get_total_bits_read() + 7) / 8 != setup_packet.size()) {
+    if ((ss.get_total_bits_read() + 7) / 8 != setup_packet.Size()) {
       throw parse_error_str("didn't read exactly setup packet");
     }
 
-    if (setup_packet.next_offset() !=
+    if (setup_packet.NextOffset() !=
         _data_offset + static_cast<long>(_first_audio_packet_offset)) {
       throw parse_error_str("first audio packet doesn't follow setup packet");
     }
@@ -917,19 +919,19 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
       long next_offset = 0;
 
       if (_old_packet_headers) {
-        Packet_8 audio_packet(_indata, offset, _little_endian);
-        packet_header_size = audio_packet.header_size();
-        size = audio_packet.size();
-        packet_payload_offset = audio_packet.offset();
-        granule = audio_packet.granule();
-        next_offset = audio_packet.next_offset();
+        Packet8 audio_packet(_indata, offset, _little_endian);
+        packet_header_size = audio_packet.HeaderSize();
+        size = audio_packet.Size();
+        packet_payload_offset = audio_packet.Offset();
+        granule = audio_packet.Granule();
+        next_offset = audio_packet.NextOffset();
       } else {
         Packet audio_packet(_indata, offset, _little_endian, _no_granule);
-        packet_header_size = audio_packet.header_size();
-        size = audio_packet.size();
-        packet_payload_offset = audio_packet.offset();
-        granule = audio_packet.granule();
-        next_offset = audio_packet.next_offset();
+        packet_header_size = audio_packet.HeaderSize();
+        size = audio_packet.Size();
+        packet_payload_offset = audio_packet.Offset();
+        granule = audio_packet.Granule();
+        next_offset = audio_packet.NextOffset();
       }
 
       if (offset + packet_header_size > _data_offset + _data_size) {
@@ -983,9 +985,9 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
             // mod_packets always goes with 6-byte headers
             Packet audio_packet(_indata, next_offset, _little_endian,
                                 _no_granule);
-            const uint32_t next_packet_size = audio_packet.size();
+            const uint32_t next_packet_size = audio_packet.Size();
             if (next_packet_size > 0) {
-              _indata.seekg(audio_packet.offset());
+              _indata.seekg(audio_packet.Offset());
 
               bitstream ss(_indata);
               Bit_uintv next_mode_number(mode_bits);
@@ -1050,14 +1052,14 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
 
     // copy information packet
     {
-      Packet_8 information_packet(_indata, offset, _little_endian);
-      const uint32_t size = information_packet.size();
+      Packet8 information_packet(_indata, offset, _little_endian);
+      const uint32_t size = information_packet.Size();
 
-      if (information_packet.granule() != 0) {
+      if (information_packet.Granule() != 0) {
         throw parse_error_str("information packet granule != 0");
       }
 
-      _indata.seekg(information_packet.offset());
+      _indata.seekg(information_packet.Offset());
 
       Bit_uint<8> c(static_cast<unsigned int>(_indata.get()));
       if (c != 1) {
@@ -1074,19 +1076,19 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
       // identification packet on its own page
       os.flush_page();
 
-      offset = information_packet.next_offset();
+      offset = information_packet.NextOffset();
     }
 
     // copy comment packet
     {
-      Packet_8 comment_packet(_indata, offset, _little_endian);
-      const uint16_t size = static_cast<uint16_t>(comment_packet.size());
+      Packet8 comment_packet(_indata, offset, _little_endian);
+      const auto size = static_cast<uint16_t>(comment_packet.Size());
 
-      if (comment_packet.granule() != 0) {
+      if (comment_packet.Granule() != 0) {
         throw parse_error_str("comment packet granule != 0");
       }
 
-      _indata.seekg(comment_packet.offset());
+      _indata.seekg(comment_packet.Offset());
 
       Bit_uint<8> c(static_cast<unsigned int>(_indata.get()));
       if (c != 3) {
@@ -1103,15 +1105,15 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
       // identification packet on its own page
       os.flush_page();
 
-      offset = comment_packet.next_offset();
+      offset = comment_packet.NextOffset();
     }
 
     // copy setup packet
     {
-      Packet_8 setup_packet(_indata, offset, _little_endian);
+      Packet8 setup_packet(_indata, offset, _little_endian);
 
-      _indata.seekg(setup_packet.offset());
-      if (setup_packet.granule() != 0) {
+      _indata.seekg(setup_packet.Offset());
+      if (setup_packet.Granule() != 0) {
         throw parse_error_str("setup packet granule != 0");
       }
       bitstream ss(_indata);
@@ -1144,7 +1146,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
         cbl.copy(ss, os);
       }
 
-      while (ss.get_total_bits_read() < setup_packet.size() * 8u) {
+      while (ss.get_total_bits_read() < setup_packet.Size() * 8u) {
         Bit_uint<1> bitly;
         ss >> bitly;
         os << bitly;
@@ -1152,7 +1154,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
 
       os.flush_page();
 
-      offset = setup_packet.next_offset();
+      offset = setup_packet.NextOffset();
     }
 
     if (offset != _data_offset + static_cast<long>(_first_audio_packet_offset)) {

@@ -29,7 +29,7 @@ namespace fs = std::filesystem;
  * @param outpath Output file path
  * @throws std::exception on conversion or file write failure
  */
-void convert(const std::string_view indata, const fs::path& outpath) {
+void Convert(const std::string_view indata, const fs::path& outpath) {
   const auto outdata = wwtools::wem_to_ogg(std::string{indata});
 
   std::ofstream fout(outpath, std::ios::binary);
@@ -44,7 +44,7 @@ void convert(const std::string_view indata, const fs::path& outpath) {
  * @param extra_message Error message to display (optional)
  * @param filename Program name for usage display
  */
-void print_help(const std::string_view extra_message = {},
+void PrintHelp(const std::string_view extra_message = {},
                 const std::string_view filename = "wwtools") {
   if (!extra_message.empty()) {
     std::cout << rang::fg::red << extra_message << rang::fg::reset << "\n\n";
@@ -59,8 +59,8 @@ void print_help(const std::string_view extra_message = {},
  * @brief Result of parsing command-line flags
  */
 struct ParsedFlags {
-  std::vector<std::string> flags;
-  bool has_error = false;
+  std::vector<std::string> m_flags;
+  bool m_has_error = false;
 };
 
 /**
@@ -68,20 +68,20 @@ struct ParsedFlags {
  * @param args Span of command-line arguments
  * @return ParsedFlags structure with flags and error status
  */
-[[nodiscard]] ParsedFlags get_flags(const std::span<char*> args) {
+[[nodiscard]] ParsedFlags GetFlags(const std::span<char*> args) {
   ParsedFlags result;
-  result.flags.reserve(args.size());
+  result.m_flags.reserve(args.size());
   bool flag_found = false;
 
   for (std::string_view arg : args) {
     // C++23: Use starts_with
     if (arg.starts_with("--") && arg.length() > 2) {
       flag_found = true;
-      result.flags.emplace_back(arg.substr(2));
+      result.m_flags.emplace_back(arg.substr(2));
     } else if (flag_found) {
       // If current arg is not a flag but comes after a flag...
-      print_help("Please place all flags after other args!", args[0]);
-      result.has_error = true;
+      PrintHelp("Please place all flags after other args!", args[0]);
+      result.m_has_error = true;
       return result;
     }
   }
@@ -94,7 +94,7 @@ struct ParsedFlags {
  * @param wanted_flag Flag to search for
  * @return true if flag exists
  */
-[[nodiscard]] bool has_flag(const std::vector<std::string>& flags,
+[[nodiscard]] bool HasFlag(const std::vector<std::string>& flags,
                             const std::string_view wanted_flag) {
   return std::ranges::contains(flags, wanted_flag);
 }
@@ -104,7 +104,7 @@ struct ParsedFlags {
  * @param path File path to read
  * @return File contents as string, or empty on failure
  */
-[[nodiscard]] std::string read_file(const fs::path& path) {
+[[nodiscard]] std::string ReadFile(const fs::path& path) {
   std::ifstream file(path, std::ios::binary);
   if (!file) {
     return {};
@@ -120,7 +120,7 @@ struct ParsedFlags {
  * @param new_ext New extension (including dot)
  * @return Path with new extension
  */
-[[nodiscard]] fs::path replace_extension(const fs::path& path, const std::string_view new_ext) {
+[[nodiscard]] fs::path ReplaceExtension(const fs::path& path, const std::string_view new_ext) {
   auto result = path;
   result.replace_extension(new_ext);
   return result;
@@ -130,13 +130,13 @@ int main(const int argc, char* argv[]) {
   // Create span for modern iteration
   std::span args(argv, static_cast<std::size_t>(argc));
 
-  const auto [flags, has_error] = get_flags(args);
+  const auto [flags, has_error] = GetFlags(args);
   if (has_error) {
     return EXIT_FAILURE;
   }
 
-  if (has_flag(flags, "help")) {
-    print_help();
+  if (HasFlag(flags, "help")) {
+    PrintHelp();
     return EXIT_SUCCESS;
   }
 
@@ -152,16 +152,16 @@ int main(const int argc, char* argv[]) {
       wem_exists = true;
       std::println("Converting {}...", entry.path().string());
 
-      const auto indata = read_file(entry.path());
+      const auto indata = ReadFile(entry.path());
       if (indata.empty()) {
         std::println(stderr, "Failed to read {}", entry.path().string());
         return EXIT_FAILURE;
       }
 
-      const auto outpath = replace_extension(entry.path(), ".ogg");
+      const auto outpath = ReplaceExtension(entry.path(), ".ogg");
 
       try {
-        convert(indata, outpath);
+        Convert(indata, outpath);
       } catch (const std::exception& e) {
         std::println(stderr, "Failed to convert {}: {}", entry.path().string(), e.what());
         return EXIT_FAILURE;
@@ -169,13 +169,13 @@ int main(const int argc, char* argv[]) {
     }
 
     if (!wem_exists) {
-      print_help("No WEM files found in the current directory!", args[0]);
+      PrintHelp("No WEM files found in the current directory!", args[0]);
     }
     return EXIT_SUCCESS;
   }
 
   if (argc < 3) {
-    print_help("Missing arguments!", args[0]);
+    PrintHelp("Missing arguments!", args[0]);
     return EXIT_FAILURE;
   }
 
@@ -184,14 +184,14 @@ int main(const int argc, char* argv[]) {
   // WEM command handling
   if (command == "wem") {
     const fs::path path = args[2];
-    const auto indata = read_file(path);
+    const auto indata = ReadFile(path);
 
     if (indata.empty()) {
       std::println(stderr, "Failed to read {}", path.string());
       return EXIT_FAILURE;
     }
 
-    if (has_flag(flags, "info")) {
+    if (HasFlag(flags, "info")) {
       try {
         std::print("{}", ww2ogg::wem_info(indata));
       } catch (const std::exception& e) {
@@ -201,11 +201,11 @@ int main(const int argc, char* argv[]) {
       return EXIT_SUCCESS;
     }
 
-    const auto outpath = replace_extension(path, ".ogg");
+    const auto outpath = ReplaceExtension(path, ".ogg");
     std::println("Converting {}...", outpath.string());
 
     try {
-      convert(indata, outpath);
+      Convert(indata, outpath);
     } catch (const std::exception& e) {
       std::println(stderr, "Failed to convert {}: {}", path.string(), e.what());
       return EXIT_FAILURE;
@@ -216,26 +216,26 @@ int main(const int argc, char* argv[]) {
   // BNK command handling
   if (command == "bnk") {
     if (argc < 4) {
-      print_help("You must specify whether to extract or find an event as well as the input!", args[0]);
+      PrintHelp("You must specify whether to extract or find an event as well as the input!", args[0]);
       return EXIT_FAILURE;
     }
 
     const std::string_view subcommand = args[2];
     const fs::path bnk_path = args[3];
 
-    const auto indata = read_file(bnk_path);
+    const auto indata = ReadFile(bnk_path);
     if (indata.empty()) {
       std::println(stderr, "Failed to read {}", bnk_path.string());
       return EXIT_FAILURE;
     }
 
-    if (has_flag(flags, "info")) {
+    if (HasFlag(flags, "info")) {
       std::print("{}", wwtools::bnk::get_info(indata));
       return EXIT_SUCCESS;
     }
 
     if (subcommand != "event" && subcommand != "extract") {
-      print_help("Incorrect value for read or write!", args[0]);
+      PrintHelp("Incorrect value for read or write!", args[0]);
       return EXIT_FAILURE;
     }
 
@@ -251,11 +251,11 @@ int main(const int argc, char* argv[]) {
 
     // Extract subcommand
     const auto wems = wwtools::bnk_extract(indata);
-    const bool noconvert = has_flag(flags, "no-convert");
+    const bool noconvert = HasFlag(flags, "no-convert");
 
     // --no-convert: extract raw embedded data to subdirectory
     if (noconvert) {
-      const auto outdir = replace_extension(bnk_path, "");
+      const auto outdir = ReplaceExtension(bnk_path, "");
       fs::create_directory(outdir);
 
       for (std::size_t i = 0; i < wems.size(); ++i) {
@@ -287,7 +287,7 @@ int main(const int argc, char* argv[]) {
                   << rang::fg::reset << "Converting " << outpath.string() << "...\n";
 
         try {
-          convert(wems[i].data, outpath);
+          Convert(wems[i].data, outpath);
         } catch (const std::exception& e) {
           std::println(stderr, "Failed to convert: {}", e.what());
         }
@@ -306,14 +306,14 @@ int main(const int argc, char* argv[]) {
                   << rang::fg::reset << "Converting " << external_wem.string()
                   << " -> " << outpath.string() << "...\n";
 
-        const auto wem_data = read_file(external_wem);
+        const auto wem_data = ReadFile(external_wem);
         if (wem_data.empty()) {
           std::println(stderr, "Failed to read {}", external_wem.string());
           continue;
         }
 
         try {
-          convert(wem_data, outpath);
+          Convert(wem_data, outpath);
         } catch (const std::exception& e) {
           std::println(stderr, "Failed to convert {}: {}", external_wem.string(), e.what());
         }
@@ -323,6 +323,6 @@ int main(const int argc, char* argv[]) {
   }
 
   // Unknown command
-  print_help("Unknown command!", args[0]);
+  PrintHelp("Unknown command!", args[0]);
   return EXIT_FAILURE;
 }

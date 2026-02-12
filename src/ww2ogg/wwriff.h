@@ -89,7 +89,7 @@ class Wwise_RIFF_Vorbis {
 
 public:
   Wwise_RIFF_Vorbis(const std::string& indata,
-                    const std::string& codebooks_data, bool inline_codebooks,
+                    std::string  codebooks_data, bool inline_codebooks,
                     bool full_setup, ForcePacketFormat force_packet_format);
 
   [[nodiscard]] std::string get_info();
