@@ -12,7 +12,6 @@
 #include <sstream>
 #include <string>
 #include <utility>
-#include <utility>
 #include <vector>
 
 #include "ww2ogg/bitstream.h"
@@ -20,1147 +19,1348 @@
 #include "ww2ogg/errors.h"
 #include "ww2ogg/wwriff.h"
 
-namespace ww2ogg {
+namespace ww2ogg
+{
 
 /**
  * @brief Modern 2 or 6 byte packet header
  */
-class Packet {
-  long m_offset;
-  uint16_t _size{0};
-  uint32_t _absolute_granule{0};
-  bool m_no_granule;
+class Packet
+{
+    long m_offset;
+    uint16_t _size{0};
+    uint32_t _absolute_granule{0};
+    bool m_no_granule;
 
-public:
-  Packet(std::stringstream& i, const long o, const bool little_endian, const bool no_granule = false)
-      : m_offset(o),  m_no_granule(no_granule) {
-    i.seekg(m_offset);
+  public:
+    Packet(std::stringstream& i, const long o, const bool little_endian,
+           const bool no_granule = false)
+        : m_offset(o), m_no_granule(no_granule)
+    {
+        i.seekg(m_offset);
 
-    if (little_endian) {
-      _size = read_16_le(i);
-      if (!m_no_granule) {
-        _absolute_granule = read_32_le(i);
-      }
-    } else {
-      _size = read_16_be(i);
-      if (!m_no_granule) {
-        _absolute_granule = read_32_be(i);
-      }
+        if (little_endian)
+        {
+            _size = read_16_le(i);
+            if (!m_no_granule)
+            {
+                _absolute_granule = read_32_le(i);
+            }
+        }
+        else
+        {
+            _size = read_16_be(i);
+            if (!m_no_granule)
+            {
+                _absolute_granule = read_32_be(i);
+            }
+        }
     }
-  }
 
-  [[nodiscard]] long HeaderSize() const { return m_no_granule ? 2 : 6; }
-  [[nodiscard]] long Offset() const { return m_offset + HeaderSize(); }
-  [[nodiscard]] uint16_t Size() const { return _size; }
-  [[nodiscard]] uint32_t Granule() const { return _absolute_granule; }
-  [[nodiscard]] long NextOffset() const { return m_offset + HeaderSize() + _size; }
+    [[nodiscard]] long HeaderSize() const
+    {
+        return m_no_granule ? 2 : 6;
+    }
+    [[nodiscard]] long Offset() const
+    {
+        return m_offset + HeaderSize();
+    }
+    [[nodiscard]] uint16_t Size() const
+    {
+        return _size;
+    }
+    [[nodiscard]] uint32_t Granule() const
+    {
+        return _absolute_granule;
+    }
+    [[nodiscard]] long NextOffset() const
+    {
+        return m_offset + HeaderSize() + _size;
+    }
 };
 
 /**
  * @brief Old 8 byte packet header
  */
-class Packet8 {
-  long m_offset;
-  uint32_t _size{0};
-  uint32_t _absolute_granule{0};
+class Packet8
+{
+    long m_offset;
+    uint32_t _size{0};
+    uint32_t _absolute_granule{0};
 
-public:
-  Packet8(std::stringstream& i, const long o, const bool little_endian)
-      : m_offset(o) {
-    i.seekg(m_offset);
+  public:
+    Packet8(std::stringstream& i, const long o, const bool little_endian) : m_offset(o)
+    {
+        i.seekg(m_offset);
 
-    if (little_endian) {
-      _size = read_32_le(i);
-      _absolute_granule = read_32_le(i);
-    } else {
-      _size = read_32_be(i);
-      _absolute_granule = read_32_be(i);
+        if (little_endian)
+        {
+            _size = read_32_le(i);
+            _absolute_granule = read_32_le(i);
+        }
+        else
+        {
+            _size = read_32_be(i);
+            _absolute_granule = read_32_be(i);
+        }
     }
-  }
 
-  [[nodiscard]] long HeaderSize() const { return 8; }
-  [[nodiscard]] long Offset() const { return m_offset + HeaderSize(); }
-  [[nodiscard]] uint32_t Size() const { return _size; }
-  [[nodiscard]] uint32_t Granule() const { return _absolute_granule; }
-  [[nodiscard]] long NextOffset() const { return m_offset + HeaderSize() + static_cast<long>(_size); }
+    [[nodiscard]] long HeaderSize() const
+    {
+        return 8;
+    }
+    [[nodiscard]] long Offset() const
+    {
+        return m_offset + HeaderSize();
+    }
+    [[nodiscard]] uint32_t Size() const
+    {
+        return _size;
+    }
+    [[nodiscard]] uint32_t Granule() const
+    {
+        return _absolute_granule;
+    }
+    [[nodiscard]] long NextOffset() const
+    {
+        return m_offset + HeaderSize() + static_cast<long>(_size);
+    }
 };
 
 /**
  * @brief Vorbis packet header writer
  */
-class VorbisPacketHeader {
-  uint8_t m_type;
+class VorbisPacketHeader
+{
+    uint8_t m_type;
 
-  static constexpr std::array<char, 6> g_vorbis_str = {'v', 'o', 'r', 'b', 'i', 's'};
+    static constexpr std::array<char, 6> g_vorbis_str = {'v', 'o', 'r', 'b', 'i', 's'};
 
-public:
-  explicit VorbisPacketHeader(const uint8_t t) : m_type(t) {}
-
-  friend bitoggstream& operator<<(bitoggstream& bstream,
-                                const VorbisPacketHeader& vph) {
-    Bit_uint<8> t(vph.m_type);
-    bstream << t;
-
-    for (unsigned int i = 0; i < 6; ++i) {
-      Bit_uint<8> c(static_cast<unsigned int>(g_vorbis_str[i]));
-      bstream << c;
+  public:
+    explicit VorbisPacketHeader(const uint8_t t) : m_type(t)
+    {
     }
 
-    return bstream;
-  }
+    friend bitoggstream& operator<<(bitoggstream& bstream, const VorbisPacketHeader& vph)
+    {
+        Bit_uint<8> t(vph.m_type);
+        bstream << t;
+
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            Bit_uint<8> c(static_cast<unsigned int>(g_vorbis_str[i]));
+            bstream << c;
+        }
+
+        return bstream;
+    }
 };
 
-Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata,
-                                     std::string  codebooks_data,
+Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string codebooks_data,
                                      const bool inline_codebooks, const bool full_setup,
                                      const ForcePacketFormat force_packet_format)
-    : _codebooks_data(std::move(codebooks_data)),
-      _indata(indata),
-      _inline_codebooks(inline_codebooks), _full_setup(full_setup) {
+    : _codebooks_data(std::move(codebooks_data)), _indata(indata),
+      _inline_codebooks(inline_codebooks), _full_setup(full_setup)
+{
 
-  _indata.seekg(0, std::ios::end);
-  _file_size = static_cast<long>(_indata.tellg());
+    _indata.seekg(0, std::ios::end);
+    _file_size = static_cast<long>(_indata.tellg());
 
-  // check RIFF header
-  {
-    unsigned char riff_head[4];
-    unsigned char wave_head[4];
-    _indata.seekg(0, std::ios::beg);
-    _indata.read(reinterpret_cast<char*>(riff_head), 4);
+    // check RIFF header
+    {
+        unsigned char riff_head[4];
+        unsigned char wave_head[4];
+        _indata.seekg(0, std::ios::beg);
+        _indata.read(reinterpret_cast<char*>(riff_head), 4);
 
-    if (std::memcmp(&riff_head[0], "RIFX", 4) != 0) {
-      if (std::memcmp(&riff_head[0], "RIFF", 4) != 0) {
-        throw parse_error_str("missing RIFF");
-      } else {
-        _little_endian = true;
-      }
-    } else {
-      _little_endian = false;
+        if (std::memcmp(&riff_head[0], "RIFX", 4) != 0)
+        {
+            if (std::memcmp(&riff_head[0], "RIFF", 4) != 0)
+            {
+                throw parse_error_str("missing RIFF");
+            }
+            else
+            {
+                _little_endian = true;
+            }
+        }
+        else
+        {
+            _little_endian = false;
+        }
+
+        if (_little_endian)
+        {
+            _read_16 = read_16_le;
+            _read_32 = read_32_le;
+        }
+        else
+        {
+            _read_16 = read_16_be;
+            _read_32 = read_32_be;
+        }
+
+        _riff_size = static_cast<long>(_read_32(_indata)) + 8;
+
+        if (_riff_size > _file_size)
+        {
+            throw parse_error_str("RIFF truncated (header claims " + std::to_string(_riff_size) +
+                                  " bytes but only " + std::to_string(_file_size) +
+                                  " available, this is likely a streaming/prefetch WEM"
+                                  " that requires the full .wem file)");
+        }
+
+        _indata.read(reinterpret_cast<char*>(wave_head), 4);
+        if (std::memcmp(&wave_head[0], "WAVE", 4) != 0)
+        {
+            throw parse_error_str("missing WAVE");
+        }
     }
 
-    if (_little_endian) {
-      _read_16 = read_16_le;
-      _read_32 = read_32_le;
-    } else {
-      _read_16 = read_16_be;
-      _read_32 = read_32_be;
+    // read chunks
+    long chunk_offset = 12;
+    while (chunk_offset < _riff_size)
+    {
+        _indata.seekg(chunk_offset, std::ios::beg);
+
+        if (chunk_offset + 8 > _riff_size)
+        {
+            throw parse_error_str("chunk header truncated");
+        }
+
+        char chunk_type[4];
+        _indata.read(chunk_type, 4);
+        const uint32_t chunk_size = _read_32(_indata);
+
+        if (std::memcmp(chunk_type, "fmt ", 4) == 0)
+        {
+            _fmt_offset = chunk_offset + 8;
+            _fmt_size = static_cast<long>(chunk_size);
+        }
+        else if (std::memcmp(chunk_type, "cue ", 4) == 0)
+        {
+            _cue_offset = chunk_offset + 8;
+            _cue_size = static_cast<long>(chunk_size);
+        }
+        else if (std::memcmp(chunk_type, "LIST", 4) == 0)
+        {
+            _LIST_offset = chunk_offset + 8;
+            _LIST_size = static_cast<long>(chunk_size);
+        }
+        else if (std::memcmp(chunk_type, "smpl", 4) == 0)
+        {
+            _smpl_offset = chunk_offset + 8;
+            _smpl_size = static_cast<long>(chunk_size);
+        }
+        else if (std::memcmp(chunk_type, "vorb", 4) == 0)
+        {
+            _vorb_offset = chunk_offset + 8;
+            _vorb_size = static_cast<long>(chunk_size);
+        }
+        else if (std::memcmp(chunk_type, "data", 4) == 0)
+        {
+            _data_offset = chunk_offset + 8;
+            _data_size = static_cast<long>(chunk_size);
+        }
+
+        chunk_offset = chunk_offset + 8 + static_cast<long>(chunk_size);
     }
 
-    _riff_size = static_cast<long>(_read_32(_indata)) + 8;
-
-    if (_riff_size > _file_size) {
-      throw parse_error_str(
-          "RIFF truncated (header claims " + std::to_string(_riff_size) +
-          " bytes but only " + std::to_string(_file_size) +
-          " available, this is likely a streaming/prefetch WEM"
-          " that requires the full .wem file)");
+    if (chunk_offset > _riff_size)
+    {
+        throw parse_error_str("chunk truncated");
     }
 
-    _indata.read(reinterpret_cast<char*>(wave_head), 4);
-    if (std::memcmp(&wave_head[0], "WAVE", 4) != 0) {
-      throw parse_error_str("missing WAVE");
-    }
-  }
-
-  // read chunks
-  long chunk_offset = 12;
-  while (chunk_offset < _riff_size) {
-    _indata.seekg(chunk_offset, std::ios::beg);
-
-    if (chunk_offset + 8 > _riff_size) {
-      throw parse_error_str("chunk header truncated");
+    // check that we have the chunks we're expecting
+    if (_fmt_offset == -1 && _data_offset == -1)
+    {
+        throw parse_error_str("expected fmt, data chunks");
     }
 
-    char chunk_type[4];
-    _indata.read(chunk_type, 4);
-    const uint32_t chunk_size = _read_32(_indata);
-
-    if (std::memcmp(chunk_type, "fmt ", 4) == 0) {
-      _fmt_offset = chunk_offset + 8;
-      _fmt_size = static_cast<long>(chunk_size);
-    } else if (std::memcmp(chunk_type, "cue ", 4) == 0) {
-      _cue_offset = chunk_offset + 8;
-      _cue_size = static_cast<long>(chunk_size);
-    } else if (std::memcmp(chunk_type, "LIST", 4) == 0) {
-      _LIST_offset = chunk_offset + 8;
-      _LIST_size = static_cast<long>(chunk_size);
-    } else if (std::memcmp(chunk_type, "smpl", 4) == 0) {
-      _smpl_offset = chunk_offset + 8;
-      _smpl_size = static_cast<long>(chunk_size);
-    } else if (std::memcmp(chunk_type, "vorb", 4) == 0) {
-      _vorb_offset = chunk_offset + 8;
-      _vorb_size = static_cast<long>(chunk_size);
-    } else if (std::memcmp(chunk_type, "data", 4) == 0) {
-      _data_offset = chunk_offset + 8;
-      _data_size = static_cast<long>(chunk_size);
+    // read fmt
+    if (_vorb_offset == -1 && _fmt_size != 0x42)
+    {
+        throw parse_error_str("expected 0x42 fmt if vorb missing");
     }
 
-    chunk_offset = chunk_offset + 8 + static_cast<long>(chunk_size);
-  }
-
-  if (chunk_offset > _riff_size) {
-    throw parse_error_str("chunk truncated");
-  }
-
-  // check that we have the chunks we're expecting
-  if (_fmt_offset == -1 && _data_offset == -1) {
-    throw parse_error_str("expected fmt, data chunks");
-  }
-
-  // read fmt
-  if (_vorb_offset == -1 && _fmt_size != 0x42) {
-    throw parse_error_str("expected 0x42 fmt if vorb missing");
-  }
-
-  if (_vorb_offset != -1 && _fmt_size != 0x28 && _fmt_size != 0x18 &&
-      _fmt_size != 0x12) {
-    throw parse_error_str("bad fmt size");
-  }
-
-  if (_vorb_offset == -1 && _fmt_size == 0x42) {
-    // fake it out
-    _vorb_offset = _fmt_offset + 0x18;
-  }
-
-  _indata.seekg(_fmt_offset, std::ios::beg);
-  if (UINT16_C(0xFFFF) != _read_16(_indata)) {
-    throw parse_error_str("bad codec id");
-  }
-  _channels = _read_16(_indata);
-  _sample_rate = _read_32(_indata);
-  _avg_bytes_per_second = _read_32(_indata);
-  if (_read_16(_indata) != 0U) {
-    throw parse_error_str("bad block align");
-  }
-  if (_read_16(_indata) != 0U) {
-    throw parse_error_str("expected 0 bps");
-  }
-  if (_fmt_size - 0x12 != _read_16(_indata)) {
-    throw parse_error_str("bad extra fmt length");
-  }
-
-  if (_fmt_size - 0x12 >= 2) {
-    // read extra fmt
-    _ext_unk = _read_16(_indata);
-    if (_fmt_size - 0x12 >= 6) {
-      _subtype = _read_32(_indata);
-    }
-  }
-
-  if (_fmt_size == 0x28) {
-    char whoknowsbuf[16];
-    const unsigned char whoknowsbuf_check[16] = {
-        1, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xAA, 0, 0x38, 0x9b, 0x71};
-    _indata.read(whoknowsbuf, 16);
-    if (std::memcmp(whoknowsbuf, whoknowsbuf_check, 16) != 0) {
-      throw parse_error_str("expected signature in extra fmt?");
-    }
-  }
-
-  // read cue
-  if (_cue_offset != -1) {
-    _indata.seekg(_cue_offset);
-    _cue_count = _read_32(_indata);
-  }
-
-  // read smpl
-  if (_smpl_offset != -1) {
-    _indata.seekg(_smpl_offset + 0x1C);
-    _loop_count = _read_32(_indata);
-
-    if (_loop_count != 1) {
-      throw parse_error_str("expected one loop");
+    if (_vorb_offset != -1 && _fmt_size != 0x28 && _fmt_size != 0x18 && _fmt_size != 0x12)
+    {
+        throw parse_error_str("bad fmt size");
     }
 
-    _indata.seekg(_smpl_offset + 0x2c);
-    _loop_start = _read_32(_indata);
-    _loop_end = _read_32(_indata);
-  }
-
-  // read vorb
-  switch (_vorb_size) {
-  case -1:
-  case 0x28:
-  case 0x2A:
-  case 0x2C:
-  case 0x32:
-  case 0x34:
-    _indata.seekg(_vorb_offset + 0x00, std::ios::beg);
-    break;
-
-  default:
-    throw parse_error_str("bad vorb size");
-  }
-
-  _sample_count = _read_32(_indata);
-
-  switch (_vorb_size) {
-  case -1:
-  case 0x2A: {
-    _no_granule = true;
-
-    _indata.seekg(_vorb_offset + 0x4, std::ios::beg);
-    const uint32_t mod_signal = _read_32(_indata);
-
-    if (mod_signal != 0x4A && mod_signal != 0x4B && mod_signal != 0x69 &&
-        mod_signal != 0x70) {
-      _mod_packets = true;
-    }
-    _indata.seekg(_vorb_offset + 0x10, std::ios::beg);
-    break;
-  }
-
-  default:
-    _indata.seekg(_vorb_offset + 0x18, std::ios::beg);
-    break;
-  }
-
-  if (force_packet_format == kForceNoModPackets) {
-    _mod_packets = false;
-  } else if (force_packet_format == kForceModPackets) {
-    _mod_packets = true;
-  }
-
-  _setup_packet_offset = _read_32(_indata);
-  _first_audio_packet_offset = _read_32(_indata);
-
-  switch (_vorb_size) {
-  case -1:
-  case 0x2A:
-    _indata.seekg(_vorb_offset + 0x24, std::ios::beg);
-    break;
-
-  case 0x32:
-  case 0x34:
-    _indata.seekg(_vorb_offset + 0x2C, std::ios::beg);
-    break;
-  }
-
-  switch (_vorb_size) {
-  case 0x28:
-  case 0x2C:
-    // ok to leave _uid, _blocksize_0_pow and _blocksize_1_pow unset
-    _header_triad_present = true;
-    _old_packet_headers = true;
-    break;
-
-  case -1:
-  case 0x2A:
-  case 0x32:
-  case 0x34:
-    _uid = _read_32(_indata);
-    _blocksize_0_pow = static_cast<uint8_t>(_indata.get());
-    _blocksize_1_pow = static_cast<uint8_t>(_indata.get());
-    break;
-  }
-
-  // check/set loops now that we know total sample count
-  if (_loop_count != 0) {
-    if (_loop_end == 0) {
-      _loop_end = _sample_count;
-    } else {
-      _loop_end = _loop_end + 1;
+    if (_vorb_offset == -1 && _fmt_size == 0x42)
+    {
+        // fake it out
+        _vorb_offset = _fmt_offset + 0x18;
     }
 
-    if (_loop_start >= _sample_count || _loop_end > _sample_count ||
-        _loop_start > _loop_end) {
-      throw parse_error_str("loops out of range");
+    _indata.seekg(_fmt_offset, std::ios::beg);
+    if (UINT16_C(0xFFFF) != _read_16(_indata))
+    {
+        throw parse_error_str("bad codec id");
     }
-  }
+    _channels = _read_16(_indata);
+    _sample_rate = _read_32(_indata);
+    _avg_bytes_per_second = _read_32(_indata);
+    if (_read_16(_indata) != 0U)
+    {
+        throw parse_error_str("bad block align");
+    }
+    if (_read_16(_indata) != 0U)
+    {
+        throw parse_error_str("expected 0 bps");
+    }
+    if (_fmt_size - 0x12 != _read_16(_indata))
+    {
+        throw parse_error_str("bad extra fmt length");
+    }
 
-  // check subtype now that we know the vorb info
-  // this is clearly just the channel layout
-  switch (_subtype) {
-  case 4:    /* 1 channel, no seek table */
-  case 3:    /* 2 channels */
-  case 0x33: /* 4 channels */
-  case 0x37: /* 5 channels, seek or not */
-  case 0x3b: /* 5 channels, no seek table */
-  case 0x3f: /* 6 channels, no seek table */
-    break;
-  default:
-    break;
-  }
+    if (_fmt_size - 0x12 >= 2)
+    {
+        // read extra fmt
+        _ext_unk = _read_16(_indata);
+        if (_fmt_size - 0x12 >= 6)
+        {
+            _subtype = _read_32(_indata);
+        }
+    }
+
+    if (_fmt_size == 0x28)
+    {
+        char whoknowsbuf[16];
+        const unsigned char whoknowsbuf_check[16] = {1,    0, 0, 0,    0, 0,    0x10, 0,
+                                                     0x80, 0, 0, 0xAA, 0, 0x38, 0x9b, 0x71};
+        _indata.read(whoknowsbuf, 16);
+        if (std::memcmp(whoknowsbuf, whoknowsbuf_check, 16) != 0)
+        {
+            throw parse_error_str("expected signature in extra fmt?");
+        }
+    }
+
+    // read cue
+    if (_cue_offset != -1)
+    {
+        _indata.seekg(_cue_offset);
+        _cue_count = _read_32(_indata);
+    }
+
+    // read smpl
+    if (_smpl_offset != -1)
+    {
+        _indata.seekg(_smpl_offset + 0x1C);
+        _loop_count = _read_32(_indata);
+
+        if (_loop_count != 1)
+        {
+            throw parse_error_str("expected one loop");
+        }
+
+        _indata.seekg(_smpl_offset + 0x2c);
+        _loop_start = _read_32(_indata);
+        _loop_end = _read_32(_indata);
+    }
+
+    // read vorb
+    switch (_vorb_size)
+    {
+    case -1:
+    case 0x28:
+    case 0x2A:
+    case 0x2C:
+    case 0x32:
+    case 0x34:
+        _indata.seekg(_vorb_offset + 0x00, std::ios::beg);
+        break;
+
+    default:
+        throw parse_error_str("bad vorb size");
+    }
+
+    _sample_count = _read_32(_indata);
+
+    switch (_vorb_size)
+    {
+    case -1:
+    case 0x2A: {
+        _no_granule = true;
+
+        _indata.seekg(_vorb_offset + 0x4, std::ios::beg);
+        const uint32_t mod_signal = _read_32(_indata);
+
+        if (mod_signal != 0x4A && mod_signal != 0x4B && mod_signal != 0x69 && mod_signal != 0x70)
+        {
+            _mod_packets = true;
+        }
+        _indata.seekg(_vorb_offset + 0x10, std::ios::beg);
+        break;
+    }
+
+    default:
+        _indata.seekg(_vorb_offset + 0x18, std::ios::beg);
+        break;
+    }
+
+    if (force_packet_format == kForceNoModPackets)
+    {
+        _mod_packets = false;
+    }
+    else if (force_packet_format == kForceModPackets)
+    {
+        _mod_packets = true;
+    }
+
+    _setup_packet_offset = _read_32(_indata);
+    _first_audio_packet_offset = _read_32(_indata);
+
+    switch (_vorb_size)
+    {
+    case -1:
+    case 0x2A:
+        _indata.seekg(_vorb_offset + 0x24, std::ios::beg);
+        break;
+
+    case 0x32:
+    case 0x34:
+        _indata.seekg(_vorb_offset + 0x2C, std::ios::beg);
+        break;
+    }
+
+    switch (_vorb_size)
+    {
+    case 0x28:
+    case 0x2C:
+        // ok to leave _uid, _blocksize_0_pow and _blocksize_1_pow unset
+        _header_triad_present = true;
+        _old_packet_headers = true;
+        break;
+
+    case -1:
+    case 0x2A:
+    case 0x32:
+    case 0x34:
+        _uid = _read_32(_indata);
+        _blocksize_0_pow = static_cast<uint8_t>(_indata.get());
+        _blocksize_1_pow = static_cast<uint8_t>(_indata.get());
+        break;
+    }
+
+    // check/set loops now that we know total sample count
+    if (_loop_count != 0)
+    {
+        if (_loop_end == 0)
+        {
+            _loop_end = _sample_count;
+        }
+        else
+        {
+            _loop_end = _loop_end + 1;
+        }
+
+        if (_loop_start >= _sample_count || _loop_end > _sample_count || _loop_start > _loop_end)
+        {
+            throw parse_error_str("loops out of range");
+        }
+    }
+
+    // check subtype now that we know the vorb info
+    // this is clearly just the channel layout
+    switch (_subtype)
+    {
+    case 4:    /* 1 channel, no seek table */
+    case 3:    /* 2 channels */
+    case 0x33: /* 4 channels */
+    case 0x37: /* 5 channels, seek or not */
+    case 0x3b: /* 5 channels, no seek table */
+    case 0x3f: /* 6 channels, no seek table */
+        break;
+    default:
+        break;
+    }
 }
 
-std::string Wwise_RIFF_Vorbis::get_info() {
-  std::stringstream info_ss;
-  if (_little_endian) {
-    info_ss << "RIFF WAVE";
-  } else {
-    info_ss << "RIFX WAVE";
-  }
-  info_ss << " " << _channels << " channel";
-  if (_channels != 1) {
-    info_ss << "s";
-  }
-  info_ss << " " << _sample_rate << " Hz " << _avg_bytes_per_second * 8
-          << " bps\n";
-  info_ss << _sample_count << " samples\n";
+std::string Wwise_RIFF_Vorbis::get_info()
+{
+    std::stringstream info_ss;
+    if (_little_endian)
+    {
+        info_ss << "RIFF WAVE";
+    }
+    else
+    {
+        info_ss << "RIFX WAVE";
+    }
+    info_ss << " " << _channels << " channel";
+    if (_channels != 1)
+    {
+        info_ss << "s";
+    }
+    info_ss << " " << _sample_rate << " Hz " << _avg_bytes_per_second * 8 << " bps\n";
+    info_ss << _sample_count << " samples\n";
 
-  if (_loop_count != 0) {
-    info_ss << "loop from " << _loop_start << " to " << _loop_end << "\n";
-  }
+    if (_loop_count != 0)
+    {
+        info_ss << "loop from " << _loop_start << " to " << _loop_end << "\n";
+    }
 
-  if (_old_packet_headers) {
-    info_ss << "- 8 byte (old) packet headers\n";
-  } else if (_no_granule) {
-    info_ss << "- 2 byte packet headers, no granule\n";
-  } else {
-    info_ss << "- 6 byte packet headers\n";
-  }
+    if (_old_packet_headers)
+    {
+        info_ss << "- 8 byte (old) packet headers\n";
+    }
+    else if (_no_granule)
+    {
+        info_ss << "- 2 byte packet headers, no granule\n";
+    }
+    else
+    {
+        info_ss << "- 6 byte packet headers\n";
+    }
 
-  if (_header_triad_present) {
-    info_ss << "- Vorbis header triad present\n";
-  }
+    if (_header_triad_present)
+    {
+        info_ss << "- Vorbis header triad present\n";
+    }
 
-  if (_full_setup || _header_triad_present) {
-    info_ss << "- full setup header\n";
-  } else {
-    info_ss << "- stripped setup header\n";
-  }
+    if (_full_setup || _header_triad_present)
+    {
+        info_ss << "- full setup header\n";
+    }
+    else
+    {
+        info_ss << "- stripped setup header\n";
+    }
 
-  if (_inline_codebooks || _header_triad_present) {
-    info_ss << "- inline codebooks\n";
-  }
+    if (_inline_codebooks || _header_triad_present)
+    {
+        info_ss << "- inline codebooks\n";
+    }
 
-  if (_mod_packets) {
-    info_ss << "- modified Vorbis packets\n";
-  } else {
-    info_ss << "- standard Vorbis packets\n";
-  }
+    if (_mod_packets)
+    {
+        info_ss << "- modified Vorbis packets\n";
+    }
+    else
+    {
+        info_ss << "- standard Vorbis packets\n";
+    }
 
-  return info_ss.str();
+    return info_ss.str();
 }
 
 void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
-                                            std::unique_ptr<bool[]>& mode_blockflag,
-                                            int& mode_bits) {
-  // generate identification packet
-  {
-    VorbisPacketHeader vhead(1);
+                                            std::unique_ptr<bool[]>& mode_blockflag, int& mode_bits)
+{
+    // generate identification packet
+    {
+        VorbisPacketHeader vhead(1);
 
-    os << vhead;
+        os << vhead;
 
-    Bit_uint<32> version(0);
-    os << version;
+        Bit_uint<32> version(0);
+        os << version;
 
-    Bit_uint<8> ch(_channels);
-    os << ch;
+        Bit_uint<8> ch(_channels);
+        os << ch;
 
-    Bit_uint<32> srate(_sample_rate);
-    os << srate;
+        Bit_uint<32> srate(_sample_rate);
+        os << srate;
 
-    Bit_uint<32> bitrate_max(0);
-    os << bitrate_max;
+        Bit_uint<32> bitrate_max(0);
+        os << bitrate_max;
 
-    Bit_uint<32> bitrate_nominal(_avg_bytes_per_second * 8);
-    os << bitrate_nominal;
+        Bit_uint<32> bitrate_nominal(_avg_bytes_per_second * 8);
+        os << bitrate_nominal;
 
-    Bit_uint<32> bitrate_minimum(0);
-    os << bitrate_minimum;
+        Bit_uint<32> bitrate_minimum(0);
+        os << bitrate_minimum;
 
-    Bit_uint<4> blocksize_0(_blocksize_0_pow);
-    os << blocksize_0;
+        Bit_uint<4> blocksize_0(_blocksize_0_pow);
+        os << blocksize_0;
 
-    Bit_uint<4> blocksize_1(_blocksize_1_pow);
-    os << blocksize_1;
+        Bit_uint<4> blocksize_1(_blocksize_1_pow);
+        os << blocksize_1;
 
-    Bit_uint<1> framing(1);
-    os << framing;
+        Bit_uint<1> framing(1);
+        os << framing;
 
-    // identification packet on its own page
-    os.flush_page();
-  }
-
-  // generate comment packet
-  {
-    VorbisPacketHeader vhead(3);
-
-    os << vhead;
-
-    static const std::string g_vendor =
-        std::string("converted from Audiokinetic Wwise by ww2ogg ") + VERSION;
-    Bit_uint<32> vendor_size(static_cast<unsigned int>(g_vendor.size()));
-
-    os << vendor_size;
-    for (unsigned int i = 0; i < vendor_size; ++i) {
-      Bit_uint<8> c(static_cast<unsigned int>(g_vendor[i]));
-      os << c;
+        // identification packet on its own page
+        os.flush_page();
     }
 
-    if (_loop_count == 0) {
-      // no user comments
-      Bit_uint<32> user_comment_count(0);
-      os << user_comment_count;
-    } else {
-      // two comments, loop start and end
-      Bit_uint<32> user_comment_count(2);
-      os << user_comment_count;
+    // generate comment packet
+    {
+        VorbisPacketHeader vhead(3);
 
-      std::stringstream loop_start_str;
-      std::stringstream loop_end_str;
+        os << vhead;
 
-      loop_start_str << "LoopStart=" << _loop_start;
-      loop_end_str << "LoopEnd=" << _loop_end;
+        static const std::string g_vendor =
+            std::string("converted from Audiokinetic Wwise by ww2ogg ") + VERSION;
+        Bit_uint<32> vendor_size(static_cast<unsigned int>(g_vendor.size()));
 
-      Bit_uint<32> loop_start_comment_length;
-      loop_start_comment_length = static_cast<unsigned int>(loop_start_str.str().length());
-      os << loop_start_comment_length;
-      for (unsigned int i = 0; i < loop_start_comment_length; ++i) {
-        Bit_uint<8> c(static_cast<unsigned int>(loop_start_str.str().c_str()[i]));
-        os << c;
-      }
-
-      Bit_uint<32> loop_end_comment_length;
-      loop_end_comment_length = static_cast<unsigned int>(loop_end_str.str().length());
-      os << loop_end_comment_length;
-      for (unsigned int i = 0; i < loop_end_comment_length; ++i) {
-        Bit_uint<8> c(static_cast<unsigned int>(loop_end_str.str().c_str()[i]));
-        os << c;
-      }
-    }
-
-    Bit_uint<1> framing(1);
-    os << framing;
-
-    os.flush_page();
-  }
-
-  // generate setup packet
-  {
-    VorbisPacketHeader vhead(5);
-
-    os << vhead;
-
-    Packet setup_packet(_indata, _data_offset + static_cast<long>(_setup_packet_offset),
-                        _little_endian, _no_granule);
-
-    _indata.seekg(setup_packet.Offset());
-    if (setup_packet.Granule() != 0) {
-      throw parse_error_str("setup packet granule != 0");
-    }
-    bitstream ss(_indata);
-
-    // codebook count
-    Bit_uint<8> codebook_count_less1;
-    ss >> codebook_count_less1;
-    const unsigned int codebook_count = codebook_count_less1 + 1;
-    os << codebook_count_less1;
-
-    // rebuild codebooks
-    if (_inline_codebooks) {
-      codebook_library cbl;
-
-      for (unsigned int i = 0; i < codebook_count; ++i) {
-        if (_full_setup) {
-          cbl.copy(ss, os);
-        } else {
-          cbl.rebuild(ss, 0, os);
-        }
-      }
-    } else {
-      /* external codebooks */
-      codebook_library cbl(_codebooks_data);
-
-      for (unsigned int i = 0; i < codebook_count; ++i) {
-        Bit_uint<10> codebook_id;
-        ss >> codebook_id;
-        try {
-          cbl.rebuild(codebook_id, os);
-        } catch (const invalid_id& e) {
-          if (codebook_id == 0x342) {
-            Bit_uint<14> codebook_identifier;
-            ss >> codebook_identifier;
-
-            if (codebook_identifier == 0x1590) {
-              // starts with BCV, probably --full-setup
-              throw parse_error_str(
-                  "invalid codebook id 0x342, try --full-setup");
-            }
-          }
-
-          // just an invalid codebook
-          throw e;
-        }
-      }
-    }
-
-    // Time Domain transforms (placeholder)
-    Bit_uint<6> time_count_less1(0);
-    os << time_count_less1;
-    Bit_uint<16> dummy_time_value(0);
-    os << dummy_time_value;
-
-    if (_full_setup) {
-      while (ss.get_total_bits_read() < setup_packet.Size() * 8u) {
-        Bit_uint<1> bitly;
-        ss >> bitly;
-        os << bitly;
-      }
-    } else {
-      // floor count
-      Bit_uint<6> floor_count_less1;
-      ss >> floor_count_less1;
-      const unsigned int floor_count = floor_count_less1 + 1;
-      os << floor_count_less1;
-
-      // rebuild floors
-      for (unsigned int i = 0; i < floor_count; ++i) {
-        // Always floor type 1
-        Bit_uint<16> floor_type(1);
-        os << floor_type;
-
-        Bit_uint<5> floor1_partitions;
-        ss >> floor1_partitions;
-        os << floor1_partitions;
-
-        std::vector<unsigned int> floor1_partition_class_list(floor1_partitions);
-
-        unsigned int maximum_class = 0;
-        for (unsigned int j = 0; j < floor1_partitions; ++j) {
-          Bit_uint<4> floor1_partition_class;
-          ss >> floor1_partition_class;
-          os << floor1_partition_class;
-
-          floor1_partition_class_list[j] = floor1_partition_class;
-
-          if (floor1_partition_class > maximum_class) {
-            maximum_class = floor1_partition_class;
-          }
-        }
-
-        std::vector<unsigned int> floor1_class_dimensions_list(maximum_class + 1);
-
-        for (unsigned int j = 0; j <= maximum_class; ++j) {
-          Bit_uint<3> class_dimensions_less1;
-          ss >> class_dimensions_less1;
-          os << class_dimensions_less1;
-
-          floor1_class_dimensions_list[j] = class_dimensions_less1 + 1;
-
-          Bit_uint<2> class_subclasses;
-          ss >> class_subclasses;
-          os << class_subclasses;
-
-          if (class_subclasses != 0) {
-            Bit_uint<8> masterbook;
-            ss >> masterbook;
-            os << masterbook;
-
-            if (masterbook >= codebook_count) {
-              throw parse_error_str("invalid floor1 masterbook");
-            }
-          }
-
-          for (unsigned int k = 0; k < (1U << class_subclasses); ++k) {
-            Bit_uint<8> subclass_book_plus1;
-            ss >> subclass_book_plus1;
-            os << subclass_book_plus1;
-
-            const int subclass_book = static_cast<int>(subclass_book_plus1) - 1;
-            if (subclass_book >= 0 &&
-                std::cmp_greater_equal(subclass_book, codebook_count)) {
-              throw parse_error_str("invalid floor1 subclass book");
-            }
-          }
-        }
-
-        Bit_uint<2> floor1_multiplier_less1;
-        ss >> floor1_multiplier_less1;
-        os << floor1_multiplier_less1;
-
-        Bit_uint<4> rangebits;
-        ss >> rangebits;
-        os << rangebits;
-
-        for (unsigned int j = 0; j < floor1_partitions; ++j) {
-          const unsigned int current_class_number = floor1_partition_class_list[j];
-          for (unsigned int k = 0;
-               k < floor1_class_dimensions_list[current_class_number]; ++k) {
-            Bit_uintv x(rangebits);
-            ss >> x;
-            os << x;
-          }
-        }
-
-
-      }
-
-      // residue count
-      Bit_uint<6> residue_count_less1;
-      ss >> residue_count_less1;
-      const unsigned int residue_count = residue_count_less1 + 1;
-      os << residue_count_less1;
-
-      // rebuild residues
-      for (unsigned int i = 0; i < residue_count; ++i) {
-        Bit_uint<2> residue_type;
-        ss >> residue_type;
-        os << Bit_uint<16>(residue_type);
-
-        if (residue_type > 2) {
-          throw parse_error_str("invalid residue type");
-        }
-
-        Bit_uint<24> residue_begin;
-        Bit_uint<24> residue_end;
-        Bit_uint<24> residue_partition_size_less1;
-        Bit_uint<6> residue_classifications_less1;
-        Bit_uint<8> residue_classbook;
-
-        ss >> residue_begin >> residue_end >> residue_partition_size_less1 >>
-            residue_classifications_less1 >> residue_classbook;
-        const unsigned int residue_classifications = residue_classifications_less1 + 1;
-        os << residue_begin << residue_end << residue_partition_size_less1
-           << residue_classifications_less1 << residue_classbook;
-
-        if (residue_classbook >= codebook_count) {
-          throw parse_error_str("invalid residue classbook");
-        }
-
-        std::vector<unsigned int> residue_cascade(residue_classifications);
-
-        for (unsigned int j = 0; j < residue_classifications; ++j) {
-          Bit_uint<5> high_bits(0);
-          Bit_uint<3> low_bits;
-
-          ss >> low_bits;
-          os << low_bits;
-
-          Bit_uint<1> bitflag;
-          ss >> bitflag;
-          os << bitflag;
-          if (bitflag) {
-            ss >> high_bits;
-            os << high_bits;
-          }
-
-          residue_cascade[j] = high_bits * 8 + low_bits;
-        }
-
-        for (unsigned int j = 0; j < residue_classifications; ++j) {
-          for (unsigned int k = 0; k < 8; ++k) {
-            if ((residue_cascade[j] & (1 << k)) != 0) {
-              Bit_uint<8> residue_book;
-              ss >> residue_book;
-              os << residue_book;
-
-              if (residue_book >= codebook_count) {
-                throw parse_error_str("invalid residue book");
-              }
-            }
-          }
-        }
-
-
-
-      }
-
-      // mapping count
-      Bit_uint<6> mapping_count_less1;
-      ss >> mapping_count_less1;
-      const unsigned int mapping_count = mapping_count_less1 + 1;
-      os << mapping_count_less1;
-
-      for (unsigned int i = 0; i < mapping_count; ++i) {
-        // always mapping type 0, the only one
-        Bit_uint<16> mapping_type(0);
-
-        os << mapping_type;
-
-        Bit_uint<1> submaps_flag;
-        ss >> submaps_flag;
-        os << submaps_flag;
-
-        unsigned int submaps = 1;
-        if (submaps_flag) {
-          Bit_uint<4> submaps_less1;
-
-          ss >> submaps_less1;
-          submaps = submaps_less1 + 1;
-          os << submaps_less1;
-        }
-
-        Bit_uint<1> square_polar_flag;
-        ss >> square_polar_flag;
-        os << square_polar_flag;
-
-        if (square_polar_flag) {
-          Bit_uint<8> coupling_steps_less1;
-          ss >> coupling_steps_less1;
-          const unsigned int coupling_steps = coupling_steps_less1 + 1;
-          os << coupling_steps_less1;
-
-          for (unsigned int j = 0; j < coupling_steps; ++j) {
-            Bit_uintv magnitude(ilog(_channels - 1));
-            Bit_uintv angle(ilog(_channels - 1));
-
-            ss >> magnitude >> angle;
-            os << magnitude << angle;
-
-            if (angle == magnitude || magnitude >= _channels ||
-                angle >= _channels) {
-              throw parse_error_str("invalid coupling");
-            }
-          }
-        }
-
-        // a rare reserved field not removed by Ak!
-        Bit_uint<2> mapping_reserved;
-        ss >> mapping_reserved;
-        os << mapping_reserved;
-        if (mapping_reserved != 0) {
-          throw parse_error_str("mapping reserved field nonzero");
-        }
-
-        if (submaps > 1) {
-          for (unsigned int j = 0; j < _channels; ++j) {
-            Bit_uint<4> mapping_mux;
-            ss >> mapping_mux;
-            os << mapping_mux;
-
-            if (mapping_mux >= submaps) {
-              throw parse_error_str("mapping_mux >= submaps");
-            }
-          }
-        }
-
-        for (unsigned int j = 0; j < submaps; ++j) {
-          // Another! Unused time domain transform configuration placeholder!
-          Bit_uint<8> time_config;
-          ss >> time_config;
-          os << time_config;
-
-          Bit_uint<8> floor_number;
-          ss >> floor_number;
-          os << floor_number;
-          if (floor_number >= floor_count) {
-            throw parse_error_str("invalid floor mapping");
-          }
-
-          Bit_uint<8> residue_number;
-          ss >> residue_number;
-          os << residue_number;
-          if (residue_number >= residue_count) {
-            throw parse_error_str("invalid residue mapping");
-          }
-        }
-      }
-
-      // mode count
-      Bit_uint<6> mode_count_less1;
-      ss >> mode_count_less1;
-      const unsigned int mode_count = mode_count_less1 + 1;
-      os << mode_count_less1;
-
-      mode_blockflag = std::make_unique<bool[]>(mode_count);
-      mode_bits = ilog(mode_count - 1);
-
-      for (unsigned int i = 0; i < mode_count; ++i) {
-        Bit_uint<1> block_flag;
-        ss >> block_flag;
-        os << block_flag;
-
-        mode_blockflag[i] = (block_flag != 0);
-
-        // only 0 valid for windowtype and transformtype
-        Bit_uint<16> windowtype(0);
-        Bit_uint<16> transformtype(0);
-        os << windowtype << transformtype;
-
-        Bit_uint<8> mapping;
-        ss >> mapping;
-        os << mapping;
-        if (mapping >= mapping_count) {
-          throw parse_error_str("invalid mode mapping");
-        }
-      }
-
-      Bit_uint<1> framing(1);
-      os << framing;
-    }
-
-    os.flush_page();
-
-    if ((ss.get_total_bits_read() + 7) / 8 != setup_packet.Size()) {
-      throw parse_error_str("didn't read exactly setup packet");
-    }
-
-    if (setup_packet.NextOffset() !=
-        _data_offset + static_cast<long>(_first_audio_packet_offset)) {
-      throw parse_error_str("first audio packet doesn't follow setup packet");
-    }
-  }
-}
-
-void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss) {
-  bitoggstream os(oss);
-
-  std::unique_ptr<bool[]> mode_blockflag;
-  int mode_bits = 0;
-  bool prev_blockflag = false;
-
-  if (_header_triad_present) {
-    generate_ogg_header_with_triad(os);
-  } else {
-    generate_ogg_header(os, mode_blockflag, mode_bits);
-  }
-
-  // Audio pages
-  {
-    long offset = _data_offset + static_cast<long>(_first_audio_packet_offset);
-
-    while (offset < _data_offset + _data_size) {
-      uint32_t size = 0;
-      uint32_t granule = 0;
-      long packet_header_size = 0;
-      long packet_payload_offset = 0;
-      long next_offset = 0;
-
-      if (_old_packet_headers) {
-        Packet8 audio_packet(_indata, offset, _little_endian);
-        packet_header_size = audio_packet.HeaderSize();
-        size = audio_packet.Size();
-        packet_payload_offset = audio_packet.Offset();
-        granule = audio_packet.Granule();
-        next_offset = audio_packet.NextOffset();
-      } else {
-        Packet audio_packet(_indata, offset, _little_endian, _no_granule);
-        packet_header_size = audio_packet.HeaderSize();
-        size = audio_packet.Size();
-        packet_payload_offset = audio_packet.Offset();
-        granule = audio_packet.Granule();
-        next_offset = audio_packet.NextOffset();
-      }
-
-      if (offset + packet_header_size > _data_offset + _data_size) {
-        throw parse_error_str("page header truncated");
-      }
-
-      offset = packet_payload_offset;
-
-      _indata.seekg(offset);
-      // HACK: don't know what to do here
-      if (granule == UINT32_C(0xFFFFFFFF)) {
-        os.set_granule(1);
-      } else {
-        os.set_granule(granule);
-      }
-
-      // first byte
-      if (_mod_packets) {
-        // need to rebuild packet type and window info
-
-        if (!mode_blockflag) {
-          throw parse_error_str("didn't load mode_blockflag");
-        }
-
-        // OUT: 1 bit packet type (0 == audio)
-        Bit_uint<1> packet_type(0);
-        os << packet_type;
-
-        Bit_uintv mode_number(mode_bits);
-        Bit_uintv remainder(8 - mode_bits);
-
+        os << vendor_size;
+        for (unsigned int i = 0; i < vendor_size; ++i)
         {
-          // collect mode number from first byte
-          bitstream ss(_indata);
-
-          // IN/OUT: N bit mode number (max 6 bits)
-          ss >> mode_number;
-          os << mode_number;
-
-          // IN: remaining bits of first (input) byte
-          ss >> remainder;
+            Bit_uint<8> c(static_cast<unsigned int>(g_vendor[i]));
+            os << c;
         }
 
-        if (mode_blockflag[mode_number]) {
-          // long window, peek at next frame
+        if (_loop_count == 0)
+        {
+            // no user comments
+            Bit_uint<32> user_comment_count(0);
+            os << user_comment_count;
+        }
+        else
+        {
+            // two comments, loop start and end
+            Bit_uint<32> user_comment_count(2);
+            os << user_comment_count;
 
-          _indata.seekg(next_offset);
-          bool next_blockflag = false;
-          if (next_offset + packet_header_size <= _data_offset + _data_size) {
+            std::stringstream loop_start_str;
+            std::stringstream loop_end_str;
 
-            // mod_packets always goes with 6-byte headers
-            Packet audio_packet(_indata, next_offset, _little_endian,
-                                _no_granule);
-            const uint32_t next_packet_size = audio_packet.Size();
-            if (next_packet_size > 0) {
-              _indata.seekg(audio_packet.Offset());
+            loop_start_str << "LoopStart=" << _loop_start;
+            loop_end_str << "LoopEnd=" << _loop_end;
 
-              bitstream ss(_indata);
-              Bit_uintv next_mode_number(mode_bits);
-
-              ss >> next_mode_number;
-
-              next_blockflag = mode_blockflag[next_mode_number];
+            Bit_uint<32> loop_start_comment_length;
+            loop_start_comment_length = static_cast<unsigned int>(loop_start_str.str().length());
+            os << loop_start_comment_length;
+            for (unsigned int i = 0; i < loop_start_comment_length; ++i)
+            {
+                Bit_uint<8> c(static_cast<unsigned int>(loop_start_str.str().c_str()[i]));
+                os << c;
             }
-          }
 
-          // OUT: previous window type bit
-          Bit_uint<1> prev_window_type(prev_blockflag ? 1 : 0);
-          os << prev_window_type;
-
-          // OUT: next window type bit
-          Bit_uint<1> next_window_type(next_blockflag ? 1 : 0);
-          os << next_window_type;
-
-          // fix seek for rest of stream
-          _indata.seekg(offset + 1);
+            Bit_uint<32> loop_end_comment_length;
+            loop_end_comment_length = static_cast<unsigned int>(loop_end_str.str().length());
+            os << loop_end_comment_length;
+            for (unsigned int i = 0; i < loop_end_comment_length; ++i)
+            {
+                Bit_uint<8> c(static_cast<unsigned int>(loop_end_str.str().c_str()[i]));
+                os << c;
+            }
         }
 
-        prev_blockflag = mode_blockflag[mode_number];
+        Bit_uint<1> framing(1);
+        os << framing;
 
-        // OUT: remaining bits of first (input) byte
-        os << remainder;
-      } else {
-        // nothing unusual for first byte
-        int v = _indata.get();
-        if (v < 0) {
-          throw parse_error_str("file truncated");
-        }
-        Bit_uint<8> c(static_cast<unsigned int>(v));
-        os << c;
-      }
-
-      // remainder of packet
-      for (unsigned int i = 1; i < size; ++i) {
-        int v = _indata.get();
-        if (v < 0) {
-          throw parse_error_str("file truncated");
-        }
-        Bit_uint<8> c(static_cast<unsigned int>(v));
-        os << c;
-      }
-
-      offset = next_offset;
-      os.flush_page(false, (offset == _data_offset + _data_size));
+        os.flush_page();
     }
-    if (offset > _data_offset + _data_size) {
-      throw parse_error_str("page truncated");
-    }
-  }
 
-  mode_blockflag.reset();
+    // generate setup packet
+    {
+        VorbisPacketHeader vhead(5);
+
+        os << vhead;
+
+        Packet setup_packet(_indata, _data_offset + static_cast<long>(_setup_packet_offset),
+                            _little_endian, _no_granule);
+
+        _indata.seekg(setup_packet.Offset());
+        if (setup_packet.Granule() != 0)
+        {
+            throw parse_error_str("setup packet granule != 0");
+        }
+        bitstream ss(_indata);
+
+        // codebook count
+        Bit_uint<8> codebook_count_less1;
+        ss >> codebook_count_less1;
+        const unsigned int codebook_count = codebook_count_less1 + 1;
+        os << codebook_count_less1;
+
+        // rebuild codebooks
+        if (_inline_codebooks)
+        {
+            codebook_library cbl;
+
+            for (unsigned int i = 0; i < codebook_count; ++i)
+            {
+                if (_full_setup)
+                {
+                    cbl.copy(ss, os);
+                }
+                else
+                {
+                    cbl.rebuild(ss, 0, os);
+                }
+            }
+        }
+        else
+        {
+            /* external codebooks */
+            codebook_library cbl(_codebooks_data);
+
+            for (unsigned int i = 0; i < codebook_count; ++i)
+            {
+                Bit_uint<10> codebook_id;
+                ss >> codebook_id;
+                try
+                {
+                    cbl.rebuild(codebook_id, os);
+                }
+                catch (const invalid_id& e)
+                {
+                    if (codebook_id == 0x342)
+                    {
+                        Bit_uint<14> codebook_identifier;
+                        ss >> codebook_identifier;
+
+                        if (codebook_identifier == 0x1590)
+                        {
+                            // starts with BCV, probably --full-setup
+                            throw parse_error_str("invalid codebook id 0x342, try --full-setup");
+                        }
+                    }
+
+                    // just an invalid codebook
+                    throw e;
+                }
+            }
+        }
+
+        // Time Domain transforms (placeholder)
+        Bit_uint<6> time_count_less1(0);
+        os << time_count_less1;
+        Bit_uint<16> dummy_time_value(0);
+        os << dummy_time_value;
+
+        if (_full_setup)
+        {
+            while (ss.get_total_bits_read() < setup_packet.Size() * 8u)
+            {
+                Bit_uint<1> bitly;
+                ss >> bitly;
+                os << bitly;
+            }
+        }
+        else
+        {
+            // floor count
+            Bit_uint<6> floor_count_less1;
+            ss >> floor_count_less1;
+            const unsigned int floor_count = floor_count_less1 + 1;
+            os << floor_count_less1;
+
+            // rebuild floors
+            for (unsigned int i = 0; i < floor_count; ++i)
+            {
+                // Always floor type 1
+                Bit_uint<16> floor_type(1);
+                os << floor_type;
+
+                Bit_uint<5> floor1_partitions;
+                ss >> floor1_partitions;
+                os << floor1_partitions;
+
+                std::vector<unsigned int> floor1_partition_class_list(floor1_partitions);
+
+                unsigned int maximum_class = 0;
+                for (unsigned int j = 0; j < floor1_partitions; ++j)
+                {
+                    Bit_uint<4> floor1_partition_class;
+                    ss >> floor1_partition_class;
+                    os << floor1_partition_class;
+
+                    floor1_partition_class_list[j] = floor1_partition_class;
+
+                    if (floor1_partition_class > maximum_class)
+                    {
+                        maximum_class = floor1_partition_class;
+                    }
+                }
+
+                std::vector<unsigned int> floor1_class_dimensions_list(maximum_class + 1);
+
+                for (unsigned int j = 0; j <= maximum_class; ++j)
+                {
+                    Bit_uint<3> class_dimensions_less1;
+                    ss >> class_dimensions_less1;
+                    os << class_dimensions_less1;
+
+                    floor1_class_dimensions_list[j] = class_dimensions_less1 + 1;
+
+                    Bit_uint<2> class_subclasses;
+                    ss >> class_subclasses;
+                    os << class_subclasses;
+
+                    if (class_subclasses != 0)
+                    {
+                        Bit_uint<8> masterbook;
+                        ss >> masterbook;
+                        os << masterbook;
+
+                        if (masterbook >= codebook_count)
+                        {
+                            throw parse_error_str("invalid floor1 masterbook");
+                        }
+                    }
+
+                    for (unsigned int k = 0; k < (1U << class_subclasses); ++k)
+                    {
+                        Bit_uint<8> subclass_book_plus1;
+                        ss >> subclass_book_plus1;
+                        os << subclass_book_plus1;
+
+                        const int subclass_book = static_cast<int>(subclass_book_plus1) - 1;
+                        if (subclass_book >= 0 &&
+                            std::cmp_greater_equal(subclass_book, codebook_count))
+                        {
+                            throw parse_error_str("invalid floor1 subclass book");
+                        }
+                    }
+                }
+
+                Bit_uint<2> floor1_multiplier_less1;
+                ss >> floor1_multiplier_less1;
+                os << floor1_multiplier_less1;
+
+                Bit_uint<4> rangebits;
+                ss >> rangebits;
+                os << rangebits;
+
+                for (unsigned int j = 0; j < floor1_partitions; ++j)
+                {
+                    const unsigned int current_class_number = floor1_partition_class_list[j];
+                    for (unsigned int k = 0; k < floor1_class_dimensions_list[current_class_number];
+                         ++k)
+                    {
+                        Bit_uintv x(rangebits);
+                        ss >> x;
+                        os << x;
+                    }
+                }
+            }
+
+            // residue count
+            Bit_uint<6> residue_count_less1;
+            ss >> residue_count_less1;
+            const unsigned int residue_count = residue_count_less1 + 1;
+            os << residue_count_less1;
+
+            // rebuild residues
+            for (unsigned int i = 0; i < residue_count; ++i)
+            {
+                Bit_uint<2> residue_type;
+                ss >> residue_type;
+                os << Bit_uint<16>(residue_type);
+
+                if (residue_type > 2)
+                {
+                    throw parse_error_str("invalid residue type");
+                }
+
+                Bit_uint<24> residue_begin;
+                Bit_uint<24> residue_end;
+                Bit_uint<24> residue_partition_size_less1;
+                Bit_uint<6> residue_classifications_less1;
+                Bit_uint<8> residue_classbook;
+
+                ss >> residue_begin >> residue_end >> residue_partition_size_less1 >>
+                    residue_classifications_less1 >> residue_classbook;
+                const unsigned int residue_classifications = residue_classifications_less1 + 1;
+                os << residue_begin << residue_end << residue_partition_size_less1
+                   << residue_classifications_less1 << residue_classbook;
+
+                if (residue_classbook >= codebook_count)
+                {
+                    throw parse_error_str("invalid residue classbook");
+                }
+
+                std::vector<unsigned int> residue_cascade(residue_classifications);
+
+                for (unsigned int j = 0; j < residue_classifications; ++j)
+                {
+                    Bit_uint<5> high_bits(0);
+                    Bit_uint<3> low_bits;
+
+                    ss >> low_bits;
+                    os << low_bits;
+
+                    Bit_uint<1> bitflag;
+                    ss >> bitflag;
+                    os << bitflag;
+                    if (bitflag)
+                    {
+                        ss >> high_bits;
+                        os << high_bits;
+                    }
+
+                    residue_cascade[j] = high_bits * 8 + low_bits;
+                }
+
+                for (unsigned int j = 0; j < residue_classifications; ++j)
+                {
+                    for (unsigned int k = 0; k < 8; ++k)
+                    {
+                        if ((residue_cascade[j] & (1 << k)) != 0)
+                        {
+                            Bit_uint<8> residue_book;
+                            ss >> residue_book;
+                            os << residue_book;
+
+                            if (residue_book >= codebook_count)
+                            {
+                                throw parse_error_str("invalid residue book");
+                            }
+                        }
+                    }
+                }
+            }
+
+            // mapping count
+            Bit_uint<6> mapping_count_less1;
+            ss >> mapping_count_less1;
+            const unsigned int mapping_count = mapping_count_less1 + 1;
+            os << mapping_count_less1;
+
+            for (unsigned int i = 0; i < mapping_count; ++i)
+            {
+                // always mapping type 0, the only one
+                Bit_uint<16> mapping_type(0);
+
+                os << mapping_type;
+
+                Bit_uint<1> submaps_flag;
+                ss >> submaps_flag;
+                os << submaps_flag;
+
+                unsigned int submaps = 1;
+                if (submaps_flag)
+                {
+                    Bit_uint<4> submaps_less1;
+
+                    ss >> submaps_less1;
+                    submaps = submaps_less1 + 1;
+                    os << submaps_less1;
+                }
+
+                Bit_uint<1> square_polar_flag;
+                ss >> square_polar_flag;
+                os << square_polar_flag;
+
+                if (square_polar_flag)
+                {
+                    Bit_uint<8> coupling_steps_less1;
+                    ss >> coupling_steps_less1;
+                    const unsigned int coupling_steps = coupling_steps_less1 + 1;
+                    os << coupling_steps_less1;
+
+                    for (unsigned int j = 0; j < coupling_steps; ++j)
+                    {
+                        Bit_uintv magnitude(ilog(_channels - 1));
+                        Bit_uintv angle(ilog(_channels - 1));
+
+                        ss >> magnitude >> angle;
+                        os << magnitude << angle;
+
+                        if (angle == magnitude || magnitude >= _channels || angle >= _channels)
+                        {
+                            throw parse_error_str("invalid coupling");
+                        }
+                    }
+                }
+
+                // a rare reserved field not removed by Ak!
+                Bit_uint<2> mapping_reserved;
+                ss >> mapping_reserved;
+                os << mapping_reserved;
+                if (mapping_reserved != 0)
+                {
+                    throw parse_error_str("mapping reserved field nonzero");
+                }
+
+                if (submaps > 1)
+                {
+                    for (unsigned int j = 0; j < _channels; ++j)
+                    {
+                        Bit_uint<4> mapping_mux;
+                        ss >> mapping_mux;
+                        os << mapping_mux;
+
+                        if (mapping_mux >= submaps)
+                        {
+                            throw parse_error_str("mapping_mux >= submaps");
+                        }
+                    }
+                }
+
+                for (unsigned int j = 0; j < submaps; ++j)
+                {
+                    // Another! Unused time domain transform configuration placeholder!
+                    Bit_uint<8> time_config;
+                    ss >> time_config;
+                    os << time_config;
+
+                    Bit_uint<8> floor_number;
+                    ss >> floor_number;
+                    os << floor_number;
+                    if (floor_number >= floor_count)
+                    {
+                        throw parse_error_str("invalid floor mapping");
+                    }
+
+                    Bit_uint<8> residue_number;
+                    ss >> residue_number;
+                    os << residue_number;
+                    if (residue_number >= residue_count)
+                    {
+                        throw parse_error_str("invalid residue mapping");
+                    }
+                }
+            }
+
+            // mode count
+            Bit_uint<6> mode_count_less1;
+            ss >> mode_count_less1;
+            const unsigned int mode_count = mode_count_less1 + 1;
+            os << mode_count_less1;
+
+            mode_blockflag = std::make_unique<bool[]>(mode_count);
+            mode_bits = ilog(mode_count - 1);
+
+            for (unsigned int i = 0; i < mode_count; ++i)
+            {
+                Bit_uint<1> block_flag;
+                ss >> block_flag;
+                os << block_flag;
+
+                mode_blockflag[i] = (block_flag != 0);
+
+                // only 0 valid for windowtype and transformtype
+                Bit_uint<16> windowtype(0);
+                Bit_uint<16> transformtype(0);
+                os << windowtype << transformtype;
+
+                Bit_uint<8> mapping;
+                ss >> mapping;
+                os << mapping;
+                if (mapping >= mapping_count)
+                {
+                    throw parse_error_str("invalid mode mapping");
+                }
+            }
+
+            Bit_uint<1> framing(1);
+            os << framing;
+        }
+
+        os.flush_page();
+
+        if ((ss.get_total_bits_read() + 7) / 8 != setup_packet.Size())
+        {
+            throw parse_error_str("didn't read exactly setup packet");
+        }
+
+        if (setup_packet.NextOffset() !=
+            _data_offset + static_cast<long>(_first_audio_packet_offset))
+        {
+            throw parse_error_str("first audio packet doesn't follow setup packet");
+        }
+    }
 }
 
-void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os) {
-  // Header page triad
-  {
-    long offset = _data_offset + static_cast<long>(_setup_packet_offset);
+void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
+{
+    bitoggstream os(oss);
 
-    // copy information packet
+    std::unique_ptr<bool[]> mode_blockflag;
+    int mode_bits = 0;
+    bool prev_blockflag = false;
+
+    if (_header_triad_present)
     {
-      Packet8 information_packet(_indata, offset, _little_endian);
-      const uint32_t size = information_packet.Size();
-
-      if (information_packet.Granule() != 0) {
-        throw parse_error_str("information packet granule != 0");
-      }
-
-      _indata.seekg(information_packet.Offset());
-
-      Bit_uint<8> c(static_cast<unsigned int>(_indata.get()));
-      if (c != 1) {
-        throw parse_error_str("wrong type for information packet");
-      }
-
-      os << c;
-
-      for (unsigned int i = 1; i < size; ++i) {
-        c = static_cast<unsigned int>(_indata.get());
-        os << c;
-      }
-
-      // identification packet on its own page
-      os.flush_page();
-
-      offset = information_packet.NextOffset();
+        generate_ogg_header_with_triad(os);
     }
-
-    // copy comment packet
+    else
     {
-      Packet8 comment_packet(_indata, offset, _little_endian);
-      const auto size = static_cast<uint16_t>(comment_packet.Size());
-
-      if (comment_packet.Granule() != 0) {
-        throw parse_error_str("comment packet granule != 0");
-      }
-
-      _indata.seekg(comment_packet.Offset());
-
-      Bit_uint<8> c(static_cast<unsigned int>(_indata.get()));
-      if (c != 3) {
-        throw parse_error_str("wrong type for comment packet");
-      }
-
-      os << c;
-
-      for (unsigned int i = 1; i < size; ++i) {
-        c = static_cast<unsigned int>(_indata.get());
-        os << c;
-      }
-
-      // identification packet on its own page
-      os.flush_page();
-
-      offset = comment_packet.NextOffset();
+        generate_ogg_header(os, mode_blockflag, mode_bits);
     }
 
-    // copy setup packet
+    // Audio pages
     {
-      Packet8 setup_packet(_indata, offset, _little_endian);
+        long offset = _data_offset + static_cast<long>(_first_audio_packet_offset);
 
-      _indata.seekg(setup_packet.Offset());
-      if (setup_packet.Granule() != 0) {
-        throw parse_error_str("setup packet granule != 0");
-      }
-      bitstream ss(_indata);
+        while (offset < _data_offset + _data_size)
+        {
+            uint32_t size = 0;
+            uint32_t granule = 0;
+            long packet_header_size = 0;
+            long packet_payload_offset = 0;
+            long next_offset = 0;
 
-      Bit_uint<8> c;
-      ss >> c;
+            if (_old_packet_headers)
+            {
+                Packet8 audio_packet(_indata, offset, _little_endian);
+                packet_header_size = audio_packet.HeaderSize();
+                size = audio_packet.Size();
+                packet_payload_offset = audio_packet.Offset();
+                granule = audio_packet.Granule();
+                next_offset = audio_packet.NextOffset();
+            }
+            else
+            {
+                Packet audio_packet(_indata, offset, _little_endian, _no_granule);
+                packet_header_size = audio_packet.HeaderSize();
+                size = audio_packet.Size();
+                packet_payload_offset = audio_packet.Offset();
+                granule = audio_packet.Granule();
+                next_offset = audio_packet.NextOffset();
+            }
 
-      // type
-      if (c != 5) {
-        throw parse_error_str("wrong type for setup packet");
-      }
-      os << c;
+            if (offset + packet_header_size > _data_offset + _data_size)
+            {
+                throw parse_error_str("page header truncated");
+            }
 
-      // 'vorbis'
-      for (unsigned int i = 0; i < 6; ++i) {
-        ss >> c;
-        os << c;
-      }
+            offset = packet_payload_offset;
 
-      // codebook count
-      Bit_uint<8> codebook_count_less1;
-      ss >> codebook_count_less1;
-      const unsigned int codebook_count = codebook_count_less1 + 1;
-      os << codebook_count_less1;
+            _indata.seekg(offset);
+            // HACK: don't know what to do here
+            if (granule == UINT32_C(0xFFFFFFFF))
+            {
+                os.set_granule(1);
+            }
+            else
+            {
+                os.set_granule(granule);
+            }
 
-      codebook_library cbl;
+            // first byte
+            if (_mod_packets)
+            {
+                // need to rebuild packet type and window info
 
-      // rebuild codebooks
-      for (unsigned int i = 0; i < codebook_count; ++i) {
-        cbl.copy(ss, os);
-      }
+                if (!mode_blockflag)
+                {
+                    throw parse_error_str("didn't load mode_blockflag");
+                }
 
-      while (ss.get_total_bits_read() < setup_packet.Size() * 8u) {
-        Bit_uint<1> bitly;
-        ss >> bitly;
-        os << bitly;
-      }
+                // OUT: 1 bit packet type (0 == audio)
+                Bit_uint<1> packet_type(0);
+                os << packet_type;
 
-      os.flush_page();
+                Bit_uintv mode_number(mode_bits);
+                Bit_uintv remainder(8 - mode_bits);
 
-      offset = setup_packet.NextOffset();
+                {
+                    // collect mode number from first byte
+                    bitstream ss(_indata);
+
+                    // IN/OUT: N bit mode number (max 6 bits)
+                    ss >> mode_number;
+                    os << mode_number;
+
+                    // IN: remaining bits of first (input) byte
+                    ss >> remainder;
+                }
+
+                if (mode_blockflag[mode_number])
+                {
+                    // long window, peek at next frame
+
+                    _indata.seekg(next_offset);
+                    bool next_blockflag = false;
+                    if (next_offset + packet_header_size <= _data_offset + _data_size)
+                    {
+
+                        // mod_packets always goes with 6-byte headers
+                        Packet audio_packet(_indata, next_offset, _little_endian, _no_granule);
+                        const uint32_t next_packet_size = audio_packet.Size();
+                        if (next_packet_size > 0)
+                        {
+                            _indata.seekg(audio_packet.Offset());
+
+                            bitstream ss(_indata);
+                            Bit_uintv next_mode_number(mode_bits);
+
+                            ss >> next_mode_number;
+
+                            next_blockflag = mode_blockflag[next_mode_number];
+                        }
+                    }
+
+                    // OUT: previous window type bit
+                    Bit_uint<1> prev_window_type(prev_blockflag ? 1 : 0);
+                    os << prev_window_type;
+
+                    // OUT: next window type bit
+                    Bit_uint<1> next_window_type(next_blockflag ? 1 : 0);
+                    os << next_window_type;
+
+                    // fix seek for rest of stream
+                    _indata.seekg(offset + 1);
+                }
+
+                prev_blockflag = mode_blockflag[mode_number];
+
+                // OUT: remaining bits of first (input) byte
+                os << remainder;
+            }
+            else
+            {
+                // nothing unusual for first byte
+                int v = _indata.get();
+                if (v < 0)
+                {
+                    throw parse_error_str("file truncated");
+                }
+                Bit_uint<8> c(static_cast<unsigned int>(v));
+                os << c;
+            }
+
+            // remainder of packet
+            for (unsigned int i = 1; i < size; ++i)
+            {
+                int v = _indata.get();
+                if (v < 0)
+                {
+                    throw parse_error_str("file truncated");
+                }
+                Bit_uint<8> c(static_cast<unsigned int>(v));
+                os << c;
+            }
+
+            offset = next_offset;
+            os.flush_page(false, (offset == _data_offset + _data_size));
+        }
+        if (offset > _data_offset + _data_size)
+        {
+            throw parse_error_str("page truncated");
+        }
     }
 
-    if (offset != _data_offset + static_cast<long>(_first_audio_packet_offset)) {
-      throw parse_error_str("first audio packet doesn't follow setup packet");
+    mode_blockflag.reset();
+}
+
+void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os)
+{
+    // Header page triad
+    {
+        long offset = _data_offset + static_cast<long>(_setup_packet_offset);
+
+        // copy information packet
+        {
+            Packet8 information_packet(_indata, offset, _little_endian);
+            const uint32_t size = information_packet.Size();
+
+            if (information_packet.Granule() != 0)
+            {
+                throw parse_error_str("information packet granule != 0");
+            }
+
+            _indata.seekg(information_packet.Offset());
+
+            Bit_uint<8> c(static_cast<unsigned int>(_indata.get()));
+            if (c != 1)
+            {
+                throw parse_error_str("wrong type for information packet");
+            }
+
+            os << c;
+
+            for (unsigned int i = 1; i < size; ++i)
+            {
+                c = static_cast<unsigned int>(_indata.get());
+                os << c;
+            }
+
+            // identification packet on its own page
+            os.flush_page();
+
+            offset = information_packet.NextOffset();
+        }
+
+        // copy comment packet
+        {
+            Packet8 comment_packet(_indata, offset, _little_endian);
+            const auto size = static_cast<uint16_t>(comment_packet.Size());
+
+            if (comment_packet.Granule() != 0)
+            {
+                throw parse_error_str("comment packet granule != 0");
+            }
+
+            _indata.seekg(comment_packet.Offset());
+
+            Bit_uint<8> c(static_cast<unsigned int>(_indata.get()));
+            if (c != 3)
+            {
+                throw parse_error_str("wrong type for comment packet");
+            }
+
+            os << c;
+
+            for (unsigned int i = 1; i < size; ++i)
+            {
+                c = static_cast<unsigned int>(_indata.get());
+                os << c;
+            }
+
+            // identification packet on its own page
+            os.flush_page();
+
+            offset = comment_packet.NextOffset();
+        }
+
+        // copy setup packet
+        {
+            Packet8 setup_packet(_indata, offset, _little_endian);
+
+            _indata.seekg(setup_packet.Offset());
+            if (setup_packet.Granule() != 0)
+            {
+                throw parse_error_str("setup packet granule != 0");
+            }
+            bitstream ss(_indata);
+
+            Bit_uint<8> c;
+            ss >> c;
+
+            // type
+            if (c != 5)
+            {
+                throw parse_error_str("wrong type for setup packet");
+            }
+            os << c;
+
+            // 'vorbis'
+            for (unsigned int i = 0; i < 6; ++i)
+            {
+                ss >> c;
+                os << c;
+            }
+
+            // codebook count
+            Bit_uint<8> codebook_count_less1;
+            ss >> codebook_count_less1;
+            const unsigned int codebook_count = codebook_count_less1 + 1;
+            os << codebook_count_less1;
+
+            codebook_library cbl;
+
+            // rebuild codebooks
+            for (unsigned int i = 0; i < codebook_count; ++i)
+            {
+                cbl.copy(ss, os);
+            }
+
+            while (ss.get_total_bits_read() < setup_packet.Size() * 8u)
+            {
+                Bit_uint<1> bitly;
+                ss >> bitly;
+                os << bitly;
+            }
+
+            os.flush_page();
+
+            offset = setup_packet.NextOffset();
+        }
+
+        if (offset != _data_offset + static_cast<long>(_first_audio_packet_offset))
+        {
+            throw parse_error_str("first audio packet doesn't follow setup packet");
+        }
     }
-  }
 }
 
 } // namespace ww2ogg

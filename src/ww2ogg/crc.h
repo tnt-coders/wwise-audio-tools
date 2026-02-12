@@ -3,10 +3,11 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif // __cplusplus
 
-uint32_t checksum(unsigned char *data, int bytes);
+    uint32_t checksum(unsigned char* data, int bytes);
 
 #ifdef __cplusplus
 }

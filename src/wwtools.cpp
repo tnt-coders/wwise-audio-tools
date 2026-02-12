@@ -17,42 +17,47 @@
 #include "ww2ogg/ww2ogg.h"
 #include "wwtools/wwtools.h"
 
-namespace wwtools {
+namespace wwtools
+{
 
-[[nodiscard]] std::string wem_to_ogg(const std::string_view indata) {
-  std::stringstream wem_out;
-  std::stringstream revorb_out;
+[[nodiscard]] std::string wem_to_ogg(const std::string_view indata)
+{
+    std::stringstream wem_out;
+    std::stringstream revorb_out;
 
-  // Convert WEM to intermediate OGG format
-  ww2ogg::ww2ogg(std::string{indata}, wem_out);
+    // Convert WEM to intermediate OGG format
+    ww2ogg::ww2ogg(std::string{indata}, wem_out);
 
-  // Fix granule positions in the OGG stream
-  if (!revorb::Revorb(wem_out, revorb_out)) {
-    throw std::runtime_error("revorb failed to fix OGG granule positions");
-  }
+    // Fix granule positions in the OGG stream
+    if (!revorb::Revorb(wem_out, revorb_out))
+    {
+        throw std::runtime_error("revorb failed to fix OGG granule positions");
+    }
 
-  return revorb_out.str();
+    return revorb_out.str();
 }
 
-[[nodiscard]] std::vector<BnkWem> bnk_extract(const std::string_view indata) {
-  const auto ids = bnk::get_wem_ids(indata);
-  const auto streamed_ids = bnk::get_streamed_wem_ids(indata);
+[[nodiscard]] std::vector<BnkWem> bnk_extract(const std::string_view indata)
+{
+    const auto ids = bnk::get_wem_ids(indata);
+    const auto streamed_ids = bnk::get_streamed_wem_ids(indata);
 
-  std::vector<std::string> raw_wems;
-  bnk::extract(indata, raw_wems);
+    std::vector<std::string> raw_wems;
+    bnk::extract(indata, raw_wems);
 
-  std::vector<BnkWem> result;
-  result.reserve(ids.size());
+    std::vector<BnkWem> result;
+    result.reserve(ids.size());
 
-  for (std::size_t i = 0; i < ids.size(); ++i) {
-    result.push_back({
-      .id = ids[i],
-      .streamed = std::ranges::contains(streamed_ids, ids[i]),
-      .data = (i < raw_wems.size()) ? std::move(raw_wems[i]) : std::string{},
-    });
-  }
+    for (std::size_t i = 0; i < ids.size(); ++i)
+    {
+        result.push_back({
+            .id = ids[i],
+            .streamed = std::ranges::contains(streamed_ids, ids[i]),
+            .data = (i < raw_wems.size()) ? std::move(raw_wems[i]) : std::string{},
+        });
+    }
 
-  return result;
+    return result;
 }
 
 } // namespace wwtools

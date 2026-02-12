@@ -12,7 +12,8 @@
 #include <istream>
 #include <sstream>
 
-namespace revorb {
+namespace revorb
+{
 
 /**
  * @brief Recompute granule positions in an OGG Vorbis stream

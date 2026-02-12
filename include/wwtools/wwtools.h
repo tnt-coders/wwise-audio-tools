@@ -21,15 +21,17 @@
  * @brief parent namespace for specific file type helper functions
  *
  */
-namespace wwtools {
+namespace wwtools
+{
 
 /**
  * @brief Information about a WEM referenced by a BNK soundbank
  */
-struct BnkWem {
-  std::uint32_t id;     ///< WEM ID
-  bool streamed;        ///< true if the WEM is streamed (external .wem file needed)
-  std::string data;     ///< Embedded WEM data (full file if !streamed, prefetch stub if streamed)
+struct BnkWem
+{
+    std::uint32_t id; ///< WEM ID
+    bool streamed;    ///< true if the WEM is streamed (external .wem file needed)
+    std::string data; ///< Embedded WEM data (full file if !streamed, prefetch stub if streamed)
 };
 
 /**

@@ -21,7 +21,8 @@
  * @brief contains helper functions for Wwise Soundbank files
  *
  */
-namespace wwtools::bnk {
+namespace wwtools::bnk
+{
 
 /**
  * @brief Extract BNK to array of WEMS
@@ -46,8 +47,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param in_event_id the input event ID
  * @return a printable info string
  */
-[[nodiscard]] std::string get_event_id_info(std::string_view indata,
-                                             std::string_view in_event_id);
+[[nodiscard]] std::string get_event_id_info(std::string_view indata, std::string_view in_event_id);
 
 /**
  * @brief get the ID of a WEM at an index
@@ -56,8 +56,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param index the index to get the ID from
  * @return the ID as a string
  */
-[[nodiscard]] std::string get_wem_id_at_index(std::string_view indata,
-                                               std::size_t index);
+[[nodiscard]] std::string get_wem_id_at_index(std::string_view indata, std::size_t index);
 
 /**
  * @brief get the event name from an event ID
