@@ -9,4 +9,5 @@ repos:
     hooks:
       - id: clang-format
         args: [--style=file:project-config/.clang-format]
+        # Exclude generated files
         exclude: '^src/kaitai/structs/'
