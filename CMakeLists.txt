@@ -1,19 +1,16 @@
 cmake_minimum_required(VERSION 3.24)
 
-# Required for MSVC to cooperate with Conan 2.X+
-cmake_policy(SET CMP0091 NEW)
-
 project(
     WwiseAudioTools
     VERSION 1.0.0
     LANGUAGES C CXX)
 
+# Add project configuration
+add_subdirectory(project-config)
+
 option(BUILD_CLI "Build command-line interface" ON)
 option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
-
-# Add project configuration
-add_subdirectory(project-config)
 
 find_package(PackageBuilder REQUIRED)
 find_package(Catch2 REQUIRED)
