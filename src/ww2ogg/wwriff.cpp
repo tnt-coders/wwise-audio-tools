@@ -28,8 +28,8 @@ namespace ww2ogg
 class Packet
 {
     long m_offset;
-    uint16_t _size{0};
-    uint32_t _absolute_granule{0};
+    uint16_t m_size{0};
+    uint32_t m_absolute_granule{0};
     bool m_no_granule;
 
   public:
@@ -41,18 +41,18 @@ class Packet
 
         if (little_endian)
         {
-            _size = read_16_le(i);
+            m_size = read_16_le(i);
             if (!m_no_granule)
             {
-                _absolute_granule = read_32_le(i);
+                m_absolute_granule = read_32_le(i);
             }
         }
         else
         {
-            _size = read_16_be(i);
+            m_size = read_16_be(i);
             if (!m_no_granule)
             {
-                _absolute_granule = read_32_be(i);
+                m_absolute_granule = read_32_be(i);
             }
         }
     }
@@ -67,15 +67,15 @@ class Packet
     }
     [[nodiscard]] uint16_t Size() const
     {
-        return _size;
+        return m_size;
     }
     [[nodiscard]] uint32_t Granule() const
     {
-        return _absolute_granule;
+        return m_absolute_granule;
     }
     [[nodiscard]] long NextOffset() const
     {
-        return m_offset + HeaderSize() + _size;
+        return m_offset + HeaderSize() + m_size;
     }
 };
 
@@ -85,8 +85,8 @@ class Packet
 class Packet8
 {
     long m_offset;
-    uint32_t _size{0};
-    uint32_t _absolute_granule{0};
+    uint32_t m_size{0};
+    uint32_t m_absolute_granule{0};
 
   public:
     Packet8(std::stringstream& i, const long o, const bool little_endian) : m_offset(o)
@@ -95,13 +95,13 @@ class Packet8
 
         if (little_endian)
         {
-            _size = read_32_le(i);
-            _absolute_granule = read_32_le(i);
+            m_size = read_32_le(i);
+            m_absolute_granule = read_32_le(i);
         }
         else
         {
-            _size = read_32_be(i);
-            _absolute_granule = read_32_be(i);
+            m_size = read_32_be(i);
+            m_absolute_granule = read_32_be(i);
         }
     }
 
@@ -115,15 +115,15 @@ class Packet8
     }
     [[nodiscard]] uint32_t Size() const
     {
-        return _size;
+        return m_size;
     }
     [[nodiscard]] uint32_t Granule() const
     {
-        return _absolute_granule;
+        return m_absolute_granule;
     }
     [[nodiscard]] long NextOffset() const
     {
-        return m_offset + HeaderSize() + static_cast<long>(_size);
+        return m_offset + HeaderSize() + static_cast<long>(m_size);
     }
 };
 

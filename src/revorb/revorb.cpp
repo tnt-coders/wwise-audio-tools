@@ -35,7 +35,7 @@ constexpr int g_k_buffer_size = 4096;
 class OggStreamGuard
 {
     ogg_stream_state* m_stream;
-    bool initialized_{false};
+    bool m_initialized{false};
 
   public:
     explicit OggStreamGuard(ogg_stream_state* const stream) : m_stream(stream)
@@ -45,15 +45,15 @@ class OggStreamGuard
     void Init(const int serialno)
     {
         ogg_stream_init(m_stream, serialno);
-        initialized_ = true;
+        m_initialized = true;
     }
 
     void Clear()
     {
-        if (initialized_)
+        if (m_initialized)
         {
             ogg_stream_clear(m_stream);
-            initialized_ = false;
+            m_initialized = false;
         }
     }
 
@@ -75,7 +75,7 @@ class OggStreamGuard
 class VorbisCommentGuard
 {
     vorbis_comment* m_vc;
-    bool initialized_{false};
+    bool m_initialized{false};
 
   public:
     explicit VorbisCommentGuard(vorbis_comment* const vc) : m_vc(vc)
@@ -85,15 +85,15 @@ class VorbisCommentGuard
     void Init()
     {
         vorbis_comment_init(m_vc);
-        initialized_ = true;
+        m_initialized = true;
     }
 
     void Clear()
     {
-        if (initialized_)
+        if (m_initialized)
         {
             vorbis_comment_clear(m_vc);
-            initialized_ = false;
+            m_initialized = false;
         }
     }
 
