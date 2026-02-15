@@ -4,7 +4,6 @@
  * @note Modernized to C++23
  */
 
-#define __STDC_CONSTANT_MACROS
 #include <sstream>
 #include <string>
 

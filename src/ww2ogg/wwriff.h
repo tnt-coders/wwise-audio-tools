@@ -12,6 +12,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "bitstream.h"
 
@@ -97,8 +98,7 @@ class Wwise_RIFF_Vorbis
     [[nodiscard]] std::string get_info();
 
     void generate_ogg(std::ostream& os);
-    void generate_ogg_header(bitoggstream& os, std::unique_ptr<bool[]>& mode_blockflag,
-                             int& mode_bits);
+    void generate_ogg_header(bitoggstream& os, std::vector<bool>& mode_blockflag, int& mode_bits);
     void generate_ogg_header_with_triad(bitoggstream& os);
 };
 

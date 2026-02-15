@@ -142,7 +142,9 @@ struct ParsedFlags
     return result;
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(const int argc, char* argv[])
+try
 {
     // Create span for modern iteration
     std::span args(argv, static_cast<std::size_t>(argc));
@@ -324,8 +326,9 @@ int main(const int argc, char* argv[])
         for (std::size_t i = 0; i < wems.size(); ++i)
         {
             const auto wem_id_str = std::to_string(wems[i].id);
-            const auto out_name =
-                (wems.size() == 1) ? bnk_stem + ".ogg" : bnk_stem + "_" + wem_id_str + ".ogg";
+            const auto out_name = (wems.size() == 1)
+                                      ? std::format("{}.ogg", bnk_stem)
+                                      : std::format("{}_{}.ogg", bnk_stem, wem_id_str);
             const auto outpath = bnk_dir / out_name;
 
             if (!wems[i].streamed)
@@ -383,5 +386,10 @@ int main(const int argc, char* argv[])
 
     // Unknown command
     PrintHelp("Unknown command!", args[0]);
+    return EXIT_FAILURE;
+}
+catch (const std::exception& e)
+{
+    std::println(stderr, "Fatal error: {}", e.what());
     return EXIT_FAILURE;
 }

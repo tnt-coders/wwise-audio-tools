@@ -4,7 +4,6 @@
  * @note Modernized to C++23
  */
 
-#define __STDC_CONSTANT_MACROS
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -148,7 +147,7 @@ class VorbisPacketHeader
 
         for (unsigned int i = 0; i < 6; ++i)
         {
-            Bit_uint<8> c(static_cast<unsigned int>(g_vorbis_str[i]));
+            Bit_uint<8> c(static_cast<unsigned int>(g_vorbis_str.at(i)));
             bstream << c;
         }
 
@@ -168,14 +167,15 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
 
     // check RIFF header
     {
-        unsigned char riff_head[4];
-        unsigned char wave_head[4];
+        std::array<unsigned char, 4> riff_head{};
+        std::array<unsigned char, 4> wave_head{};
         _indata.seekg(0, std::ios::beg);
-        _indata.read(reinterpret_cast<char*>(riff_head), 4);
+        _indata.read(reinterpret_cast<char*>(riff_head.data()),
+                     4); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
-        if (std::memcmp(&riff_head[0], "RIFX", 4) != 0)
+        if (std::memcmp(riff_head.data(), "RIFX", 4) != 0)
         {
-            if (std::memcmp(&riff_head[0], "RIFF", 4) != 0)
+            if (std::memcmp(riff_head.data(), "RIFF", 4) != 0)
             {
                 throw parse_error_str("missing RIFF");
             }
@@ -210,8 +210,9 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
                                   " that requires the full .wem file)");
         }
 
-        _indata.read(reinterpret_cast<char*>(wave_head), 4);
-        if (std::memcmp(&wave_head[0], "WAVE", 4) != 0)
+        _indata.read(reinterpret_cast<char*>(wave_head.data()),
+                     4); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        if (std::memcmp(wave_head.data(), "WAVE", 4) != 0)
         {
             throw parse_error_str("missing WAVE");
         }
@@ -228,36 +229,36 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
             throw parse_error_str("chunk header truncated");
         }
 
-        char chunk_type[4];
-        _indata.read(chunk_type, 4);
+        std::array<char, 4> chunk_type{};
+        _indata.read(chunk_type.data(), 4);
         const uint32_t chunk_size = _read_32(_indata);
 
-        if (std::memcmp(chunk_type, "fmt ", 4) == 0)
+        if (std::memcmp(chunk_type.data(), "fmt ", 4) == 0)
         {
             _fmt_offset = chunk_offset + 8;
             _fmt_size = static_cast<long>(chunk_size);
         }
-        else if (std::memcmp(chunk_type, "cue ", 4) == 0)
+        else if (std::memcmp(chunk_type.data(), "cue ", 4) == 0)
         {
             _cue_offset = chunk_offset + 8;
             _cue_size = static_cast<long>(chunk_size);
         }
-        else if (std::memcmp(chunk_type, "LIST", 4) == 0)
+        else if (std::memcmp(chunk_type.data(), "LIST", 4) == 0)
         {
             _LIST_offset = chunk_offset + 8;
             _LIST_size = static_cast<long>(chunk_size);
         }
-        else if (std::memcmp(chunk_type, "smpl", 4) == 0)
+        else if (std::memcmp(chunk_type.data(), "smpl", 4) == 0)
         {
             _smpl_offset = chunk_offset + 8;
             _smpl_size = static_cast<long>(chunk_size);
         }
-        else if (std::memcmp(chunk_type, "vorb", 4) == 0)
+        else if (std::memcmp(chunk_type.data(), "vorb", 4) == 0)
         {
             _vorb_offset = chunk_offset + 8;
             _vorb_size = static_cast<long>(chunk_size);
         }
-        else if (std::memcmp(chunk_type, "data", 4) == 0)
+        else if (std::memcmp(chunk_type.data(), "data", 4) == 0)
         {
             _data_offset = chunk_offset + 8;
             _data_size = static_cast<long>(chunk_size);
@@ -327,11 +328,11 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
 
     if (_fmt_size == 0x28)
     {
-        char whoknowsbuf[16];
-        const unsigned char whoknowsbuf_check[16] = {1,    0, 0, 0,    0, 0,    0x10, 0,
-                                                     0x80, 0, 0, 0xAA, 0, 0x38, 0x9b, 0x71};
-        _indata.read(whoknowsbuf, 16);
-        if (std::memcmp(whoknowsbuf, whoknowsbuf_check, 16) != 0)
+        std::array<char, 16> whoknowsbuf{};
+        const std::array<unsigned char, 16> whoknowsbuf_check = {
+            1, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xAA, 0, 0x38, 0x9b, 0x71};
+        _indata.read(whoknowsbuf.data(), 16);
+        if (std::memcmp(whoknowsbuf.data(), whoknowsbuf_check.data(), 16) != 0)
         {
             throw parse_error_str("expected signature in extra fmt?");
         }
@@ -423,6 +424,9 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
     case 0x34:
         _indata.seekg(_vorb_offset + 0x2C, std::ios::beg);
         break;
+
+    default:
+        break;
     }
 
     switch (_vorb_size)
@@ -441,6 +445,9 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
         _uid = _read_32(_indata);
         _blocksize_0_pow = static_cast<uint8_t>(_indata.get());
         _blocksize_1_pow = static_cast<uint8_t>(_indata.get());
+        break;
+
+    default:
         break;
     }
 
@@ -466,6 +473,7 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
     // this is clearly just the channel layout
     switch (_subtype)
     {
+    // NOLINTNEXTLINE(bugprone-branch-clone)
     case 4:    /* 1 channel, no seek table */
     case 3:    /* 2 channels */
     case 0x33: /* 4 channels */
@@ -546,8 +554,8 @@ std::string Wwise_RIFF_Vorbis::get_info()
     return info_ss.str();
 }
 
-void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
-                                            std::unique_ptr<bool[]>& mode_blockflag, int& mode_bits)
+void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os, std::vector<bool>& mode_blockflag,
+                                            int& mode_bits)
 {
     // generate identification packet
     {
@@ -696,7 +704,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
                 ss >> codebook_id;
                 try
                 {
-                    cbl.rebuild(codebook_id, os);
+                    cbl.rebuild(static_cast<int>(codebook_id), os);
                 }
                 catch (const invalid_id& e)
                 {
@@ -1015,7 +1023,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os,
             const unsigned int mode_count = mode_count_less1 + 1;
             os << mode_count_less1;
 
-            mode_blockflag = std::make_unique<bool[]>(mode_count);
+            mode_blockflag.resize(mode_count);
             mode_bits = ilog(mode_count - 1);
 
             for (unsigned int i = 0; i < mode_count; ++i)
@@ -1063,7 +1071,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
 {
     bitoggstream os(oss);
 
-    std::unique_ptr<bool[]> mode_blockflag;
+    std::vector<bool> mode_blockflag;
     int mode_bits = 0;
     bool prev_blockflag = false;
 
@@ -1130,7 +1138,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
             {
                 // need to rebuild packet type and window info
 
-                if (!mode_blockflag)
+                if (mode_blockflag.empty())
                 {
                     throw parse_error_str("didn't load mode_blockflag");
                 }
@@ -1229,7 +1237,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
         }
     }
 
-    mode_blockflag.reset();
+    mode_blockflag.clear();
 }
 
 void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os)

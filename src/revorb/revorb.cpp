@@ -210,8 +210,10 @@ namespace revorb
 
     while (ogg_stream_flush(os, &page) != 0)
     {
-        outdata.write(reinterpret_cast<char*>(page.header), page.header_len);
-        outdata.write(reinterpret_cast<char*>(page.body), page.body_len);
+        outdata.write(reinterpret_cast<char*>(page.header),
+                      page.header_len); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        outdata.write(reinterpret_cast<char*>(page.body),
+                      page.body_len); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     }
 
     return true;
@@ -306,8 +308,10 @@ namespace revorb
                             ogg_page opage{};
                             while (ogg_stream_pageout(&stream_out, &opage) != 0)
                             {
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                                 outdata.write(reinterpret_cast<char*>(opage.header),
                                               opage.header_len);
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                                 outdata.write(reinterpret_cast<char*>(opage.body), opage.body_len);
                             }
                         }
@@ -326,8 +330,12 @@ namespace revorb
                 ogg_page opage{};
                 while (ogg_stream_flush(&stream_out, &opage) != 0)
                 {
-                    outdata.write(reinterpret_cast<char*>(opage.header), opage.header_len);
-                    outdata.write(reinterpret_cast<char*>(opage.body), opage.body_len);
+                    outdata.write(
+                        reinterpret_cast<char*>(opage.header),
+                        opage.header_len); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                    outdata.write(
+                        reinterpret_cast<char*>(opage.body),
+                        opage.body_len); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                 }
                 ogg_stream_clear(&stream_in);
                 break;

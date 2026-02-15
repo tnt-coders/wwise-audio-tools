@@ -28,8 +28,9 @@ namespace ww2ogg
  * @throws ww2ogg::file_open_error on file access failure
  */
 void ww2ogg(const std::string& indata, std::ostream& outdata,
-            unsigned char* codebooks_data = packed_codebooks_bin, bool inline_codebooks = false,
-            bool full_setup = false, ForcePacketFormat force_packet_format = kNoForcePacketFormat);
+            const unsigned char* codebooks_data = packed_codebooks_bin,
+            bool inline_codebooks = false, bool full_setup = false,
+            ForcePacketFormat force_packet_format = kNoForcePacketFormat);
 
 /**
  * @brief Get information about a WEM file
@@ -42,7 +43,7 @@ void ww2ogg(const std::string& indata, std::ostream& outdata,
  * @return Information string about the WEM file
  */
 [[nodiscard]] std::string wem_info(const std::string& indata,
-                                   unsigned char* codebooks_data = packed_codebooks_bin,
+                                   const unsigned char* codebooks_data = packed_codebooks_bin,
                                    bool inline_codebooks = false, bool full_setup = false,
                                    ForcePacketFormat force_packet_format = kNoForcePacketFormat);
 

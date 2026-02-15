@@ -76,7 +76,8 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     std::stringstream ss;
     ss.write(sound_structure.c_str(), static_cast<std::streamsize>(sound_structure.size()));
     ss.seekg(static_cast<std::streamoff>(parent_id_offset));
-    ss.read(reinterpret_cast<char*>(&parent_id), 4);
+    ss.read(reinterpret_cast<char*>(&parent_id),
+            4); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
     return parent_id;
 }

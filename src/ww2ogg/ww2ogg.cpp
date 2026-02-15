@@ -4,7 +4,6 @@
  * @note Modernized to C++23
  */
 
-#define __STDC_CONSTANT_MACROS
 #include <ostream>
 #include <string>
 
@@ -16,11 +15,12 @@
 namespace ww2ogg
 {
 
-void ww2ogg(const std::string& indata, std::ostream& outdata, unsigned char* const codebooks_data,
-            const bool inline_codebooks, const bool full_setup,
-            const ForcePacketFormat force_packet_format)
+void ww2ogg(const std::string& indata, std::ostream& outdata,
+            const unsigned char* const codebooks_data, const bool inline_codebooks,
+            const bool full_setup, const ForcePacketFormat force_packet_format)
 {
-    const std::string codebooks_data_s(reinterpret_cast<char*>(codebooks_data),
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    const std::string codebooks_data_s(reinterpret_cast<const char*>(codebooks_data),
                                        packed_codebooks_bin_len);
     Wwise_RIFF_Vorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup,
                          force_packet_format);
@@ -28,11 +28,13 @@ void ww2ogg(const std::string& indata, std::ostream& outdata, unsigned char* con
     ww.generate_ogg(outdata);
 }
 
-[[nodiscard]] std::string wem_info(const std::string& indata, unsigned char* const codebooks_data,
+[[nodiscard]] std::string wem_info(const std::string& indata,
+                                   const unsigned char* const codebooks_data,
                                    const bool inline_codebooks, const bool full_setup,
                                    const ForcePacketFormat force_packet_format)
 {
-    const std::string codebooks_data_s(reinterpret_cast<char*>(codebooks_data),
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    const std::string codebooks_data_s(reinterpret_cast<const char*>(codebooks_data),
                                        packed_codebooks_bin_len);
     Wwise_RIFF_Vorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup,
                          force_packet_format);

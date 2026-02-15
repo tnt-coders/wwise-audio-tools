@@ -2,6 +2,6 @@
 
 namespace ww2ogg
 {
-extern unsigned char packed_codebooks_bin[];
-extern unsigned int packed_codebooks_bin_len;
+extern const unsigned char packed_codebooks_bin[];
+extern const unsigned int packed_codebooks_bin_len;
 } // namespace ww2ogg
