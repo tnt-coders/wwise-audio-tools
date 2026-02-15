@@ -156,7 +156,7 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     }
 }
 
-[[nodiscard]] std::string get_info(const std::string_view indata)
+[[nodiscard]] std::string GetInfo(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});
     bnk_t bnk(&ks);
@@ -183,8 +183,8 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     return result;
 }
 
-[[nodiscard]] std::string get_event_id_info(const std::string_view indata,
-                                            const std::string_view in_event_id)
+[[nodiscard]] std::string GetEventIdInfo(const std::string_view indata,
+                                         const std::string_view in_event_id)
 {
     kaitai::kstream ks(std::string{indata});
     bnk_t bnk(&ks);
@@ -294,8 +294,7 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     return result;
 }
 
-[[nodiscard]] std::string get_wem_id_at_index(const std::string_view indata,
-                                              const std::size_t index)
+[[nodiscard]] std::string GetWemIdAtIndex(const std::string_view indata, const std::size_t index)
 {
     kaitai::kstream ks(std::string{indata});
     bnk_t bnk(&ks);
@@ -309,7 +308,7 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     return std::to_string(didx->objs()->at(index)->id());
 }
 
-[[nodiscard]] std::string get_event_name_from_id([[maybe_unused]] const std::uint32_t event_id)
+[[nodiscard]] std::string GetEventNameFromId([[maybe_unused]] const std::uint32_t event_id)
 {
     // This function signature is maintained for API compatibility, but it cannot
     // look up event names without the BNK file data. Event name lookup is now

@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
  */
 void Convert(const std::string_view indata, const fs::path& outpath)
 {
-    const auto outdata = wwtools::wem_to_ogg(std::string{indata});
+    const auto outdata = wwtools::WemToOgg(std::string{indata});
 
     std::ofstream fout(outpath, std::ios::binary);
     if (!fout)
@@ -227,7 +227,7 @@ try
         {
             try
             {
-                std::print("{}", ww2ogg::wem_info(indata));
+                std::print("{}", ww2ogg::WemInfo(indata));
             }
             catch (const std::exception& e)
             {
@@ -274,7 +274,7 @@ try
 
         if (HasFlag(flags, "info"))
         {
-            std::print("{}", wwtools::bnk::get_info(indata));
+            std::print("{}", wwtools::bnk::GetInfo(indata));
             return EXIT_SUCCESS;
         }
 
@@ -292,12 +292,12 @@ try
                 in_event_id = args[4];
             }
 
-            std::print("{}", wwtools::bnk::get_event_id_info(indata, in_event_id));
+            std::print("{}", wwtools::bnk::GetEventIdInfo(indata, in_event_id));
             return EXIT_SUCCESS;
         }
 
         // Extract subcommand
-        const auto wems = wwtools::bnk_extract(indata);
+        const auto wems = wwtools::BnkExtract(indata);
         const bool noconvert = HasFlag(flags, "no-convert");
 
         // --no-convert: extract raw embedded data to subdirectory

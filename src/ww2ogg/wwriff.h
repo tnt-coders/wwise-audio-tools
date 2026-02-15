@@ -95,11 +95,11 @@ class Wwise_RIFF_Vorbis
     Wwise_RIFF_Vorbis(const std::string& indata, std::string codebooks_data, bool inline_codebooks,
                       bool full_setup, ForcePacketFormat force_packet_format);
 
-    [[nodiscard]] std::string get_info();
+    [[nodiscard]] std::string GetInfo();
 
-    void generate_ogg(std::ostream& os);
-    void generate_ogg_header(bitoggstream& os, std::vector<bool>& mode_blockflag, int& mode_bits);
-    void generate_ogg_header_with_triad(bitoggstream& os);
+    void GenerateOgg(std::ostream& os);
+    void GenerateOggHeader(bitoggstream& os, std::vector<bool>& mode_blockflag, int& mode_bits);
+    void GenerateOggHeaderWithTriad(bitoggstream& os);
 };
 
 } // namespace ww2ogg

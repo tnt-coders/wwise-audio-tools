@@ -157,7 +157,7 @@ std::stringstream buffer;
 buffer << input.rdbuf();
 std::string wem_data = buffer.str();
 
-std::string ogg_data = wwtools::wem_to_ogg(wem_data);
+std::string ogg_data = wwtools::WemToOgg(wem_data);
 
 std::ofstream output("audio.ogg", std::ios::binary);
 output << ogg_data;
@@ -179,14 +179,14 @@ std::vector<std::string> wem_files;
 wwtools::bnk::extract(bnk_data, wem_files);
 
 for (size_t i = 0; i < wem_files.size(); i++) {
-    std::string ogg_data = wwtools::wem_to_ogg(wem_files[i]);
-    std::string wem_id = wwtools::bnk::get_wem_id_at_index(bnk_data, i);
+    std::string ogg_data = wwtools::WemToOgg(wem_files[i]);
+    std::string wem_id = wwtools::bnk::GetWemIdAtIndex(bnk_data, i);
     std::ofstream output(wem_id + ".ogg", std::ios::binary);
     output << ogg_data;
 }
 
-std::cout << wwtools::bnk::get_info(bnk_data) << std::endl;
-std::cout << wwtools::bnk::get_event_id_info(bnk_data, "12345") << std::endl;
+std::cout << wwtools::bnk::GetInfo(bnk_data) << std::endl;
+std::cout << wwtools::bnk::GetEventIdInfo(bnk_data, "12345") << std::endl;
 ```
 
 **Working with Sound Cache (W3SC) Files:**
@@ -223,13 +223,13 @@ buffer << input.rdbuf();
 std::string wem_data = buffer.str();
 
 std::stringstream ogg_output;
-bool success = ww2ogg::ww2ogg(wem_data, ogg_output);
+bool success = ww2ogg::Ww2Ogg(wem_data, ogg_output);
 
 if (success) {
     std::ofstream output("audio.ogg", std::ios::binary);
     output << ogg_output.str();
 }
 
-std::cout << ww2ogg::wem_info(wem_data) << std::endl;
+std::cout << ww2ogg::WemInfo(wem_data) << std::endl;
 ```
 

@@ -20,13 +20,13 @@
 namespace wwtools
 {
 
-[[nodiscard]] std::string wem_to_ogg(const std::string_view indata)
+[[nodiscard]] std::string WemToOgg(const std::string_view indata)
 {
     std::stringstream wem_out;
     std::stringstream revorb_out;
 
     // Convert WEM to intermediate OGG format
-    ww2ogg::ww2ogg(std::string{indata}, wem_out);
+    ww2ogg::Ww2Ogg(std::string{indata}, wem_out);
 
     // Fix granule positions in the OGG stream
     if (!revorb::Revorb(wem_out, revorb_out))
@@ -37,7 +37,7 @@ namespace wwtools
     return revorb_out.str();
 }
 
-[[nodiscard]] std::vector<BnkWem> bnk_extract(const std::string_view indata)
+[[nodiscard]] std::vector<BnkWem> BnkExtract(const std::string_view indata)
 {
     const auto ids = bnk::GetWemIds(indata);
     const auto streamed_ids = bnk::GetStreamedWemIds(indata);

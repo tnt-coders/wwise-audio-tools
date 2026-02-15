@@ -38,7 +38,7 @@ void Extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param indata std::string_view with the file data
  * @return a printable info string
  */
-[[nodiscard]] std::string get_info(std::string_view indata);
+[[nodiscard]] std::string GetInfo(std::string_view indata);
 
 /**
  * @brief get WEMs correlating to a BNK and an optional event ID
@@ -47,7 +47,7 @@ void Extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param in_event_id the input event ID
  * @return a printable info string
  */
-[[nodiscard]] std::string get_event_id_info(std::string_view indata, std::string_view in_event_id);
+[[nodiscard]] std::string GetEventIdInfo(std::string_view indata, std::string_view in_event_id);
 
 /**
  * @brief get the ID of a WEM at an index
@@ -56,7 +56,7 @@ void Extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param index the index to get the ID from
  * @return the ID as a string
  */
-[[nodiscard]] std::string get_wem_id_at_index(std::string_view indata, std::size_t index);
+[[nodiscard]] std::string GetWemIdAtIndex(std::string_view indata, std::size_t index);
 
 /**
  * @brief get the event name from an event ID
@@ -64,7 +64,7 @@ void Extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param event_id the event ID to look up
  * @return the event name, or empty string if not found
  */
-[[nodiscard]] std::string get_event_name_from_id(std::uint32_t event_id);
+[[nodiscard]] std::string GetEventNameFromId(std::uint32_t event_id);
 
 /**
  * @brief get all WEM IDs referenced by the soundbank's DIDX section

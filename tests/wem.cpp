@@ -26,7 +26,7 @@ namespace
 
     indata.assign(std::istreambuf_iterator<char>(filein), std::istreambuf_iterator<char>());
 
-    return wwtools::wem_to_ogg(indata);
+    return wwtools::WemToOgg(indata);
 }
 
 } // anonymous namespace

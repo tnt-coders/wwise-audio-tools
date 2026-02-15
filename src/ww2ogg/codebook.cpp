@@ -58,7 +58,7 @@ void codebook_library::rebuild(const int i, bitoggstream& bos)
 
     array_streambuf asb(cb, static_cast<int>(cb_size));
     std::istream is(&asb);
-    bitstream bis(is);
+    bitstream bis{is};
 
     rebuild(bis, cb_size, bos);
 }

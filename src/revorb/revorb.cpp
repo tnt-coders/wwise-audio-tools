@@ -295,7 +295,7 @@ namespace revorb
                         const auto bs = vorbis_packet_blocksize(&vi, &packet);
                         if (lastbs != 0)
                         {
-                            granpos += (lastbs + bs) / 4;
+                            granpos += static_cast<ogg_int64_t>((lastbs + bs) / 4);
                         }
                         lastbs = bs;
 

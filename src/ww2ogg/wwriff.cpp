@@ -413,6 +413,7 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
     _setup_packet_offset = _read_32(_indata);
     _first_audio_packet_offset = _read_32(_indata);
 
+    // NOLINTNEXTLINE(bugprone-branch-clone)
     switch (_vorb_size)
     {
     case -1:
@@ -486,7 +487,7 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
     }
 }
 
-std::string Wwise_RIFF_Vorbis::get_info()
+std::string Wwise_RIFF_Vorbis::GetInfo()
 {
     std::stringstream info_ss;
     if (_little_endian)
@@ -554,8 +555,8 @@ std::string Wwise_RIFF_Vorbis::get_info()
     return info_ss.str();
 }
 
-void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os, std::vector<bool>& mode_blockflag,
-                                            int& mode_bits)
+void Wwise_RIFF_Vorbis::GenerateOggHeader(bitoggstream& os, std::vector<bool>& mode_blockflag,
+                                          int& mode_bits)
 {
     // generate identification packet
     {
@@ -1067,7 +1068,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os, std::vector<bool>&
     }
 }
 
-void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
+void Wwise_RIFF_Vorbis::GenerateOgg(std::ostream& oss)
 {
     bitoggstream os(oss);
 
@@ -1077,11 +1078,11 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
 
     if (_header_triad_present)
     {
-        generate_ogg_header_with_triad(os);
+        GenerateOggHeaderWithTriad(os);
     }
     else
     {
-        generate_ogg_header(os, mode_blockflag, mode_bits);
+        GenerateOggHeader(os, mode_blockflag, mode_bits);
     }
 
     // Audio pages
@@ -1240,7 +1241,7 @@ void Wwise_RIFF_Vorbis::generate_ogg(std::ostream& oss)
     mode_blockflag.clear();
 }
 
-void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os)
+void Wwise_RIFF_Vorbis::GenerateOggHeaderWithTriad(bitoggstream& os)
 {
     // Header page triad
     {
