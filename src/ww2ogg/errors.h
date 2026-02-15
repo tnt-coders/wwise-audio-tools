@@ -82,17 +82,17 @@ class size_mismatch : public parse_error
  */
 class invalid_id : public parse_error
 {
-    int id_;
+    int m_id;
 
   public:
     explicit invalid_id(int i)
-        : parse_error(std::format("invalid codebook id {}, try --inline-codebooks", i)), id_(i)
+        : parse_error(std::format("invalid codebook id {}, try --inline-codebooks", i)), m_id(i)
     {
     }
 
     [[nodiscard]] int id() const
     {
-        return id_;
+        return m_id;
     }
 };
 

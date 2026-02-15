@@ -22,31 +22,31 @@ codebook_library::codebook_library(const std::string& indata)
     const auto file_size = static_cast<long>(is.tellg());
 
     is.seekg(file_size - 4, std::ios::beg);
-    const auto offset_offset = static_cast<long>(read_32_le(is));
+    const auto offset_offset = static_cast<long>(Read32Le(is));
     const auto codebook_count = (file_size - offset_offset) / 4;
 
-    codebook_data.resize(offset_offset);
-    codebook_offsets.resize(codebook_count);
+    m_codebook_data.resize(offset_offset);
+    m_codebook_offsets.resize(codebook_count);
 
     is.seekg(0, std::ios::beg);
     for (long i = 0; i < offset_offset; ++i)
     {
-        codebook_data[i] = static_cast<char>(is.get());
+        m_codebook_data[i] = static_cast<char>(is.get());
     }
 
     for (long i = 0; i < codebook_count; ++i)
     {
-        codebook_offsets[i] = static_cast<long>(read_32_le(is));
+        m_codebook_offsets[i] = static_cast<long>(Read32Le(is));
     }
 }
 
-void codebook_library::rebuild(const int i, bitoggstream& bos)
+void codebook_library::Rebuild(const int i, bitoggstream& bos)
 {
-    const char* cb = get_codebook(i);
+    const char* cb = GetCodebook(i);
     unsigned long cb_size = 0;
 
     {
-        const long signed_cb_size = get_codebook_size(i);
+        const long signed_cb_size = GetCodebookSize(i);
 
         if (cb == nullptr || signed_cb_size == -1)
         {
@@ -60,11 +60,11 @@ void codebook_library::rebuild(const int i, bitoggstream& bos)
     std::istream is(&asb);
     bitstream bis{is};
 
-    rebuild(bis, cb_size, bos);
+    Rebuild(bis, cb_size, bos);
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::copy(bitstream& bis, bitoggstream& bos)
+void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
 {
     /* IN: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
 
@@ -99,7 +99,7 @@ void codebook_library::copy(bitstream& bis, bitoggstream& bos)
         while (current_entry < entries)
         {
             /* IN/OUT: ilog(entries-current_entry) bit count w/ given length */
-            Bit_uintv number(ilog(entries - current_entry));
+            Bit_uintv number(Ilog(entries - current_entry));
             bis >> number;
             bos << number;
             current_entry += number;
@@ -162,7 +162,7 @@ void codebook_library::copy(bitstream& bis, bitoggstream& bos)
         bis >> min >> max >> value_length >> sequence_flag;
         bos << min << max << value_length << sequence_flag;
 
-        const unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
+        const unsigned int quantvals = BookMaptype1Quantvals(entries, dimensions);
         for (unsigned int i = 0; i < quantvals; ++i)
         {
             /* IN/OUT: n bit value */
@@ -182,7 +182,7 @@ void codebook_library::copy(bitstream& bis, bitoggstream& bos)
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::rebuild(bitstream& bis, const unsigned long cb_size, bitoggstream& bos)
+void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bitoggstream& bos)
 {
     /* IN: 4 bit dimensions, 14 bit entry count */
 
@@ -211,7 +211,7 @@ void codebook_library::rebuild(bitstream& bis, const unsigned long cb_size, bito
         while (current_entry < entries)
         {
             /* IN/OUT: ilog(entries-current_entry) bit count w/ given length */
-            Bit_uintv number(ilog(entries - current_entry));
+            Bit_uintv number(Ilog(entries - current_entry));
             bis >> number;
             bos << number;
             current_entry += number;
@@ -285,7 +285,7 @@ void codebook_library::rebuild(bitstream& bis, const unsigned long cb_size, bito
         bis >> min >> max >> value_length >> sequence_flag;
         bos << min << max << value_length << sequence_flag;
 
-        const unsigned int quantvals = _book_maptype1_quantvals(entries, dimensions);
+        const unsigned int quantvals = BookMaptype1Quantvals(entries, dimensions);
         for (unsigned int i = 0; i < quantvals; ++i)
         {
             /* IN/OUT: n bit value */
@@ -306,9 +306,9 @@ void codebook_library::rebuild(bitstream& bis, const unsigned long cb_size, bito
     /* check that we used exactly all bytes */
     /* note: if all bits are used in the last byte there will be one extra 0 byte
      */
-    if (cb_size != 0 && bis.get_total_bits_read() / 8 + 1 != cb_size)
+    if (cb_size != 0 && bis.GetTotalBitsRead() / 8 + 1 != cb_size)
     {
-        throw size_mismatch(cb_size, bis.get_total_bits_read() / 8 + 1);
+        throw size_mismatch(cb_size, bis.GetTotalBitsRead() / 8 + 1);
     }
 }
 

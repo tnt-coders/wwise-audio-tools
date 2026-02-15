@@ -36,60 +36,60 @@ enum ForcePacketFormat
  */
 class Wwise_RIFF_Vorbis
 {
-    std::string _codebooks_data;
-    std::stringstream _indata;
-    long _file_size = -1;
+    std::string m_codebooks_data;
+    std::stringstream m_indata;
+    long m_file_size = -1;
 
-    bool _little_endian = true;
+    bool m_little_endian = true;
 
-    long _riff_size = -1;
-    long _fmt_offset = -1;
-    long _cue_offset = -1;
-    long _LIST_offset = -1;
-    long _smpl_offset = -1;
-    long _vorb_offset = -1;
-    long _data_offset = -1;
-    long _fmt_size = -1;
-    long _cue_size = -1;
-    long _LIST_size = -1;
-    long _smpl_size = -1;
-    long _vorb_size = -1;
-    long _data_size = -1;
+    long m_riff_size = -1;
+    long m_fmt_offset = -1;
+    long m_cue_offset = -1;
+    long m_list_offset = -1;
+    long m_smpl_offset = -1;
+    long m_vorb_offset = -1;
+    long m_data_offset = -1;
+    long m_fmt_size = -1;
+    long m_cue_size = -1;
+    long m_list_size = -1;
+    long m_smpl_size = -1;
+    long m_vorb_size = -1;
+    long m_data_size = -1;
 
     // RIFF fmt
-    uint16_t _channels = 0;
-    uint32_t _sample_rate = 0;
-    uint32_t _avg_bytes_per_second = 0;
+    uint16_t m_channels = 0;
+    uint32_t m_sample_rate = 0;
+    uint32_t m_avg_bytes_per_second = 0;
 
     // RIFF extended fmt
-    uint16_t _ext_unk = 0;
-    uint32_t _subtype = 0;
+    uint16_t m_ext_unk = 0;
+    uint32_t m_subtype = 0;
 
     // cue info
-    uint32_t _cue_count = 0;
+    uint32_t m_cue_count = 0;
 
     // smpl info
-    uint32_t _loop_count = 0;
-    uint32_t _loop_start = 0;
-    uint32_t _loop_end = 0;
+    uint32_t m_loop_count = 0;
+    uint32_t m_loop_start = 0;
+    uint32_t m_loop_end = 0;
 
     // vorbis info
-    uint32_t _sample_count = 0;
-    uint32_t _setup_packet_offset = 0;
-    uint32_t _first_audio_packet_offset = 0;
-    uint32_t _uid = 0;
-    uint8_t _blocksize_0_pow = 0;
-    uint8_t _blocksize_1_pow = 0;
+    uint32_t m_sample_count = 0;
+    uint32_t m_setup_packet_offset = 0;
+    uint32_t m_first_audio_packet_offset = 0;
+    uint32_t m_uid = 0;
+    uint8_t m_blocksize_0_pow = 0;
+    uint8_t m_blocksize_1_pow = 0;
 
-    const bool _inline_codebooks;
-    const bool _full_setup;
-    bool _header_triad_present = false;
-    bool _old_packet_headers = false;
-    bool _no_granule = false;
-    bool _mod_packets = false;
+    const bool m_inline_codebooks;
+    const bool m_full_setup;
+    bool m_header_triad_present = false;
+    bool m_old_packet_headers = false;
+    bool m_no_granule = false;
+    bool m_mod_packets = false;
 
-    uint16_t (*_read_16)(std::istream& is) = nullptr;
-    uint32_t (*_read_32)(std::istream& is) = nullptr;
+    uint16_t (*m_read_16)(std::istream& is) = nullptr;
+    uint32_t (*m_read_32)(std::istream& is) = nullptr;
 
   public:
     Wwise_RIFF_Vorbis(const std::string& indata, std::string codebooks_data, bool inline_codebooks,
