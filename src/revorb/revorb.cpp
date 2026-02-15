@@ -243,7 +243,7 @@ namespace revorb
     {
         ogg_int64_t granpos = 0;
         ogg_int64_t packetnum = 0;
-        int lastbs = 0;
+        long lastbs = 0;
 
         while (true)
         {
@@ -292,7 +292,7 @@ namespace revorb
                             continue;
                         }
 
-                        const int bs = vorbis_packet_blocksize(&vi, &packet);
+                        const auto bs = vorbis_packet_blocksize(&vi, &packet);
                         if (lastbs != 0)
                         {
                             granpos += (lastbs + bs) / 4;

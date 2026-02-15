@@ -734,7 +734,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header(bitoggstream& os, std::vector<bool>&
 
         if (_full_setup)
         {
-            while (ss.get_total_bits_read() < setup_packet.Size() * 8u)
+            while (ss.get_total_bits_read() < static_cast<unsigned long>(setup_packet.Size()) * 8u)
             {
                 Bit_uint<1> bitly;
                 ss >> bitly;
@@ -1352,7 +1352,7 @@ void Wwise_RIFF_Vorbis::generate_ogg_header_with_triad(bitoggstream& os)
                 cbl.copy(ss, os);
             }
 
-            while (ss.get_total_bits_read() < setup_packet.Size() * 8u)
+            while (ss.get_total_bits_read() < static_cast<unsigned long>(setup_packet.Size()) * 8u)
             {
                 Bit_uint<1> bitly;
                 ss >> bitly;
