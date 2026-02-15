@@ -46,6 +46,7 @@ class WwiseAudioToolsConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["BUILD_CLI"] = False
+        tc.variables["BUILD_TESTS"] = False
         tc.variables["PACKED_CODEBOOKS_AOTUV"] = self.options.packed_codebooks_aotuv
         tc.generate()
 

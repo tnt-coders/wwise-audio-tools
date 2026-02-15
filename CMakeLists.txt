@@ -9,6 +9,7 @@ project(
 add_subdirectory(project-config)
 
 option(BUILD_CLI "Build command-line interface" ON)
+option(BUILD_TESTS "Build tests" ON)
 option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
@@ -72,9 +73,9 @@ endif()
 package_install()
 
 # Add tests
-find_package(Catch2 QUIET)
+if(BUILD_TESTS)
+    find_package(Catch2 REQUIRED)
 
-if(Catch2_FOUND)
     add_executable(tests tests/wem.cpp)
     target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
 
