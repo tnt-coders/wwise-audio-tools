@@ -5,6 +5,9 @@ project(
     VERSION 1.0.0
     LANGUAGES C CXX)
 
+# CMAKE_CXX_STANDARD must be set explicitly for Conan to detect it
+set(CMAKE_CXX_STANDARD 23)
+
 # Add project configuration
 add_subdirectory(project-config)
 
@@ -56,6 +59,7 @@ endif()
 # Create library target
 package_add_library(WwiseAudioTools ${WWISE_AUDIO_TOOLS_SOURCES})
 
+# Explicitly include required standard with the target for consumers
 target_compile_features(WwiseAudioTools PUBLIC cxx_std_23)
 
 target_link_libraries(WwiseAudioTools PRIVATE impl_KaitaiStructs Ogg::ogg Vorbis::vorbis)
