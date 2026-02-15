@@ -21,7 +21,7 @@ class WwiseAudioToolsConan(ConanFile):
         "fPIC": True,
         "packed_codebooks_aotuv": True,
     }
-    exports_sources = "CMakeLists.txt", "src/*", "include/*", "cmake/*"
+    exports_sources = "CMakeLists.txt", "project-config/*", "src/*", "include/*"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -33,17 +33,19 @@ class WwiseAudioToolsConan(ConanFile):
 
     def requirements(self):
         self.requires("cmake-package-builder/1.0.0") #recipe: https://github.com/tnt-coders/cmake-package-builder.git
-        self.requires("catch2/3.12.0")
         self.requires("kaitai_struct_cpp_stl_runtime/0.11")
         self.requires("ogg/1.3.5")
         self.requires("rang/3.2")
         self.requires("vorbis/1.3.7")
+
+        self.test_requires("catch2/3.12.0")
 
     def layout(self):
         cmake_layout(self)
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables["BUILD_CLI"] = False
         tc.variables["PACKED_CODEBOOKS_AOTUV"] = self.options.packed_codebooks_aotuv
         tc.generate()
 

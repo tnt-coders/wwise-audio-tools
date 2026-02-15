@@ -13,7 +13,6 @@ option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
 find_package(PackageBuilder REQUIRED)
-find_package(Catch2 REQUIRED)
 find_package(kaitai_struct_cpp_stl_runtime REQUIRED)
 find_package(Ogg REQUIRED)
 find_package(rang REQUIRED)
@@ -73,12 +72,16 @@ endif()
 package_install()
 
 # Add tests
-add_executable(tests tests/wem.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
+find_package(Catch2 QUIET)
 
-# Copy test data to test location
-add_custom_command(
-    TARGET tests
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata
-            $<TARGET_FILE_DIR:tests>/testdata)
+if(Catch2_FOUND)
+    add_executable(tests tests/wem.cpp)
+    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
+
+    # Copy test data to test location
+    add_custom_command(
+        TARGET tests
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata
+                $<TARGET_FILE_DIR:tests>/testdata)
+endif()
