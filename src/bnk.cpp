@@ -135,7 +135,7 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
 namespace wwtools::bnk
 {
 
-void extract(const std::string_view indata, std::vector<std::string>& outdata)
+void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 {
     kaitai::kstream ks(std::string{indata});
     bnk_t bnk(&ks);
@@ -317,7 +317,7 @@ void extract(const std::string_view indata, std::vector<std::string>& outdata)
     return {};
 }
 
-[[nodiscard]] std::vector<std::uint32_t> get_wem_ids(const std::string_view indata)
+[[nodiscard]] std::vector<std::uint32_t> GetWemIds(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});
     bnk_t bnk(&ks);
@@ -339,7 +339,7 @@ void extract(const std::string_view indata, std::vector<std::string>& outdata)
     return ids;
 }
 
-[[nodiscard]] std::vector<std::uint32_t> get_streamed_wem_ids(const std::string_view indata)
+[[nodiscard]] std::vector<std::uint32_t> GetStreamedWemIds(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});
     bnk_t bnk(&ks);

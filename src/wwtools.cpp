@@ -39,11 +39,11 @@ namespace wwtools
 
 [[nodiscard]] std::vector<BnkWem> bnk_extract(const std::string_view indata)
 {
-    const auto ids = bnk::get_wem_ids(indata);
-    const auto streamed_ids = bnk::get_streamed_wem_ids(indata);
+    const auto ids = bnk::GetWemIds(indata);
+    const auto streamed_ids = bnk::GetStreamedWemIds(indata);
 
     std::vector<std::string> raw_wems;
-    bnk::extract(indata, raw_wems);
+    bnk::Extract(indata, raw_wems);
 
     std::vector<BnkWem> result;
     result.reserve(ids.size());

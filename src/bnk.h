@@ -30,7 +30,7 @@ namespace wwtools::bnk
  * @param indata std::string_view with the BNK content
  * @param outdata vector of std::string that has all the embedded WEM files
  */
-void extract(std::string_view indata, std::vector<std::string>& outdata);
+void Extract(std::string_view indata, std::vector<std::string>& outdata);
 
 /**
  * @brief get the info string
@@ -72,7 +72,7 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param indata std::string_view with the BNK content
  * @return vector of WEM IDs
  */
-[[nodiscard]] std::vector<std::uint32_t> get_wem_ids(std::string_view indata);
+[[nodiscard]] std::vector<std::uint32_t> GetWemIds(std::string_view indata);
 
 /**
  * @brief get the set of WEM IDs that are streamed (not fully embedded)
@@ -83,6 +83,6 @@ void extract(std::string_view indata, std::vector<std::string>& outdata);
  * @param indata std::string_view with the BNK content
  * @return set of WEM IDs that are streamed
  */
-[[nodiscard]] std::vector<std::uint32_t> get_streamed_wem_ids(std::string_view indata);
+[[nodiscard]] std::vector<std::uint32_t> GetStreamedWemIds(std::string_view indata);
 
 } // namespace wwtools::bnk
