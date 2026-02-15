@@ -170,8 +170,8 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
         std::array<unsigned char, 4> riff_head{};
         std::array<unsigned char, 4> wave_head{};
         _indata.seekg(0, std::ios::beg);
-        _indata.read(reinterpret_cast<char*>(riff_head.data()),
-                     4); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        _indata.read(reinterpret_cast<char*>(riff_head.data()), 4);
 
         if (std::memcmp(riff_head.data(), "RIFX", 4) != 0)
         {
@@ -210,8 +210,8 @@ Wwise_RIFF_Vorbis::Wwise_RIFF_Vorbis(const std::string& indata, std::string code
                                   " that requires the full .wem file)");
         }
 
-        _indata.read(reinterpret_cast<char*>(wave_head.data()),
-                     4); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        _indata.read(reinterpret_cast<char*>(wave_head.data()), 4);
         if (std::memcmp(wave_head.data(), "WAVE", 4) != 0)
         {
             throw parse_error_str("missing WAVE");
