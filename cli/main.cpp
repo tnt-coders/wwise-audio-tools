@@ -1,9 +1,3 @@
-/**
- * @file main.cpp
- * @brief CLI interface for Wwise audio tools
- * @note Modernized to C++23
- */
-
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
@@ -23,12 +17,6 @@
 
 namespace fs = std::filesystem;
 
-/**
- * @brief Convert WEM data to OGG and write to file
- * @param indata Input WEM data
- * @param outpath Output file path
- * @throws std::exception on conversion or file write failure
- */
 void Convert(const std::string_view indata, const fs::path& outpath)
 {
     const auto outdata = wwtools::Wem2Ogg(std::string{indata});
@@ -41,11 +29,6 @@ void Convert(const std::string_view indata, const fs::path& outpath)
     fout << outdata;
 }
 
-/**
- * @brief Print help message with optional error
- * @param extra_message Error message to display (optional)
- * @param filename Program name for usage display
- */
 void PrintHelp(const std::string_view extra_message = {},
                const std::string_view filename = "wwtools")
 {
@@ -61,20 +44,12 @@ void PrintHelp(const std::string_view extra_message = {},
         "Or run it without arguments to find and convert all WEMs in the current directory.");
 }
 
-/**
- * @brief Result of parsing command-line flags
- */
 struct ParsedFlags
 {
     std::vector<std::string> m_flags;
     bool m_has_error = false;
 };
 
-/**
- * @brief Parse command-line flags from arguments
- * @param args Span of command-line arguments
- * @return ParsedFlags structure with flags and error status
- */
 [[nodiscard]] ParsedFlags GetFlags(const std::span<char*> args)
 {
     ParsedFlags result;
@@ -100,23 +75,12 @@ struct ParsedFlags
     return result;
 }
 
-/**
- * @brief Check if a flag exists in the flags list
- * @param flags List of parsed flags
- * @param wanted_flag Flag to search for
- * @return true if flag exists
- */
 [[nodiscard]] bool HasFlag(const std::vector<std::string>& flags,
                            const std::string_view wanted_flag)
 {
     return std::ranges::contains(flags, wanted_flag);
 }
 
-/**
- * @brief Read file contents into a string
- * @param path File path to read
- * @return File contents as string, or empty on failure
- */
 [[nodiscard]] std::string ReadFile(const fs::path& path)
 {
     std::ifstream file(path, std::ios::binary);
@@ -129,12 +93,6 @@ struct ParsedFlags
     return buffer.str();
 }
 
-/**
- * @brief Replace file extension with a new one
- * @param path Original path
- * @param new_ext New extension (including dot)
- * @return Path with new extension
- */
 [[nodiscard]] fs::path ReplaceExtension(const fs::path& path, const std::string_view new_ext)
 {
     auto result = path;

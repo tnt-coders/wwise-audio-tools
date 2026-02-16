@@ -1,9 +1,3 @@
-/**
- * @file ww2ogg.cpp
- * @brief WEM to OGG conversion implementation
- * @note Modernized to C++23
- */
-
 #include <ostream>
 #include <string>
 

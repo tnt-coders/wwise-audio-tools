@@ -1,11 +1,5 @@
 #pragma once
 
-/**
- * @file errors.h
- * @brief Error types for ww2ogg parsing
- * @note Modernized to C++23
- */
-
 #include <cstddef>
 #include <format>
 #include <stdexcept>
@@ -15,9 +9,6 @@
 namespace ww2ogg
 {
 
-/**
- * @brief Error for invalid command-line arguments
- */
 class ArgumentError : public std::runtime_error
 {
   public:
@@ -27,9 +18,6 @@ class ArgumentError : public std::runtime_error
     }
 };
 
-/**
- * @brief Error for file opening failures
- */
 class FileOpenError : public std::runtime_error
 {
   public:
@@ -39,9 +27,6 @@ class FileOpenError : public std::runtime_error
     }
 };
 
-/**
- * @brief Base class for parsing errors
- */
 class ParseError : public std::runtime_error
 {
   public:
@@ -54,9 +39,6 @@ class ParseError : public std::runtime_error
     }
 };
 
-/**
- * @brief Parse error with string message
- */
 class ParseErrorStr : public ParseError
 {
   public:
@@ -65,9 +47,6 @@ class ParseErrorStr : public ParseError
     }
 };
 
-/**
- * @brief Error for size mismatches during parsing
- */
 class SizeMismatch : public ParseError
 {
   public:
@@ -77,9 +56,6 @@ class SizeMismatch : public ParseError
     }
 };
 
-/**
- * @brief Error for invalid codebook IDs
- */
 class InvalidId : public ParseError
 {
     int m_id;

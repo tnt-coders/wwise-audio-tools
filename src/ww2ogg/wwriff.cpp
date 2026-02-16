@@ -1,9 +1,3 @@
-/**
- * @file wwriff.cpp
- * @brief Wwise RIFF Vorbis parser implementation
- * @note Modernized to C++23
- */
-
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -21,9 +15,6 @@
 namespace ww2ogg
 {
 
-/**
- * @brief Modern 2 or 6 byte packet header
- */
 class Packet
 {
     long m_offset;
@@ -78,9 +69,6 @@ class Packet
     }
 };
 
-/**
- * @brief Old 8 byte packet header
- */
 class Packet8
 {
     long m_offset;
@@ -126,9 +114,6 @@ class Packet8
     }
 };
 
-/**
- * @brief Vorbis packet header writer
- */
 class VorbisPacketHeader
 {
     uint8_t m_type;

@@ -1,9 +1,3 @@
-/**
- * @file wwtools.cpp
- * @brief Implementation of public API functions
- * @note Modernized to C++23
- */
-
 #include <algorithm>
 #include <cstdint>
 #include <sstream>

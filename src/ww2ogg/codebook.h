@@ -1,11 +1,5 @@
 #pragma once
 
-/**
- * @file codebook.h
- * @brief Vorbis codebook handling for ww2ogg
- * @note Modernized to C++23
- */
-
 #include <string>
 #include <vector>
 
@@ -16,9 +10,7 @@
 namespace
 {
 
-/**
- * @brief Integer logarithm base 2
- */
+// Returns number of bits required to represent v (integer log2 + 1, 0 for v==0).
 [[nodiscard]] inline int Ilog(unsigned int v)
 {
     int ret = 0;
@@ -30,9 +22,7 @@ namespace
     return ret;
 }
 
-/**
- * @brief Calculate quantization values for maptype 1 codebooks
- */
+// Calculates quantization values used by Vorbis maptype 1 codebooks.
 [[nodiscard]] inline unsigned int BookMaptype1Quantvals(const unsigned int entries,
                                                         const unsigned int dimensions)
 {
@@ -69,9 +59,6 @@ namespace
 namespace ww2ogg
 {
 
-/**
- * @brief Manages a library of Vorbis codebooks
- */
 class CodebookLibrary
 {
     std::vector<char> m_codebook_data;
@@ -86,21 +73,14 @@ class CodebookLibrary
     CodebookLibrary(CodebookLibrary&&) = default;
     CodebookLibrary& operator=(CodebookLibrary&&) = default;
 
-    /**
-     * @brief Construct from codebook data string
-     */
     explicit CodebookLibrary(const std::string& indata);
 
-    /**
-     * @brief Construct empty library (for inline codebooks)
-     */
+    // Creates an empty library used when rebuilding codebooks from inline data.
     CodebookLibrary();
 
     ~CodebookLibrary() = default;
 
-    /**
-     * @brief Get pointer to codebook data
-     */
+    // Returns a pointer to raw codebook bytes for id i, or nullptr when i is out of range.
     [[nodiscard]] const char* GetCodebook(int i) const
     {
         if (m_codebook_data.empty() || m_codebook_offsets.empty())
@@ -114,9 +94,7 @@ class CodebookLibrary
         return &m_codebook_data[m_codebook_offsets[i]];
     }
 
-    /**
-     * @brief Get size of codebook
-     */
+    // Returns codebook byte size for id i, or -1 when i is out of range.
     [[nodiscard]] long GetCodebookSize(int i) const
     {
         if (m_codebook_data.empty() || m_codebook_offsets.empty())
@@ -130,8 +108,11 @@ class CodebookLibrary
         return m_codebook_offsets[i + 1] - m_codebook_offsets[i];
     }
 
+    // Rebuilds a codebook by id into an OGG bitstream.
     void Rebuild(int i, Bitoggstream& bos);
+    // Rebuilds a codebook from a source bitstream and explicit size.
     void Rebuild(Bitstream& bis, unsigned long cb_size, Bitoggstream& bos);
+    // Copies a codebook blob from input bitstream to output bitstream.
     void Copy(Bitstream& bis, Bitoggstream& bos);
 };
 

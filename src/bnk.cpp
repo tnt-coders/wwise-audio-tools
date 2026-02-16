@@ -1,9 +1,3 @@
-/**
- * @file bnk.cpp
- * @brief Implementation of BNK file processing functions
- * @note Modernized to C++23
- */
-
 #include <cstdint>
 #include <format>
 #include <map>
@@ -19,9 +13,6 @@
 namespace
 {
 
-/**
- * @brief Internal structure to track events and corresponding SFX
- */
 struct EventSFX
 {
     bnk_t::action_type_t m_action_type{};
@@ -29,12 +20,6 @@ struct EventSFX
     bool m_is_child = false;
 };
 
-/**
- * @brief Find a section by type in the BNK data
- * @param bnk The parsed BNK object
- * @param type Section type to find (e.g., "DATA", "BKHD", "DIDX", "HIRC")
- * @return Pointer to section data, or nullptr if not found
- */
 template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view type)
 {
     for (const auto& section : *bnk.data())
@@ -47,9 +32,6 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     return nullptr;
 }
 
-/**
- * @brief Get parent ID from sound structure
- */
 [[nodiscard]] std::uint32_t GetParentId(bnk_t::sound_effect_or_voice_t* sfx)
 {
     std::uint32_t parent_id_offset = 6;
@@ -82,9 +64,6 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     return parent_id;
 }
 
-/**
- * @brief Get a string with the action type from the enum
- */
 [[nodiscard]] std::string_view GetEventActionType(const bnk_t::action_type_t action_type)
 {
     switch (action_type)
@@ -106,12 +85,6 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     }
 }
 
-/**
- * @brief Look up an event name from the STID section
- * @param stid_data The STID section data (can be nullptr)
- * @param event_id The event ID to look up
- * @return The event name, or empty string if not found or STID section is missing
- */
 [[nodiscard]] std::string LookupEventName(bnk_t::stid_data_t* stid_data,
                                           const std::uint32_t event_id)
 {

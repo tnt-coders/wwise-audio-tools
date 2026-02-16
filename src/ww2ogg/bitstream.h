@@ -1,11 +1,5 @@
 #pragma once
 
-/**
- * @file bitstream.h
- * @brief Bit-level stream reading/writing for OGG generation
- * @note Modernized to C++23
- */
-
 #include <array>
 #include <cstdint>
 #include <istream>
@@ -161,9 +155,6 @@ inline void Write16Be(std::ostream& os, uint16_t v)
 namespace ww2ogg
 {
 
-/**
- * @brief Bit-level input stream reader (LSB first)
- */
 class Bitstream
 {
     std::istream& m_is;
@@ -207,9 +198,6 @@ class Bitstream
     }
 };
 
-/**
- * @brief Bit-level OGG output stream writer
- */
 class Bitoggstream
 {
     std::ostream& m_os;
@@ -357,9 +345,6 @@ class Bitoggstream
     }
 };
 
-/**
- * @brief Fixed-size bit integer for compile-time sized bit fields
- */
 template <unsigned int BitSize> class BitUint
 {
     unsigned int m_total;
@@ -420,9 +405,6 @@ template <unsigned int BitSize> class BitUint
     }
 };
 
-/**
- * @brief Variable-size bit integer for runtime-sized bit fields
- */
 class BitUintv
 {
     unsigned int m_size;
@@ -484,9 +466,6 @@ class BitUintv
     }
 };
 
-/**
- * @brief Stream buffer backed by a character array
- */
 class ArrayStreambuf : public std::streambuf
 {
     // Non-copyable, non-movable

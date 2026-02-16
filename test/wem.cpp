@@ -1,9 +1,3 @@
-/**
- * @file wem.cpp
- * @brief Unit tests for WEM to OGG conversion
- * @note Modernized to C++23
- */
-
 #include <catch2/catch_test_macros.hpp>
 #include <fstream>
 #include <sstream>

@@ -1,9 +1,3 @@
-/**
- * @file codebook.cpp
- * @brief Vorbis codebook library implementation
- * @note Modernized to C++23
- */
-
 #include <sstream>
 #include <string>
 

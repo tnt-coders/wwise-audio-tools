@@ -1,11 +1,5 @@
 #pragma once
 
-/**
- * @file wwriff.h
- * @brief Wwise RIFF Vorbis file parser
- * @note Modernized to C++23
- */
-
 #include <cstdint>
 #include <istream>
 #include <memory>
@@ -21,9 +15,6 @@ namespace ww2ogg
 
 inline constexpr const char* g_version = "0.24";
 
-/**
- * @brief Force specific packet format during conversion
- */
 enum ForcePacketFormat
 {
     K_NO_FORCE_PACKET_FORMAT,
@@ -31,9 +22,6 @@ enum ForcePacketFormat
     K_FORCE_NO_MOD_PACKETS
 };
 
-/**
- * @brief Parser and converter for Wwise RIFF Vorbis files
- */
 class WwiseRiffVorbis
 {
     std::string m_codebooks_data;
