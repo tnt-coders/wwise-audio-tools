@@ -12,9 +12,9 @@
 namespace ww2ogg
 {
 
-codebook_library::codebook_library() = default;
+CodebookLibrary::CodebookLibrary() = default;
 
-codebook_library::codebook_library(const std::string& indata)
+CodebookLibrary::CodebookLibrary(const std::string& indata)
 {
     std::stringstream is(indata);
 
@@ -40,7 +40,7 @@ codebook_library::codebook_library(const std::string& indata)
     }
 }
 
-void codebook_library::Rebuild(const int i, bitoggstream& bos)
+void CodebookLibrary::Rebuild(const int i, Bitoggstream& bos)
 {
     const char* cb = GetCodebook(i);
     unsigned long cb_size = 0;
@@ -50,48 +50,48 @@ void codebook_library::Rebuild(const int i, bitoggstream& bos)
 
         if (cb == nullptr || signed_cb_size == -1)
         {
-            throw invalid_id(i);
+            throw InvalidId(i);
         }
 
         cb_size = static_cast<unsigned long>(signed_cb_size);
     }
 
-    array_streambuf asb(cb, static_cast<int>(cb_size));
+    ArrayStreambuf asb(cb, static_cast<int>(cb_size));
     std::istream is(&asb);
-    bitstream bis{is};
+    Bitstream bis{is};
 
     Rebuild(bis, cb_size, bos);
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
+void CodebookLibrary::Copy(Bitstream& bis, Bitoggstream& bos)
 {
     /* IN: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
 
-    Bit_uint<24> id;
-    Bit_uint<16> dimensions;
-    Bit_uint<24> entries;
+    BitUint<24> id;
+    BitUint<16> dimensions;
+    BitUint<24> entries;
 
     bis >> id >> dimensions >> entries;
 
     if (0x564342 != id)
     {
-        throw parse_error_str("invalid codebook identifier");
+        throw ParseErrorStr("invalid codebook identifier");
     }
 
     /* OUT: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
-    bos << id << Bit_uint<16>(dimensions) << Bit_uint<24>(entries);
+    bos << id << BitUint<16>(dimensions) << BitUint<24>(entries);
 
     // gather codeword lengths
 
     /* IN/OUT: 1 bit ordered flag */
-    Bit_uint<1> ordered;
+    BitUint<1> ordered;
     bis >> ordered;
     bos << ordered;
     if (ordered)
     {
         /* IN/OUT: 5 bit initial length */
-        Bit_uint<5> initial_length;
+        BitUint<5> initial_length;
         bis >> initial_length;
         bos << initial_length;
 
@@ -99,20 +99,20 @@ void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
         while (current_entry < entries)
         {
             /* IN/OUT: ilog(entries-current_entry) bit count w/ given length */
-            Bit_uintv number(Ilog(entries - current_entry));
+            BitUintv number(Ilog(entries - current_entry));
             bis >> number;
             bos << number;
             current_entry += number;
         }
         if (current_entry > entries)
         {
-            throw parse_error_str("current_entry out of range");
+            throw ParseErrorStr("current_entry out of range");
         }
     }
     else
     {
         /* IN/OUT: 1 bit sparse flag */
-        Bit_uint<1> sparse;
+        BitUint<1> sparse;
         bis >> sparse;
         bos << sparse;
 
@@ -123,7 +123,7 @@ void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
             if (sparse)
             {
                 /* IN/OUT 1 bit sparse presence flag */
-                Bit_uint<1> present;
+                BitUint<1> present;
                 bis >> present;
                 bos << present;
 
@@ -133,7 +133,7 @@ void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
             if (present_bool)
             {
                 /* IN/OUT: 5 bit codeword length-1 */
-                Bit_uint<5> codeword_length;
+                BitUint<5> codeword_length;
                 bis >> codeword_length;
                 bos << codeword_length;
             }
@@ -143,7 +143,7 @@ void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
     // lookup table
 
     /* IN/OUT: 4 bit lookup type */
-    Bit_uint<4> lookup_type;
+    BitUint<4> lookup_type;
     bis >> lookup_type;
     bos << lookup_type;
 
@@ -155,10 +155,10 @@ void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
     {
         /* IN/OUT: 32 bit minimum length, 32 bit maximum length, 4 bit value
          * length-1, 1 bit sequence flag */
-        Bit_uint<32> min;
-        Bit_uint<32> max;
-        Bit_uint<4> value_length;
-        Bit_uint<1> sequence_flag;
+        BitUint<32> min;
+        BitUint<32> max;
+        BitUint<4> value_length;
+        BitUint<1> sequence_flag;
         bis >> min >> max >> value_length >> sequence_flag;
         bos << min << max << value_length << sequence_flag;
 
@@ -166,44 +166,44 @@ void codebook_library::Copy(bitstream& bis, bitoggstream& bos)
         for (unsigned int i = 0; i < quantvals; ++i)
         {
             /* IN/OUT: n bit value */
-            Bit_uintv val(value_length + 1);
+            BitUintv val(value_length + 1);
             bis >> val;
             bos << val;
         }
     }
     else if (lookup_type == 2)
     {
-        throw parse_error_str("didn't expect lookup type 2");
+        throw ParseErrorStr("didn't expect lookup type 2");
     }
     else
     {
-        throw parse_error_str("invalid lookup type");
+        throw ParseErrorStr("invalid lookup type");
     }
 }
 
 /* cb_size == 0 to not check size (for an inline bitstream) */
-void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bitoggstream& bos)
+void CodebookLibrary::Rebuild(Bitstream& bis, const unsigned long cb_size, Bitoggstream& bos)
 {
     /* IN: 4 bit dimensions, 14 bit entry count */
 
-    Bit_uint<4> dimensions;
-    Bit_uint<14> entries;
+    BitUint<4> dimensions;
+    BitUint<14> entries;
 
     bis >> dimensions >> entries;
 
     /* OUT: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
-    bos << Bit_uint<24>(0x564342) << Bit_uint<16>(dimensions) << Bit_uint<24>(entries);
+    bos << BitUint<24>(0x564342) << BitUint<16>(dimensions) << BitUint<24>(entries);
 
     // gather codeword lengths
 
     /* IN/OUT: 1 bit ordered flag */
-    Bit_uint<1> ordered;
+    BitUint<1> ordered;
     bis >> ordered;
     bos << ordered;
     if (ordered)
     {
         /* IN/OUT: 5 bit initial length */
-        Bit_uint<5> initial_length;
+        BitUint<5> initial_length;
         bis >> initial_length;
         bos << initial_length;
 
@@ -211,26 +211,26 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
         while (current_entry < entries)
         {
             /* IN/OUT: ilog(entries-current_entry) bit count w/ given length */
-            Bit_uintv number(Ilog(entries - current_entry));
+            BitUintv number(Ilog(entries - current_entry));
             bis >> number;
             bos << number;
             current_entry += number;
         }
         if (current_entry > entries)
         {
-            throw parse_error_str("current_entry out of range");
+            throw ParseErrorStr("current_entry out of range");
         }
     }
     else
     {
         /* IN: 3 bit codeword length length, 1 bit sparse flag */
-        Bit_uint<3> codeword_length_length;
-        Bit_uint<1> sparse;
+        BitUint<3> codeword_length_length;
+        BitUint<1> sparse;
         bis >> codeword_length_length >> sparse;
 
         if (codeword_length_length == 0 || codeword_length_length > 5)
         {
-            throw parse_error_str("nonsense codeword length");
+            throw ParseErrorStr("nonsense codeword length");
         }
 
         /* OUT: 1 bit sparse flag */
@@ -243,7 +243,7 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
             if (sparse)
             {
                 /* IN/OUT 1 bit sparse presence flag */
-                Bit_uint<1> present;
+                BitUint<1> present;
                 bis >> present;
                 bos << present;
 
@@ -253,11 +253,11 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
             if (present_bool)
             {
                 /* IN: n bit codeword length-1 */
-                Bit_uintv codeword_length(codeword_length_length);
+                BitUintv codeword_length(codeword_length_length);
                 bis >> codeword_length;
 
                 /* OUT: 5 bit codeword length-1 */
-                bos << Bit_uint<5>(codeword_length);
+                bos << BitUint<5>(codeword_length);
             }
         }
     } // done with lengths
@@ -265,10 +265,10 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
     // lookup table
 
     /* IN: 1 bit lookup type */
-    Bit_uint<1> lookup_type;
+    BitUint<1> lookup_type;
     bis >> lookup_type;
     /* OUT: 4 bit lookup type */
-    bos << Bit_uint<4>(lookup_type);
+    bos << BitUint<4>(lookup_type);
 
     if (lookup_type == 0)
     {
@@ -278,10 +278,10 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
     {
         /* IN/OUT: 32 bit minimum length, 32 bit maximum length, 4 bit value
          * length-1, 1 bit sequence flag */
-        Bit_uint<32> min;
-        Bit_uint<32> max;
-        Bit_uint<4> value_length;
-        Bit_uint<1> sequence_flag;
+        BitUint<32> min;
+        BitUint<32> max;
+        BitUint<4> value_length;
+        BitUint<1> sequence_flag;
         bis >> min >> max >> value_length >> sequence_flag;
         bos << min << max << value_length << sequence_flag;
 
@@ -289,18 +289,18 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
         for (unsigned int i = 0; i < quantvals; ++i)
         {
             /* IN/OUT: n bit value */
-            Bit_uintv val(value_length + 1);
+            BitUintv val(value_length + 1);
             bis >> val;
             bos << val;
         }
     }
     else if (lookup_type == 2)
     {
-        throw parse_error_str("didn't expect lookup type 2");
+        throw ParseErrorStr("didn't expect lookup type 2");
     }
     else
     {
-        throw parse_error_str("invalid lookup type");
+        throw ParseErrorStr("invalid lookup type");
     }
 
     /* check that we used exactly all bytes */
@@ -308,7 +308,7 @@ void codebook_library::Rebuild(bitstream& bis, const unsigned long cb_size, bito
      */
     if (cb_size != 0 && bis.GetTotalBitsRead() / 8 + 1 != cb_size)
     {
-        throw size_mismatch(cb_size, bis.GetTotalBitsRead() / 8 + 1);
+        throw SizeMismatch(cb_size, bis.GetTotalBitsRead() / 8 + 1);
     }
 }
 

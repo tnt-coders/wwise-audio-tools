@@ -6,10 +6,6 @@
  * @note Modernized to C++23
  */
 
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS
-#endif
-
 #include <array>
 #include <cstdint>
 #include <istream>
@@ -168,27 +164,32 @@ namespace ww2ogg
 /**
  * @brief Bit-level input stream reader (LSB first)
  */
-class bitstream
+class Bitstream
 {
     std::istream& m_is;
 
-    unsigned char m_bit_buffer;
-    unsigned int m_bits_left;
-    unsigned long m_total_bits_read;
+    unsigned char m_bit_buffer{0};
+    ;
+    {0};
+    unsigned int m_bits_left{0};
+    ;
+    {0};
+    unsigned long m_total_bits_read{0};
+    ;
+    {0};
 
   public:
-    class Weird_char_size
+    class WeirdCharSize
     {
     };
-    class Out_of_bits
+    class OutOfBits
     {
     };
 
-    explicit bitstream(std::istream& is)
-        : m_is(is), m_bit_buffer(0), m_bits_left(0), m_total_bits_read(0)
+    explicit Bitstream(std::istream& is) : m_is(is)
     {
         if (std::numeric_limits<unsigned char>::digits != 8)
-            throw Weird_char_size();
+            throw WeirdCharSize();
     }
 
     [[nodiscard]] bool GetBit()
@@ -197,7 +198,7 @@ class bitstream
         {
             int c = m_is.get();
             if (c == EOF)
-                throw Out_of_bits();
+                throw OutOfBits();
             m_bit_buffer = static_cast<unsigned char>(c);
             m_bits_left = 8;
         }
@@ -215,38 +216,48 @@ class bitstream
 /**
  * @brief Bit-level OGG output stream writer
  */
-class bitoggstream
+class Bitoggstream
 {
     std::ostream& m_os;
 
-    unsigned char m_bit_buffer;
-    unsigned int m_bits_stored;
+    unsigned char m_bit_buffer{0};
+    ;
+    {0};
+    unsigned int m_bits_stored{0};
+    ;
+    {0};
 
     enum
     {
-        header_bytes = 27,
-        max_segments = 255,
-        segment_size = 255
+        HEADER_BYTES = 27,
+        MAX_SEGMENTS = 255,
+        SEGMENT_SIZE = 255
     };
 
-    unsigned int m_payload_bytes;
-    bool m_first, m_continued;
-    std::array<unsigned char, header_bytes + max_segments + segment_size * max_segments>
+    unsigned int m_payload_bytes{0};
+    ;
+    {0};
+    bool m_first{true};
+    ;
+    {true}, m_continued{false} {false};
+    std::array<unsigned char, HEADER_BYTES + MAX_SEGMENTS + SEGMENT_SIZE * MAX_SEGMENTS>
         m_page_buffer{};
-    uint32_t m_granule;
-    uint32_t m_seqno;
+    uint32_t m_granule{0};
+    ;
+    {0};
+    uint32_t m_seqno{0};
+    ;
+    {0};
 
   public:
-    class Weird_char_size
+    class WeirdCharSize
     {
     };
 
-    explicit bitoggstream(std::ostream& os)
-        : m_os(os), m_bit_buffer(0), m_bits_stored(0), m_payload_bytes(0), m_first(true),
-          m_continued(false), m_granule(0), m_seqno(0)
+    explicit Bitoggstream(std::ostream& os) : m_os(os)
     {
         if (std::numeric_limits<unsigned char>::digits != 8)
-            throw Weird_char_size();
+            throw WeirdCharSize();
     }
 
     void PutBit(const bool bit)
@@ -270,12 +281,12 @@ class bitoggstream
     {
         if (m_bits_stored != 0)
         {
-            if (m_payload_bytes == segment_size * max_segments)
+            if (m_payload_bytes == SEGMENT_SIZE * MAX_SEGMENTS)
             {
-                throw parse_error_str("ran out of space in an Ogg packet");
+                throw ParseErrorStr("ran out of space in an Ogg packet");
             }
 
-            m_page_buffer[header_bytes + max_segments + m_payload_bytes] = m_bit_buffer;
+            m_page_buffer[HEADER_BYTES + MAX_SEGMENTS + m_payload_bytes] = m_bit_buffer;
             ++m_payload_bytes;
 
             m_bits_stored = 0;
@@ -285,7 +296,7 @@ class bitoggstream
 
     void FlushPage(const bool next_continued = false, const bool last = false)
     {
-        if (m_payload_bytes != segment_size * max_segments)
+        if (m_payload_bytes != SEGMENT_SIZE * MAX_SEGMENTS)
         {
             FlushBits();
         }
@@ -293,15 +304,15 @@ class bitoggstream
         if (m_payload_bytes != 0)
         {
             unsigned int segments =
-                (m_payload_bytes + segment_size) / segment_size; // intentionally round up
-            if (segments == max_segments + 1)
-                segments = max_segments; // at max eschews the final 0
+                (m_payload_bytes + SEGMENT_SIZE) / SEGMENT_SIZE; // intentionally round up
+            if (segments == MAX_SEGMENTS + 1)
+                segments = MAX_SEGMENTS; // at max eschews the final 0
 
             // move payload back
             for (unsigned int i = 0; i < m_payload_bytes; ++i)
             {
-                m_page_buffer[header_bytes + segments + i] =
-                    m_page_buffer[header_bytes + max_segments + i];
+                m_page_buffer[HEADER_BYTES + segments + i] =
+                    m_page_buffer[HEADER_BYTES + MAX_SEGMENTS + i];
             }
 
             m_page_buffer[0] = 'O';
@@ -323,10 +334,10 @@ class bitoggstream
             // lacing values
             for (unsigned int i = 0, bytes_left = m_payload_bytes; i < segments; ++i)
             {
-                if (bytes_left >= segment_size)
+                if (bytes_left >= SEGMENT_SIZE)
                 {
-                    bytes_left -= segment_size;
-                    m_page_buffer[27 + i] = segment_size;
+                    bytes_left -= SEGMENT_SIZE;
+                    m_page_buffer[27 + i] = SEGMENT_SIZE;
                 }
                 else
                 {
@@ -336,10 +347,10 @@ class bitoggstream
 
             // checksum
             Write32Le(&m_page_buffer[22],
-                      checksum(m_page_buffer.data(), header_bytes + segments + m_payload_bytes));
+                      Checksum(m_page_buffer.data(), HEADER_BYTES + segments + m_payload_bytes));
 
             // output to ostream
-            for (unsigned int i = 0; i < header_bytes + segments + m_payload_bytes; ++i)
+            for (unsigned int i = 0; i < HEADER_BYTES + segments + m_payload_bytes; ++i)
             {
                 m_os.put(static_cast<char>(m_page_buffer[i]));
             }
@@ -351,7 +362,7 @@ class bitoggstream
         }
     }
 
-    ~bitoggstream() noexcept
+    ~Bitoggstream() noexcept
     {
         try
         {
@@ -366,36 +377,36 @@ class bitoggstream
 /**
  * @brief Fixed-size bit integer for compile-time sized bit fields
  */
-template <unsigned int BIT_SIZE> class Bit_uint
+template <unsigned int BitSize> class BitUint
 {
     unsigned int m_total;
 
   public:
-    class Too_many_bits
+    class TooManyBits
     {
     };
-    class Int_too_big
+    class IntTooBig
     {
     };
 
-    Bit_uint() : m_total(0)
+    BitUint() : m_total(0)
     {
-        if (BIT_SIZE > static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
-            throw Too_many_bits();
+        if (BitSize > static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
+            throw TooManyBits();
     }
 
-    explicit Bit_uint(const unsigned int v) : m_total(v)
+    explicit BitUint(const unsigned int v) : m_total(v)
     {
-        if (BIT_SIZE > static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
-            throw Too_many_bits();
-        if ((v >> (BIT_SIZE - 1U)) > 1U)
-            throw Int_too_big();
+        if (BitSize > static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
+            throw TooManyBits();
+        if ((v >> (BitSize - 1U)) > 1U)
+            throw IntTooBig();
     }
 
-    Bit_uint& operator=(unsigned int v)
+    BitUint& operator=(unsigned int v)
     {
-        if ((v >> (BIT_SIZE - 1U)) > 1U)
-            throw Int_too_big();
+        if ((v >> (BitSize - 1U)) > 1U)
+            throw IntTooBig();
         m_total = v;
         return *this;
     }
@@ -405,10 +416,10 @@ template <unsigned int BIT_SIZE> class Bit_uint
         return m_total;
     }
 
-    friend bitstream& operator>>(bitstream& bstream, Bit_uint& bui)
+    friend Bitstream& operator>>(Bitstream& bstream, BitUint& bui)
     {
         bui.m_total = 0;
-        for (unsigned int i = 0; i < BIT_SIZE; ++i)
+        for (unsigned int i = 0; i < BitSize; ++i)
         {
             if (bstream.GetBit())
                 bui.m_total |= (1U << i);
@@ -416,9 +427,9 @@ template <unsigned int BIT_SIZE> class Bit_uint
         return bstream;
     }
 
-    friend bitoggstream& operator<<(bitoggstream& bstream, const Bit_uint& bui)
+    friend Bitoggstream& operator<<(Bitoggstream& bstream, const BitUint& bui)
     {
-        for (unsigned int i = 0; i < BIT_SIZE; ++i)
+        for (unsigned int i = 0; i < BitSize; ++i)
         {
             bstream.PutBit((bui.m_total & (1U << i)) != 0);
         }
@@ -429,37 +440,37 @@ template <unsigned int BIT_SIZE> class Bit_uint
 /**
  * @brief Variable-size bit integer for runtime-sized bit fields
  */
-class Bit_uintv
+class BitUintv
 {
     unsigned int m_size;
     unsigned int m_total;
 
   public:
-    class Too_many_bits
+    class TooManyBits
     {
     };
-    class Int_too_big
+    class IntTooBig
     {
     };
 
-    explicit Bit_uintv(const unsigned int s) : m_size(s), m_total(0)
+    explicit BitUintv(const unsigned int s) : m_size(s), m_total(0)
     {
         if (s > static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
-            throw Too_many_bits();
+            throw TooManyBits();
     }
 
-    Bit_uintv(const unsigned int s, const unsigned int v) : m_size(s), m_total(v)
+    BitUintv(const unsigned int s, const unsigned int v) : m_size(s), m_total(v)
     {
         if (m_size > static_cast<unsigned int>(std::numeric_limits<unsigned int>::digits))
-            throw Too_many_bits();
+            throw TooManyBits();
         if ((v >> (m_size - 1U)) > 1U)
-            throw Int_too_big();
+            throw IntTooBig();
     }
 
-    Bit_uintv& operator=(unsigned int v)
+    BitUintv& operator=(unsigned int v)
     {
         if ((v >> (m_size - 1U)) > 1U)
-            throw Int_too_big();
+            throw IntTooBig();
         m_total = v;
         return *this;
     }
@@ -469,7 +480,7 @@ class Bit_uintv
         return m_total;
     }
 
-    friend bitstream& operator>>(bitstream& bstream, Bit_uintv& bui)
+    friend Bitstream& operator>>(Bitstream& bstream, BitUintv& bui)
     {
         bui.m_total = 0;
         for (unsigned int i = 0; i < bui.m_size; ++i)
@@ -480,7 +491,7 @@ class Bit_uintv
         return bstream;
     }
 
-    friend bitoggstream& operator<<(bitoggstream& bstream, const Bit_uintv& bui)
+    friend Bitoggstream& operator<<(Bitoggstream& bstream, const BitUintv& bui)
     {
         for (unsigned int i = 0; i < bui.m_size; ++i)
         {
@@ -493,23 +504,23 @@ class Bit_uintv
 /**
  * @brief Stream buffer backed by a character array
  */
-class array_streambuf : public std::streambuf
+class ArrayStreambuf : public std::streambuf
 {
     // Non-copyable, non-movable
-    array_streambuf& operator=(const array_streambuf&) = delete;
-    array_streambuf(const array_streambuf&) = delete;
-    array_streambuf(array_streambuf&&) = delete;
-    array_streambuf& operator=(array_streambuf&&) = delete;
+    ArrayStreambuf& operator=(const ArrayStreambuf&) = delete;
+    ArrayStreambuf(const ArrayStreambuf&) = delete;
+    ArrayStreambuf(ArrayStreambuf&&) = delete;
+    ArrayStreambuf& operator=(ArrayStreambuf&&) = delete;
 
     std::vector<char> m_arr;
 
   public:
-    array_streambuf(const char* const a, const int l) : m_arr(a, a + l)
+    ArrayStreambuf(const char* const a, const int l) : m_arr(a, a + l)
     {
         setg(m_arr.data(), m_arr.data(), m_arr.data() + m_arr.size());
     }
 
-    ~array_streambuf() override = default;
+    ~ArrayStreambuf() override = default;
 };
 
 } // namespace ww2ogg

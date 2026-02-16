@@ -24,8 +24,8 @@ namespace
  */
 struct EventSFX
 {
-    bnk_t::action_type_t m_action_type{};
-    bnk_t::sound_effect_or_voice_t* m_sfx = nullptr;
+    BnkT::ActionTypeT m_action_type{};
+    BnkT::SoundEffectOrVoiceT* m_sfx = nullptr;
     bool m_is_child = false;
 };
 
@@ -35,13 +35,13 @@ struct EventSFX
  * @param type Section type to find (e.g., "DATA", "BKHD", "DIDX", "HIRC")
  * @return Pointer to section data, or nullptr if not found
  */
-template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view type)
+template <typename T> [[nodiscard]] T* FindSection(BnkT& bnk, std::string_view type)
 {
-    for (const auto& section : *bnk.data())
+    for (const auto& section : *bnk.Data())
     {
-        if (section->type() == type)
+        if (section->Type() == type)
         {
-            return static_cast<T*>(section->section_data());
+            return static_cast<T*>(section->SectionData());
         }
     }
     return nullptr;
@@ -50,10 +50,10 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
 /**
  * @brief Get parent ID from sound structure
  */
-[[nodiscard]] std::uint32_t GetParentId(bnk_t::sound_effect_or_voice_t* sfx)
+[[nodiscard]] std::uint32_t GetParentId(BnkT::SoundEffectOrVoiceT* sfx)
 {
     std::uint32_t parent_id_offset = 6;
-    const auto& sound_structure = sfx->sound_structure();
+    const auto& sound_structure = sfx->SoundStructure();
 
     if (sound_structure.size() < 2)
     {
@@ -85,17 +85,17 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
 /**
  * @brief Get a string with the action type from the enum
  */
-[[nodiscard]] std::string_view GetEventActionType(const bnk_t::action_type_t action_type)
+[[nodiscard]] std::string_view GetEventActionType(const BnkT::ActionTypeT action_type)
 {
     switch (action_type)
     {
-    case bnk_t::ACTION_TYPE_PLAY:
+    case BnkT::ACTION_TYPE_PLAY:
         return "play";
-    case bnk_t::ACTION_TYPE_PAUSE:
+    case BnkT::ACTION_TYPE_PAUSE:
         return "pause";
-    case bnk_t::ACTION_TYPE_STOP:
+    case BnkT::ACTION_TYPE_STOP:
         return "stop";
-    case bnk_t::ACTION_TYPE_RESUME:
+    case BnkT::ACTION_TYPE_RESUME:
         return "resume";
     default:
         // For unknown types, we need to return a stable string
@@ -112,19 +112,18 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
  * @param event_id The event ID to look up
  * @return The event name, or empty string if not found or STID section is missing
  */
-[[nodiscard]] std::string LookupEventName(bnk_t::stid_data_t* stid_data,
-                                          const std::uint32_t event_id)
+[[nodiscard]] std::string LookupEventName(BnkT::StidDataT* stid_data, const std::uint32_t event_id)
 {
     if (!stid_data)
     {
         return {};
     }
 
-    for (const auto* stid_obj : *stid_data->objs())
+    for (const auto* stid_obj : *stid_data->Objs())
     {
-        if (stid_obj->id() == event_id)
+        if (stid_obj->Id() == event_id)
         {
-            return stid_obj->name();
+            return stid_obj->Name();
         }
     }
 
@@ -139,44 +138,44 @@ namespace wwtools::bnk
 void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 {
     kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
+    BnkT bnk(&ks);
 
-    auto* data_section = FindSection<bnk_t::data_data_t>(bnk, "DATA");
+    auto* data_section = FindSection<BnkT::DataDataT>(bnk, "DATA");
     if (!data_section)
     {
         return;
     }
 
-    const auto num_files = data_section->didx_data()->num_files();
+    const auto num_files = data_section->DidxData()->NumFiles();
     outdata.reserve(num_files);
 
-    for (const auto& file_data : *data_section->data_obj_section()->data())
+    for (const auto& file_data : *data_section->DataObjSection()->Data())
     {
-        outdata.push_back(file_data->file());
+        outdata.push_back(file_data->File());
     }
 }
 
 [[nodiscard]] std::string GetInfo(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
+    BnkT bnk(&ks);
 
     std::string result;
 
     // Get bank header info
-    if (auto* bkhd = FindSection<bnk_t::bkhd_data_t>(bnk, "BKHD"))
+    if (auto* bkhd = FindSection<BnkT::BkhdDataT>(bnk, "BKHD"))
     {
-        result += std::format("Version: {}\n", bkhd->version());
-        result += std::format("Soundbank ID: {}\n", bkhd->id());
+        result += std::format("Version: {}\n", bkhd->Version());
+        result += std::format("Soundbank ID: {}\n", bkhd->Id());
     }
 
     // Get data index info
-    if (auto* didx = FindSection<bnk_t::didx_data_t>(bnk, "DIDX"))
+    if (auto* didx = FindSection<BnkT::DidxDataT>(bnk, "DIDX"))
     {
-        result += std::format("{} embedded WEM files:\n", didx->num_files());
-        for (const auto& index : *didx->objs())
+        result += std::format("{} embedded WEM files:\n", didx->NumFiles());
+        for (const auto& index : *didx->Objs())
         {
-            result += std::format("\t{}\n", index->id());
+            result += std::format("\t{}\n", index->Id());
         }
     }
 
@@ -187,33 +186,33 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
                                          const std::string_view in_event_id)
 {
     kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
+    BnkT bnk(&ks);
 
-    auto* hirc_data = FindSection<bnk_t::hirc_data_t>(bnk, "HIRC");
+    auto* hirc_data = FindSection<BnkT::HircDataT>(bnk, "HIRC");
     if (!hirc_data)
     {
         return {};
     }
 
     // Load STID section for event name lookup (may be nullptr if not present)
-    auto* stid_data = FindSection<bnk_t::stid_data_t>(bnk, "STID");
+    auto* stid_data = FindSection<BnkT::StidDataT>(bnk, "STID");
 
     const bool all_event_ids = in_event_id.empty();
     std::size_t num_events = 0;
 
     // Map events to their event actions
-    std::map<std::uint32_t, std::vector<bnk_t::event_action_t*>> event_to_event_actions;
+    std::map<std::uint32_t, std::vector<BnkT::EventActionT*>> event_to_event_actions;
 
-    for (const auto& obj : *hirc_data->objs())
+    for (const auto& obj : *hirc_data->Objs())
     {
-        if (obj->type() != bnk_t::OBJECT_TYPE_EVENT)
+        if (obj->Type() != BnkT::OBJECT_TYPE_EVENT)
         {
             continue;
         }
 
         ++num_events;
-        auto* event = dynamic_cast<bnk_t::event_t*>(obj->object_data());
-        const auto obj_id_str = std::to_string(obj->id());
+        auto* event = dynamic_cast<BnkT::EventT*>(obj->ObjectData());
+        const auto obj_id_str = std::to_string(obj->Id());
 
         // Check if we should process this event
         if (!all_event_ids && obj_id_str != in_event_id)
@@ -222,20 +221,19 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
         }
 
         // Find matching event actions
-        for (const auto& event_action_id : *event->event_actions())
+        for (const auto& event_action_id : *event->EventActions())
         {
-            for (const auto& action_obj : *hirc_data->objs())
+            for (const auto& action_obj : *hirc_data->Objs())
             {
-                if (action_obj->type() != bnk_t::OBJECT_TYPE_EVENT_ACTION)
+                if (action_obj->Type() != BnkT::OBJECT_TYPE_EVENT_ACTION)
                 {
                     continue;
                 }
 
-                auto* event_action =
-                    dynamic_cast<bnk_t::event_action_t*>(action_obj->object_data());
-                if (action_obj->id() == event_action_id && event_action->game_object_id() != 0)
+                auto* event_action = dynamic_cast<BnkT::EventActionT*>(action_obj->ObjectData());
+                if (action_obj->Id() == event_action_id && event_action->GameObjectId() != 0)
                 {
-                    event_to_event_actions[obj->id()].push_back(event_action);
+                    event_to_event_actions[obj->Id()].push_back(event_action);
                 }
             }
         }
@@ -244,27 +242,27 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     // Map events to their SFX
     std::map<std::uint32_t, std::vector<EventSFX>> event_to_event_sfxs;
 
-    for (const auto& obj : *hirc_data->objs())
+    for (const auto& obj : *hirc_data->Objs())
     {
-        if (obj->type() != bnk_t::OBJECT_TYPE_SOUND_EFFECT_OR_VOICE)
+        if (obj->Type() != BnkT::OBJECT_TYPE_SOUND_EFFECT_OR_VOICE)
         {
             continue;
         }
 
-        auto* sfx = dynamic_cast<bnk_t::sound_effect_or_voice_t*>(obj->object_data());
+        auto* sfx = dynamic_cast<BnkT::SoundEffectOrVoiceT*>(obj->ObjectData());
         const auto parent_id = GetParentId(sfx);
 
         for (const auto& [event_id, event_actions] : event_to_event_actions)
         {
             for (const auto* event_action : event_actions)
             {
-                const auto game_obj_id = event_action->game_object_id();
-                if (game_obj_id != obj->id() && game_obj_id != parent_id)
+                const auto game_obj_id = event_action->GameObjectId();
+                if (game_obj_id != obj->Id() && game_obj_id != parent_id)
                 {
                     continue;
                 }
 
-                event_to_event_sfxs[event_id].push_back({.m_action_type = event_action->type(),
+                event_to_event_sfxs[event_id].push_back({.m_action_type = event_action->Type(),
                                                          .m_sfx = sfx,
                                                          .m_is_child = (game_obj_id == parent_id)});
             }
@@ -284,9 +282,9 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 
         for (const auto& event_sfx : event_sfxs)
         {
-            result += std::format("\t{} {}{}\n", GetEventActionType(event_sfx.m_action_type),
-                                  event_sfx.m_sfx->audio_file_id(),
-                                  event_sfx.m_is_child ? " (child)" : "");
+            result +=
+                std::format("\t{} {}{}\n", GetEventActionType(event_sfx.m_action_type),
+                            event_sfx.m_sfx->AudioFileId(), event_sfx.m_is_child ? " (child)" : "");
         }
         result += '\n';
     }
@@ -297,15 +295,15 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 [[nodiscard]] std::string GetWemIdAtIndex(const std::string_view indata, const std::size_t index)
 {
     kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
+    BnkT bnk(&ks);
 
-    auto* didx = FindSection<bnk_t::didx_data_t>(bnk, "DIDX");
-    if (!didx || index >= didx->objs()->size())
+    auto* didx = FindSection<BnkT::DidxDataT>(bnk, "DIDX");
+    if (!didx || index >= didx->Objs()->size())
     {
         return {};
     }
 
-    return std::to_string(didx->objs()->at(index)->id());
+    return std::to_string(didx->Objs()->at(index)->Id());
 }
 
 [[nodiscard]] std::string GetEventNameFromId([[maybe_unused]] const std::uint32_t event_id)
@@ -320,20 +318,20 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 [[nodiscard]] std::vector<std::uint32_t> GetWemIds(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
+    BnkT bnk(&ks);
 
     std::vector<std::uint32_t> ids;
 
-    auto* didx = FindSection<bnk_t::didx_data_t>(bnk, "DIDX");
+    auto* didx = FindSection<BnkT::DidxDataT>(bnk, "DIDX");
     if (!didx)
     {
         return ids;
     }
 
-    ids.reserve(didx->objs()->size());
-    for (const auto& obj : *didx->objs())
+    ids.reserve(didx->Objs()->size());
+    for (const auto& obj : *didx->Objs())
     {
-        ids.push_back(obj->id());
+        ids.push_back(obj->Id());
     }
 
     return ids;
@@ -342,27 +340,27 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 [[nodiscard]] std::vector<std::uint32_t> GetStreamedWemIds(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
+    BnkT bnk(&ks);
 
     std::vector<std::uint32_t> ids;
 
-    auto* hirc_data = FindSection<bnk_t::hirc_data_t>(bnk, "HIRC");
+    auto* hirc_data = FindSection<BnkT::HircDataT>(bnk, "HIRC");
     if (!hirc_data)
     {
         return ids;
     }
 
-    for (const auto& obj : *hirc_data->objs())
+    for (const auto& obj : *hirc_data->Objs())
     {
-        if (obj->type() != bnk_t::OBJECT_TYPE_SOUND_EFFECT_OR_VOICE)
+        if (obj->Type() != BnkT::OBJECT_TYPE_SOUND_EFFECT_OR_VOICE)
         {
             continue;
         }
 
-        auto* sfx = dynamic_cast<bnk_t::sound_effect_or_voice_t*>(obj->object_data());
-        if (sfx->included_or_streamed() != 0)
+        auto* sfx = dynamic_cast<BnkT::SoundEffectOrVoiceT*>(obj->ObjectData());
+        if (sfx->IncludedOrStreamed() != 0)
         {
-            ids.push_back(sfx->audio_file_id());
+            ids.push_back(sfx->AudioFileId());
         }
     }
 

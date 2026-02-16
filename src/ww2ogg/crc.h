@@ -7,7 +7,7 @@ extern "C"
 {
 #endif // __cplusplus
 
-    uint32_t checksum(unsigned char* data, int bytes);
+    uint32_t Checksum(unsigned char* data, int bytes);
 
 #ifdef __cplusplus
 }

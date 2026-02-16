@@ -21,9 +21,8 @@ void Ww2Ogg(const std::string& indata, std::ostream& outdata,
 {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     const std::string codebooks_data_s(reinterpret_cast<const char*>(codebooks_data),
-                                       packed_codebooks_bin_len);
-    Wwise_RIFF_Vorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup,
-                         force_packet_format);
+                                       g_packed_codebooks_bin_len);
+    WwiseRiffVorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup, force_packet_format);
 
     ww.GenerateOgg(outdata);
 }
@@ -35,9 +34,8 @@ void Ww2Ogg(const std::string& indata, std::ostream& outdata,
 {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     const std::string codebooks_data_s(reinterpret_cast<const char*>(codebooks_data),
-                                       packed_codebooks_bin_len);
-    Wwise_RIFF_Vorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup,
-                         force_packet_format);
+                                       g_packed_codebooks_bin_len);
+    WwiseRiffVorbis ww(indata, codebooks_data_s, inline_codebooks, full_setup, force_packet_format);
     return ww.GetInfo();
 }
 

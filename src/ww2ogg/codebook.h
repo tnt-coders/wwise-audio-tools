@@ -72,31 +72,31 @@ namespace ww2ogg
 /**
  * @brief Manages a library of Vorbis codebooks
  */
-class codebook_library
+class CodebookLibrary
 {
     std::vector<char> m_codebook_data;
     std::vector<long> m_codebook_offsets;
 
     // Non-copyable
-    codebook_library(const codebook_library&) = delete;
-    codebook_library& operator=(const codebook_library&) = delete;
+    CodebookLibrary(const CodebookLibrary&) = delete;
+    CodebookLibrary& operator=(const CodebookLibrary&) = delete;
 
   public:
     // Movable
-    codebook_library(codebook_library&&) = default;
-    codebook_library& operator=(codebook_library&&) = default;
+    CodebookLibrary(CodebookLibrary&&) = default;
+    CodebookLibrary& operator=(CodebookLibrary&&) = default;
 
     /**
      * @brief Construct from codebook data string
      */
-    explicit codebook_library(const std::string& indata);
+    explicit CodebookLibrary(const std::string& indata);
 
     /**
      * @brief Construct empty library (for inline codebooks)
      */
-    codebook_library();
+    CodebookLibrary();
 
-    ~codebook_library() = default;
+    ~CodebookLibrary() = default;
 
     /**
      * @brief Get pointer to codebook data
@@ -105,7 +105,7 @@ class codebook_library
     {
         if (m_codebook_data.empty() || m_codebook_offsets.empty())
         {
-            throw parse_error_str("codebook library not loaded");
+            throw ParseErrorStr("codebook library not loaded");
         }
         if (i >= static_cast<int>(m_codebook_offsets.size()) - 1 || i < 0)
         {
@@ -121,7 +121,7 @@ class codebook_library
     {
         if (m_codebook_data.empty() || m_codebook_offsets.empty())
         {
-            throw parse_error_str("codebook library not loaded");
+            throw ParseErrorStr("codebook library not loaded");
         }
         if (i >= static_cast<int>(m_codebook_offsets.size()) - 1 || i < 0)
         {
@@ -130,9 +130,9 @@ class codebook_library
         return m_codebook_offsets[i + 1] - m_codebook_offsets[i];
     }
 
-    void Rebuild(int i, bitoggstream& bos);
-    void Rebuild(bitstream& bis, unsigned long cb_size, bitoggstream& bos);
-    void Copy(bitstream& bis, bitoggstream& bos);
+    void Rebuild(int i, Bitoggstream& bos);
+    void Rebuild(Bitstream& bis, unsigned long cb_size, Bitoggstream& bos);
+    void Copy(Bitstream& bis, Bitoggstream& bos);
 };
 
 } // namespace ww2ogg

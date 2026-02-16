@@ -19,22 +19,22 @@
 namespace ww2ogg
 {
 
-inline constexpr const char* VERSION = "0.24";
+inline constexpr const char* g_version = "0.24";
 
 /**
  * @brief Force specific packet format during conversion
  */
 enum ForcePacketFormat
 {
-    kNoForcePacketFormat,
-    kForceModPackets,
-    kForceNoModPackets
+    K_NO_FORCE_PACKET_FORMAT,
+    K_FORCE_MOD_PACKETS,
+    K_FORCE_NO_MOD_PACKETS
 };
 
 /**
  * @brief Parser and converter for Wwise RIFF Vorbis files
  */
-class Wwise_RIFF_Vorbis
+class WwiseRiffVorbis
 {
     std::string m_codebooks_data;
     std::stringstream m_indata;
@@ -92,14 +92,14 @@ class Wwise_RIFF_Vorbis
     uint32_t (*m_read_32)(std::istream& is) = nullptr;
 
   public:
-    Wwise_RIFF_Vorbis(const std::string& indata, std::string codebooks_data, bool inline_codebooks,
-                      bool full_setup, ForcePacketFormat force_packet_format);
+    WwiseRiffVorbis(const std::string& indata, std::string codebooks_data, bool inline_codebooks,
+                    bool full_setup, ForcePacketFormat force_packet_format);
 
     [[nodiscard]] std::string GetInfo();
 
     void GenerateOgg(std::ostream& os);
-    void GenerateOggHeader(bitoggstream& os, std::vector<bool>& mode_blockflag, int& mode_bits);
-    void GenerateOggHeaderWithTriad(bitoggstream& os);
+    void GenerateOggHeader(Bitoggstream& os, std::vector<bool>& mode_blockflag, int& mode_bits);
+    void GenerateOggHeaderWithTriad(Bitoggstream& os);
 };
 
 } // namespace ww2ogg

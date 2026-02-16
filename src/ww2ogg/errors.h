@@ -18,10 +18,10 @@ namespace ww2ogg
 /**
  * @brief Error for invalid command-line arguments
  */
-class Argument_error : public std::runtime_error
+class ArgumentError : public std::runtime_error
 {
   public:
-    explicit Argument_error(std::string_view str)
+    explicit ArgumentError(std::string_view str)
         : std::runtime_error(std::format("Argument error: {}", str))
     {
     }
@@ -30,10 +30,10 @@ class Argument_error : public std::runtime_error
 /**
  * @brief Error for file opening failures
  */
-class file_open_error : public std::runtime_error
+class FileOpenError : public std::runtime_error
 {
   public:
-    explicit file_open_error(std::string_view name)
+    explicit FileOpenError(std::string_view name)
         : std::runtime_error(std::format("Error opening {}", name))
     {
     }
@@ -42,13 +42,13 @@ class file_open_error : public std::runtime_error
 /**
  * @brief Base class for parsing errors
  */
-class parse_error : public std::runtime_error
+class ParseError : public std::runtime_error
 {
   public:
-    parse_error() : std::runtime_error("Parse error: unspecified")
+    ParseError() : std::runtime_error("Parse error: unspecified")
     {
     }
-    explicit parse_error(std::string_view msg)
+    explicit ParseError(std::string_view msg)
         : std::runtime_error(std::format("Parse error: {}", msg))
     {
     }
@@ -57,10 +57,10 @@ class parse_error : public std::runtime_error
 /**
  * @brief Parse error with string message
  */
-class parse_error_str : public parse_error
+class ParseErrorStr : public ParseError
 {
   public:
-    explicit parse_error_str(std::string_view s) : parse_error(s)
+    explicit ParseErrorStr(std::string_view s) : ParseError(s)
     {
     }
 };
@@ -68,11 +68,11 @@ class parse_error_str : public parse_error
 /**
  * @brief Error for size mismatches during parsing
  */
-class size_mismatch : public parse_error
+class SizeMismatch : public ParseError
 {
   public:
-    size_mismatch(std::size_t real_s, std::size_t read_s)
-        : parse_error(std::format("expected {} bits, read {}", real_s, read_s))
+    SizeMismatch(std::size_t real_s, std::size_t read_s)
+        : ParseError(std::format("expected {} bits, read {}", real_s, read_s))
     {
     }
 };
@@ -80,17 +80,17 @@ class size_mismatch : public parse_error
 /**
  * @brief Error for invalid codebook IDs
  */
-class invalid_id : public parse_error
+class InvalidId : public ParseError
 {
     int m_id;
 
   public:
-    explicit invalid_id(int i)
-        : parse_error(std::format("invalid codebook id {}, try --inline-codebooks", i)), m_id(i)
+    explicit InvalidId(int i)
+        : ParseError(std::format("invalid codebook id {}, try --inline-codebooks", i)), m_id(i)
     {
     }
 
-    [[nodiscard]] int id() const
+    [[nodiscard]] int Id() const
     {
         return m_id;
     }
