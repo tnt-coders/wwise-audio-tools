@@ -169,14 +169,8 @@ class Bitstream
     std::istream& m_is;
 
     unsigned char m_bit_buffer{0};
-    ;
-    {0};
     unsigned int m_bits_left{0};
-    ;
-    {0};
     unsigned long m_total_bits_read{0};
-    ;
-    {0};
 
   public:
     class WeirdCharSize
@@ -221,11 +215,7 @@ class Bitoggstream
     std::ostream& m_os;
 
     unsigned char m_bit_buffer{0};
-    ;
-    {0};
     unsigned int m_bits_stored{0};
-    ;
-    {0};
 
     enum
     {
@@ -235,19 +225,12 @@ class Bitoggstream
     };
 
     unsigned int m_payload_bytes{0};
-    ;
-    {0};
     bool m_first{true};
-    ;
-    {true}, m_continued{false} {false};
+    bool m_continued{false};
     std::array<unsigned char, HEADER_BYTES + MAX_SEGMENTS + SEGMENT_SIZE * MAX_SEGMENTS>
         m_page_buffer{};
     uint32_t m_granule{0};
-    ;
-    {0};
     uint32_t m_seqno{0};
-    ;
-    {0};
 
   public:
     class WeirdCharSize
