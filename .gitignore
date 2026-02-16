@@ -1,6 +1,9 @@
 # User specific IDE config
 .idea
 
+# Claude project context generated with /init
+CLAUDE.md
+
 # CMake user presets
 CMakeUserPresets.json
 
