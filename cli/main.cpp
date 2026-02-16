@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
  */
 void Convert(const std::string_view indata, const fs::path& outpath)
 {
-    const auto outdata = wwtools::WemToOgg(std::string{indata});
+    const auto outdata = wwtools::Wem2Ogg(std::string{indata});
 
     std::ofstream fout(outpath, std::ios::binary);
     if (!fout)

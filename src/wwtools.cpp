@@ -20,7 +20,7 @@
 namespace wwtools
 {
 
-[[nodiscard]] std::string WemToOgg(const std::string_view indata)
+[[nodiscard]] std::string Wem2Ogg(const std::string_view indata)
 {
     std::stringstream wem_out;
     std::stringstream revorb_out;
@@ -37,7 +37,7 @@ namespace wwtools
     return revorb_out.str();
 }
 
-[[nodiscard]] std::vector<BnkWem> BnkExtract(const std::string_view indata)
+[[nodiscard]] std::vector<BnkEntry> BnkExtract(const std::string_view indata)
 {
     const auto ids = bnk::GetWemIds(indata);
     const auto streamed_ids = bnk::GetStreamedWemIds(indata);
@@ -45,7 +45,7 @@ namespace wwtools
     std::vector<std::string> raw_wems;
     bnk::Extract(indata, raw_wems);
 
-    std::vector<BnkWem> result;
+    std::vector<BnkEntry> result;
     result.reserve(ids.size());
 
     for (std::size_t i = 0; i < ids.size(); ++i)

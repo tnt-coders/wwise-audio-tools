@@ -27,7 +27,7 @@ namespace wwtools
 /**
  * @brief Information about a WEM referenced by a BNK soundbank
  */
-struct BnkWem
+struct BnkEntry
 {
     std::uint32_t id; ///< WEM ID
     bool streamed;    ///< true if the WEM is streamed (external .wem file needed)
@@ -41,7 +41,7 @@ struct BnkWem
  * @return OGG file data
  * @throws std::exception on conversion failure
  */
-[[nodiscard]] std::string WemToOgg(std::string_view indata);
+[[nodiscard]] std::string Wem2Ogg(std::string_view indata);
 
 /**
  * @brief extract all WEMs from a BNK soundbank with their IDs and streaming status
@@ -53,6 +53,6 @@ struct BnkWem
  * @param indata BNK file data
  * @return vector of BnkWem structs
  */
-[[nodiscard]] std::vector<BnkWem> BnkExtract(std::string_view indata);
+[[nodiscard]] std::vector<BnkEntry> BnkExtract(std::string_view indata);
 
 } // namespace wwtools
