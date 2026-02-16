@@ -78,5 +78,8 @@ package_install()
 
 # Add tests
 if(BUILD_TESTS)
+    # CTest must be included here (not in test/) so the root CTestTestfile.cmake includes the test
+    # subdirectory — otherwise ctest from the build root finds no tests.
+    include(CTest)
     add_subdirectory(test)
 endif()
