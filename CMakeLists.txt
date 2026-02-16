@@ -13,6 +13,7 @@ add_subdirectory(project-config)
 
 option(BUILD_CLI "Build command-line interface" ON)
 option(BUILD_TESTS "Build tests" ON)
+option(BUILD_DOCS "Build API documentation with Doxygen" OFF)
 option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
