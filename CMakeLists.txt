@@ -78,15 +78,5 @@ package_install()
 
 # Add tests
 if(BUILD_TESTS)
-    find_package(Catch2 REQUIRED)
-
-    add_executable(tests tests/wem.cpp)
-    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain WwiseAudioTools::WwiseAudioTools)
-
-    # Copy test data to test location
-    add_custom_command(
-        TARGET tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata
-                $<TARGET_FILE_DIR:tests>/testdata)
+    add_subdirectory(test)
 endif()
