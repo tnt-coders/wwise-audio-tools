@@ -1,0 +1,17 @@
+name: Docs
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  docs:
+    uses: tnt-coders/ci-workflows/.github/workflows/cmake-cpp-conan-docs.yml@master
