@@ -8,13 +8,17 @@ project(
 # CMAKE_CXX_STANDARD must be set explicitly for Conan to detect it
 set(CMAKE_CXX_STANDARD 23)
 
-# Add project configuration
-add_subdirectory(project-config)
-
 option(BUILD_CLI "Build command-line interface" ON)
-option(BUILD_TESTS "Build tests" ON)
+option(PROJECT_CONFIG_ENABLE_DOCS
+       "Enable docs target generation from project-config when Doxygen is available" ON)
+option(PROJECT_CONFIG_ENABLE_CLANG_TIDY
+       "Enable clang-tidy target generation from project-config when run-clang-tidy is available"
+       ON)
 option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
+
+# Add project configuration
+add_subdirectory(project-config)
 
 find_package(PackageBuilder REQUIRED)
 find_package(kaitai_struct_cpp_stl_runtime REQUIRED)
@@ -31,7 +35,6 @@ package_create()
 # link to it.
 package_add_library(impl_KaitaiStructs OBJECT src/kaitai/structs/bnk.cpp src/kaitai/structs/vlq.cpp
                     src/kaitai/structs/wem.cpp)
-
 target_link_libraries(impl_KaitaiStructs
                       PUBLIC kaitai_struct_cpp_stl_runtime::kaitai_struct_cpp_stl_runtime)
 
@@ -58,18 +61,13 @@ endif()
 
 # Create library target
 package_add_library(WwiseAudioTools ${WWISE_AUDIO_TOOLS_SOURCES})
-
-# Explicitly include required standard with the target for consumers
 target_compile_features(WwiseAudioTools PUBLIC cxx_std_23)
-
 target_link_libraries(WwiseAudioTools PRIVATE impl_KaitaiStructs Ogg::ogg Vorbis::vorbis)
 
 # CLI
 if(BUILD_CLI)
     package_add_executable(WwiseAudioTools_CLI cli/main.cpp)
-
     target_link_libraries(WwiseAudioTools_CLI PRIVATE rang::rang WwiseAudioTools::WwiseAudioTools)
-
     set_target_properties(WwiseAudioTools_CLI PROPERTIES OUTPUT_NAME wwtools)
 endif()
 
@@ -77,9 +75,7 @@ endif()
 package_install()
 
 # Add tests
-if(BUILD_TESTS)
-    # CTest must be included here (not in test/) so the root CTestTestfile.cmake includes the test
-    # subdirectory — otherwise ctest from the build root finds no tests.
-    include(CTest)
+include(CTest)
+if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
