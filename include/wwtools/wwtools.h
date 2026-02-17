@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * @file wwtools.hpp
+ * @file wwtools.h
  * @author Abheek Dhawan (abheekd at protonmail dot com)
  * @brief helper functions for other Wwise file actions
  * @date 2022-05-26
@@ -48,7 +48,7 @@ struct BnkEntry
  *
  * For embedded WEMs, data contains the full WEM audio.
  * For streamed WEMs, data contains only the prefetch stub; the caller
- * must load the full audio from an external <id>.wem file.
+ * must load the full audio from an external `<id>.wem` file.
  *
  * @param indata BNK file data
  * @return vector of BnkWem structs
