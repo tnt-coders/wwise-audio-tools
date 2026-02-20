@@ -8,6 +8,7 @@
 namespace
 {
 
+// Reads a WEM file from disk and converts it to OGG via the public API.
 [[nodiscard]] std::string Convert(const std::string& path)
 {
     std::ifstream filein(path, std::ios::binary);
@@ -25,6 +26,8 @@ namespace
 
 } // anonymous namespace
 
+// Golden-file test: converts a WEM and compares byte-for-byte against a reference OGG
+// produced by the standalone ww2ogg + revorb tools.
 TEST_CASE("Compare WEM converted with WwiseAudioTools to those converted with standalone tools",
           "[wwise-audio-tools]")
 {

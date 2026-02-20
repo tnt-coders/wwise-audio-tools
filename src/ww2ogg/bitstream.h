@@ -10,7 +10,9 @@
 #include "crc.h"
 #include "errors.h"
 
-// Host-endian-neutral integer reading/writing utilities
+// Host-endian-neutral integer reading/writing utilities.
+// These manually assemble multi-byte integers byte-by-byte so they produce correct
+// results regardless of the host CPU's native endianness.
 namespace
 {
 
@@ -155,12 +157,15 @@ inline void Write16Be(std::ostream& os, uint16_t v)
 namespace ww2ogg
 {
 
+// Input bitstream that reads bits one at a time from an underlying byte stream.
+// Bits are consumed MSB-first within each byte.
+// Used to parse Wwise's compact codebook/setup representations.
 class Bitstream
 {
     std::istream& m_is;
 
-    unsigned char m_bit_buffer{0};
-    unsigned int m_bits_left{0};
+    unsigned char m_bit_buffer{0}; // current byte being consumed
+    unsigned int m_bits_left{0};   // unconsumed bits remaining in m_bit_buffer
     unsigned long m_total_bits_read{0};
 
   public:
@@ -198,27 +203,35 @@ class Bitstream
     }
 };
 
+// Output bitstream that accumulates bits and flushes them as complete OGG pages.
+//
+// Bits are accumulated LSB-first (matching Vorbis bit-packing order), collected into
+// a page buffer, and written as OGG pages with correct headers, segment tables,
+// and CRC checksums when FlushPage() is called.
+//
+// The page buffer is sized to hold a maximum-length OGG page:
+//   27 bytes header + 255 segment table entries + 255*255 bytes payload
 class Bitoggstream
 {
     std::ostream& m_os;
 
-    unsigned char m_bit_buffer{0};
-    unsigned int m_bits_stored{0};
+    unsigned char m_bit_buffer{0}; // partial byte being assembled
+    unsigned int m_bits_stored{0}; // bits written into m_bit_buffer so far
 
     enum
     {
-        HEADER_BYTES = 27,
-        MAX_SEGMENTS = 255,
-        SEGMENT_SIZE = 255
+        HEADER_BYTES = 27,  // OGG page header size
+        MAX_SEGMENTS = 255, // max segments per OGG page
+        SEGMENT_SIZE = 255  // max bytes per segment
     };
 
-    unsigned int m_payload_bytes{0};
-    bool m_first{true};
-    bool m_continued{false};
+    unsigned int m_payload_bytes{0}; // bytes accumulated in current page
+    bool m_first{true};              // true for BOS (beginning of stream) page
+    bool m_continued{false};         // packet continues from previous page
     std::array<unsigned char, HEADER_BYTES + MAX_SEGMENTS + SEGMENT_SIZE * MAX_SEGMENTS>
-        m_page_buffer{};
-    uint32_t m_granule{0};
-    uint32_t m_seqno{0};
+        m_page_buffer{};   // workspace: payload stored at offset HEADER_BYTES+MAX_SEGMENTS
+    uint32_t m_granule{0}; // granule position for current page
+    uint32_t m_seqno{0};   // incrementing page sequence number
 
   public:
     class WeirdCharSize
@@ -345,6 +358,10 @@ class Bitoggstream
     }
 };
 
+// Fixed-width unsigned integer for bitstream I/O.
+// BitSize is the number of bits to read/write (compile-time constant).
+// Supports streaming from Bitstream (input) and to Bitoggstream (output).
+// Bits are read/written LSB-first (Vorbis bit-packing convention).
 template <unsigned int BitSize> class BitUint
 {
     unsigned int m_total;
@@ -405,9 +422,11 @@ template <unsigned int BitSize> class BitUint
     }
 };
 
+// Variable-width unsigned integer for bitstream I/O.
+// Like BitUint but the bit width is determined at runtime (passed to constructor).
 class BitUintv
 {
-    unsigned int m_size;
+    unsigned int m_size; // number of bits
     unsigned int m_total;
 
   public:
@@ -466,9 +485,10 @@ class BitUintv
     }
 };
 
+// Adapts a raw byte array into a std::streambuf for use with std::istream.
+// Owns a copy of the data (the input pointer may go out of scope after construction).
 class ArrayStreambuf : public std::streambuf
 {
-    // Non-copyable, non-movable
     ArrayStreambuf& operator=(const ArrayStreambuf&) = delete;
     ArrayStreambuf(const ArrayStreambuf&) = delete;
     ArrayStreambuf(ArrayStreambuf&&) = delete;

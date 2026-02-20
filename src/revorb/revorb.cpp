@@ -6,8 +6,9 @@
 namespace
 {
 
-constexpr int g_k_buffer_size = 4096;
+constexpr int g_k_buffer_size = 4096; // chunk size for feeding data to libogg
 
+// RAII guard for ogg_stream_state — calls ogg_stream_clear on destruction.
 class OggStreamGuard
 {
     ogg_stream_state* m_stream;
@@ -45,6 +46,7 @@ class OggStreamGuard
     OggStreamGuard& operator=(OggStreamGuard&&) = delete;
 };
 
+// RAII guard for vorbis_comment — calls vorbis_comment_clear on destruction.
 class VorbisCommentGuard
 {
     vorbis_comment* m_vc;
@@ -87,6 +89,10 @@ class VorbisCommentGuard
 namespace revorb
 {
 
+// Copies the three Vorbis header packets (identification, comment, setup) from input
+// to output, initializing the ogg_stream_state for both directions and extracting
+// vorbis_info (needed later to compute packet block sizes for granule calculation).
+// Returns false if the headers are malformed or incomplete.
 [[nodiscard]] bool CopyHeaders(std::stringstream& fi, ogg_sync_state* si, ogg_stream_state* is,
                                std::stringstream& outdata, ogg_stream_state* os, vorbis_info* vi)
 {
@@ -192,6 +198,17 @@ namespace revorb
     return true;
 }
 
+// Recalculates and rewrites OGG page granule positions for a Vorbis stream.
+//
+// After ww2ogg conversion, granule positions may be incorrect (especially for modified
+// packets or when Wwise used placeholder values).  This function:
+//   1. Copies the three header packets verbatim
+//   2. Reads each audio packet, computes its block size via vorbis_packet_blocksize
+//   3. Accumulates a running sample count: granpos += (prev_blocksize + cur_blocksize) / 4
+//   4. Writes each packet with the corrected granule position
+//
+// The /4 factor comes from Vorbis overlap-add: each block contributes blocksize/2 new
+// samples, and the overlap region between consecutive blocks is (prev+cur)/4 samples.
 [[nodiscard]] bool Revorb(std::istream& indata, std::stringstream& outdata)
 {
     bool failed = false;

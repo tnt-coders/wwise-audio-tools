@@ -15,6 +15,10 @@
 namespace ww2ogg
 {
 
+// Reads a Wwise audio packet header (6-byte or 2-byte variant).
+// Layout for 6-byte: [size:u16][granule:u32]
+// Layout for 2-byte (no_granule): [size:u16]
+// After construction, Offset() points to the packet payload and Size() gives its length.
 class Packet
 {
     long m_offset;
@@ -69,6 +73,9 @@ class Packet
     }
 };
 
+// Reads an older 8-byte Wwise audio packet header.
+// Layout: [size:u32][granule:u32]
+// Used by older BNK/WEM versions that set m_old_packet_headers = true.
 class Packet8
 {
     long m_offset;
@@ -114,6 +121,8 @@ class Packet8
     }
 };
 
+// Writes the standard Vorbis packet header: a 1-byte type followed by the "vorbis" magic string.
+// Type 1 = identification, type 3 = comment, type 5 = setup.
 class VorbisPacketHeader
 {
     uint8_t m_type;
@@ -541,6 +550,20 @@ std::string WwiseRiffVorbis::GetInfo()
     return info_ss.str();
 }
 
+// Reconstructs Vorbis header packets for WEMs where Wwise stripped them.
+//
+// This produces three OGG pages:
+//   Page 1: Identification packet (channels, sample rate, block sizes)
+//   Page 2: Comment packet (vendor string + optional loop tags)
+//   Page 3: Setup packet (codebooks, floors, residues, mappings, modes)
+//
+// The setup packet is the complex part — Wwise stores codebooks as 10-bit IDs referencing
+// an external packed codebook file, so we must look them up and expand them.  Floor, residue,
+// mapping, and mode configurations are stored in a compact bitstream that we read and re-emit
+// in standard Vorbis format.
+//
+// mode_blockflag and mode_bits are output parameters needed later by GenerateOgg to decode
+// the first byte of "modified" audio packets.
 void WwiseRiffVorbis::GenerateOggHeader(Bitoggstream& os, std::vector<bool>& mode_blockflag,
                                         int& mode_bits)
 {
@@ -1054,6 +1077,14 @@ void WwiseRiffVorbis::GenerateOggHeader(Bitoggstream& os, std::vector<bool>& mod
     }
 }
 
+// Main entry point: writes a complete OGG Vorbis stream.
+// First emits the header pages (via triad path or reconstruction), then iterates over
+// all audio packets in the data chunk, translating Wwise framing to OGG pages.
+//
+// For "modified" packets (m_mod_packets), the first byte of each audio packet needs
+// reconstruction: Wwise strips the packet-type bit and window-type bits, so we read
+// the mode number, determine block flags, peek at the next packet's mode to figure out
+// the next-window type, and re-emit the correct Vorbis first byte.
 void WwiseRiffVorbis::GenerateOgg(std::ostream& oss)
 {
     Bitoggstream os(oss);
@@ -1227,6 +1258,9 @@ void WwiseRiffVorbis::GenerateOgg(std::ostream& oss)
     mode_blockflag.clear();
 }
 
+// Copies the Vorbis header triad verbatim from older WEM files that already include
+// the full identification/comment/setup packets (wrapped in 8-byte Wwise packet headers).
+// Codebooks are copied as-is since they're already in standard Vorbis format.
 void WwiseRiffVorbis::GenerateOggHeaderWithTriad(Bitoggstream& os)
 {
     // Header page triad

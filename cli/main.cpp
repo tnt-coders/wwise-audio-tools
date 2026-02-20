@@ -17,6 +17,7 @@
 
 namespace fs = std::filesystem;
 
+// Converts WEM data to OGG and writes the result to outpath.
 void Convert(const std::string_view indata, const fs::path& outpath)
 {
     const auto outdata = wwtools::Wem2Ogg(std::string{indata});
@@ -50,6 +51,8 @@ struct ParsedFlags
     bool m_has_error = false;
 };
 
+// Extracts "--flag" arguments from the command line.
+// Flags must come after all positional arguments (enforced with an error).
 [[nodiscard]] ParsedFlags GetFlags(const std::span<char*> args)
 {
     ParsedFlags result;

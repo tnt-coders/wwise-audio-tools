@@ -6,6 +6,10 @@
 #include <string>
 #include <string_view>
 
+// Exception hierarchy for ww2ogg parsing and conversion errors.
+// All derive from std::runtime_error.  ParseError is the common base for data-format errors;
+// ParseErrorStr adds a string message, SizeMismatch reports byte-count discrepancies,
+// and InvalidId reports an unknown codebook ID (suggesting --inline-codebooks).
 namespace ww2ogg
 {
 

@@ -2,7 +2,9 @@
 
 #include "ww2ogg/crc.h"
 
-/* from Tremor (lowmem) */
+/* OGG CRC32 lookup table from Tremor (lowmem).
+ * Polynomial: 0x04c11db7 (same as used by libogg).
+ * The table is pre-computed for single-byte lookups. */
 static const uint32_t g_crc_lookup[256] = {
     0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005,
     0x2608edb8, 0x22c9f00f, 0x2f8ad6d6, 0x2b4bcb61, 0x350c9b64, 0x31cd86d3, 0x3c8ea00a, 0x384fbdbd,
@@ -37,6 +39,7 @@ static const uint32_t g_crc_lookup[256] = {
     0x89b8fd09, 0x8d79e0be, 0x803ac667, 0x84fbdbd0, 0x9abc8bd5, 0x9e7d9662, 0x933eb0bb, 0x97ffad0c,
     0xafb010b1, 0xab710d06, 0xa6322bdf, 0xa2f33668, 0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4};
 
+/* Computes the OGG page CRC32 over `bytes` bytes starting at `data`. */
 uint32_t Checksum(unsigned char* data, int bytes)
 {
     uint32_t crc_reg = 0;

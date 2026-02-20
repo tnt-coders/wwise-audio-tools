@@ -8,6 +8,14 @@ namespace ww2ogg
 
 CodebookLibrary::CodebookLibrary() = default;
 
+// Loads a packed codebooks binary blob.
+//
+// File layout:
+//   [0 .. offset_offset)           Raw codebook data (concatenated)
+//   [offset_offset .. file_size-4) Array of uint32_t LE offsets into the raw data
+//   [file_size-4 .. file_size)     uint32_t LE: the offset_offset value itself
+//
+// Each codebook i spans from m_codebook_offsets[i] to m_codebook_offsets[i+1].
 CodebookLibrary::CodebookLibrary(const std::string& indata)
 {
     std::stringstream is(indata);
@@ -15,6 +23,7 @@ CodebookLibrary::CodebookLibrary(const std::string& indata)
     is.seekg(0, std::ios::end);
     const auto file_size = static_cast<long>(is.tellg());
 
+    // The last 4 bytes tell us where the offset table begins
     is.seekg(file_size - 4, std::ios::beg);
     const auto offset_offset = static_cast<long>(Read32Le(is));
     const auto codebook_count = (file_size - offset_offset) / 4;
@@ -34,6 +43,8 @@ CodebookLibrary::CodebookLibrary(const std::string& indata)
     }
 }
 
+// Rebuilds a single codebook by its ID from the external packed library.
+// Wraps the raw bytes in a Bitstream and delegates to the bitstream-based Rebuild.
 void CodebookLibrary::Rebuild(const int i, Bitoggstream& bos)
 {
     const char* cb = GetCodebook(i);
@@ -57,7 +68,9 @@ void CodebookLibrary::Rebuild(const int i, Bitoggstream& bos)
     Rebuild(bis, cb_size, bos);
 }
 
-/* cb_size == 0 to not check size (for an inline bitstream) */
+// Copies a codebook from input to output without transformation.
+// Used when codebooks are already in standard Vorbis format (inline or header-triad WEMs).
+// cb_size == 0 means don't check size (for inline bitstreams).
 void CodebookLibrary::Copy(Bitstream& bis, Bitoggstream& bos)
 {
     /* IN: 24 bit identifier, 16 bit dimensions, 24 bit entry count */
@@ -175,7 +188,17 @@ void CodebookLibrary::Copy(Bitstream& bis, Bitoggstream& bos)
     }
 }
 
-/* cb_size == 0 to not check size (for an inline bitstream) */
+// Rebuilds a codebook from Wwise's compact representation into standard Vorbis format.
+//
+// Wwise compresses codebooks by:
+//   - Using 4-bit dimensions (Vorbis uses 16-bit) and 14-bit entries (vs 24-bit)
+//   - Using a variable-length codeword length field (3-bit length-of-length + n-bit values)
+//     instead of Vorbis's fixed 5-bit codeword lengths
+//   - Using 1-bit lookup type (vs 4-bit)
+//   - Omitting the 24-bit "BCV" identifier
+//
+// This method reads the compact format and emits standard Vorbis codebook format.
+// cb_size == 0 means don't check size (for inline bitstreams).
 void CodebookLibrary::Rebuild(Bitstream& bis, const unsigned long cb_size, Bitoggstream& bos)
 {
     /* IN: 4 bit dimensions, 14 bit entry count */

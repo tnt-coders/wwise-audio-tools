@@ -9,6 +9,8 @@
 namespace ww2ogg
 {
 
+// Wraps the packed codebook data in a string, constructs WwiseRiffVorbis (which parses
+// the WEM), and writes the resulting OGG stream.
 void Ww2Ogg(const std::string& indata, std::ostream& outdata,
             const unsigned char* const codebooks_data, const bool inline_codebooks,
             const bool full_setup, const ForcePacketFormat force_packet_format)

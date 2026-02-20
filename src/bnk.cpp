@@ -13,6 +13,9 @@
 namespace
 {
 
+// Associates an event action (play/stop/etc.) with the SFX object it targets.
+// m_is_child is set when the SFX was reached through a parent container rather
+// than being directly referenced by the event action's game_object_id.
 struct EventSFX
 {
     bnk_t::action_type_t m_action_type{};
@@ -20,6 +23,8 @@ struct EventSFX
     bool m_is_child = false;
 };
 
+// Searches the top-level BNK section list for one matching `type` (e.g. "BKHD", "DATA", "HIRC")
+// and returns a pointer to its parsed data, or nullptr if not present.
 template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view type)
 {
     for (const auto& section : *bnk.data())
@@ -32,6 +37,20 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     return nullptr;
 }
 
+// Extracts the parent object ID from a SFX's raw sound_structure blob.
+//
+// The sound_structure layout (simplified):
+//   [0]     override_parent_fx (1 byte)
+//   [1]     num_effects (1 byte)
+//   if num_effects > 0:
+//     [2]     bypassed_fx bitmask (1 byte)
+//     [3..]   num_effects * 7 bytes of effect entries
+//   then:
+//     [+0..+3]  bus_id (4 bytes, skipped)
+//     [+4..+5]  direct_parent_id is at offset +4 (but we read from offset 6 + effect_block_size)
+//
+// The parent ID links an SFX to its container (e.g. random/sequence container),
+// allowing event->container->child SFX resolution in GetEventIdInfo.
 [[nodiscard]] std::uint32_t GetParentId(bnk_t::sound_effect_or_voice_t* sfx)
 {
     std::uint32_t parent_id_offset = 6;
@@ -54,6 +73,7 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
         return 0;
     }
 
+    // Read the 4-byte LE parent ID from the computed offset
     std::uint32_t parent_id = 0;
     std::stringstream ss;
     ss.write(sound_structure.c_str(), static_cast<std::streamsize>(sound_structure.size()));
@@ -64,6 +84,8 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     return parent_id;
 }
 
+// Maps a BNK event action type enum to a human-readable label.
+// Uses a thread_local string for unknown types so the returned string_view stays valid.
 [[nodiscard]] std::string_view GetEventActionType(const bnk_t::action_type_t action_type)
 {
     switch (action_type)
@@ -85,6 +107,8 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
     }
 }
 
+// Searches the STID (string-to-ID mapping) section for a human-readable event name.
+// Returns empty string when stid_data is null or the ID isn't found.
 [[nodiscard]] std::string LookupEventName(bnk_t::stid_data_t* stid_data,
                                           const std::uint32_t event_id)
 {
@@ -109,6 +133,9 @@ template <typename T> [[nodiscard]] T* FindSection(bnk_t& bnk, std::string_view 
 namespace wwtools::bnk
 {
 
+// Parses the BNK and pulls raw WEM file blobs from the DATA section.
+// The DATA section contains a DIDX (data index) followed by concatenated WEM payloads.
+// Each entry in outdata corresponds to one embedded WEM in index order.
 void Extract(const std::string_view indata, std::vector<std::string>& outdata)
 {
     kaitai::kstream ks(std::string{indata});
@@ -156,6 +183,17 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     return result;
 }
 
+// Builds a human-readable report mapping events to the WEM audio files they trigger.
+//
+// Resolution chain: Event -> EventAction(s) -> SFX object(s) -> audio_file_id
+//
+// When in_event_id is empty, reports on ALL events in the BNK.  When non-empty,
+// filters to just the event whose numeric ID matches the string.
+//
+// The three-pass approach:
+//   Pass 1: Find events and collect their event-action references
+//   Pass 2: Find SFX objects and match them to events via game_object_id or parent_id
+//   Pass 3: Format the result string
 [[nodiscard]] std::string GetEventIdInfo(const std::string_view indata,
                                          const std::string_view in_event_id)
 {
@@ -168,13 +206,12 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
         return {};
     }
 
-    // Load STID section for event name lookup (may be nullptr if not present)
     auto* stid_data = FindSection<bnk_t::stid_data_t>(bnk, "STID");
 
     const bool all_event_ids = in_event_id.empty();
     std::size_t num_events = 0;
 
-    // Map events to their event actions
+    // Pass 1: Map each event to its event-action objects
     std::map<std::uint32_t, std::vector<bnk_t::event_action_t*>> event_to_event_actions;
 
     for (const auto& obj : *hirc_data->objs())
@@ -214,7 +251,7 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
         }
     }
 
-    // Map events to their SFX
+    // Pass 2: Match SFX objects to events via event-action game_object_id or parent container
     std::map<std::uint32_t, std::vector<EventSFX>> event_to_event_sfxs;
 
     for (const auto& obj : *hirc_data->objs())
@@ -244,7 +281,7 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
         }
     }
 
-    // Build result string
+    // Pass 3: Format the output
     std::string result;
     result += std::format("Found {} event(s)\n", num_events);
     result += std::format("{} of them point to files in this BNK\n\n", event_to_event_sfxs.size());
@@ -312,6 +349,9 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     return ids;
 }
 
+// Scans HIRC SFX objects for those marked as streamed (included_or_streamed != 0).
+// Streamed WEMs only have a small prefetch stub embedded in the BNK; the full audio
+// lives in a separate .wem file that the caller must locate and read.
 [[nodiscard]] std::vector<std::uint32_t> GetStreamedWemIds(const std::string_view indata)
 {
     kaitai::kstream ks(std::string{indata});

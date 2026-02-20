@@ -6,7 +6,8 @@
 #include "bitstream.h"
 #include "errors.h"
 
-// Helper functions from Tremor (lowmem)
+// Helper functions ported from Tremor (lowmem Vorbis decoder).
+// These are used during codebook parsing/reconstruction.
 namespace
 {
 
@@ -22,7 +23,9 @@ namespace
     return ret;
 }
 
-// Calculates quantization values used by Vorbis maptype 1 codebooks.
+// Calculates the number of quantization values for a Vorbis maptype 1 codebook.
+// Returns floor(entries^(1/dimensions)) — the number of scalar values needed to
+// reconstruct the full lookup table via the multiplicative decomposition.
 [[nodiscard]] inline unsigned int BookMaptype1Quantvals(const unsigned int entries,
                                                         const unsigned int dimensions)
 {
