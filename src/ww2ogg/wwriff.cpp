@@ -1,11 +1,9 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "ww2ogg/bitstream.h"
 #include "ww2ogg/codebook.h"

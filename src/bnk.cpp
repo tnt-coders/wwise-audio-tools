@@ -304,20 +304,6 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     return result;
 }
 
-[[nodiscard]] std::string GetWemIdAtIndex(const std::string_view indata, const std::size_t index)
-{
-    kaitai::kstream ks(std::string{indata});
-    bnk_t bnk(&ks);
-
-    auto* didx = FindSection<bnk_t::didx_data_t>(bnk, "DIDX");
-    if (!didx || index >= didx->objs()->size())
-    {
-        return {};
-    }
-
-    return std::to_string(didx->objs()->at(index)->id());
-}
-
 [[nodiscard]] std::string GetEventNameFromId([[maybe_unused]] const std::uint32_t event_id)
 {
     // This function signature is maintained for API compatibility, but it cannot
