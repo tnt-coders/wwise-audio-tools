@@ -49,11 +49,18 @@ cmake --build --preset release --target clang-tidy-fix   # auto-fix
 
 ### Documentation
 
-Requires [Doxygen](https://www.doxygen.nl/) to be installed. The target is only available when Doxygen is found on `PATH`.
+API documentation for the latest stable release is hosted on GitHub Pages at:
+https://tnt-coders.github.io/wwise-audio-tools/
+
+To build the documentation locally for a specific release or branch, you need [Doxygen](https://www.doxygen.nl/) installed and on `PATH`. Optionally, install [Graphviz](https://graphviz.org/) to enable DOT graph generation (dependency diagrams, call graphs, etc.).
 
 ```bash
+git checkout <tag-or-branch>
+cmake --preset release
 cmake --build --preset release --target docs
 ```
+
+The generated HTML will be in `build/release/docs/html/`.
 
 ## Usage
 
