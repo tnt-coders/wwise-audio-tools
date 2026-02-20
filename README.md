@@ -2,232 +2,147 @@
 
 [![Build](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build.yml)
 
-This repository provides a static and dynamic library as well as a command line tool for converting Wwise WEM files to OGG format.
-
-## ⚠️ Active Development Notice
-
-This project is under active development. The information in this README may not reflect the current state of the codebase. Please check the latest commits and issues for the most up-to-date information.
+A C++ library and command-line tool for converting Wwise WEM audio files to OGG Vorbis format and extracting WEM files from BNK soundbanks.
 
 ## About
-Both `ww2ogg` and `revorb` are relatively old and cumbersome to use repetitively. This project maintains support for these tools while making them easier to use and integrate into other applications.
+
+Wwise encodes audio as `.wem` files using a modified Vorbis format with stripped headers, custom packet framing, and external codebooks. The traditional approach to decoding these requires chaining two separate tools (`ww2ogg` + `revorb`) with manual codebook management. This project combines both into a single library with a clean API and a CLI tool that handles everything automatically.
 
 ## Requirements
-- CMake 3.12 or higher  
-- C++17 compatible compiler  
-- Git (to clone submodules)  
 
-## Dependencies / Submodules
-The project includes its dependencies as Git submodules:  
-- `libogg`  
-- `libvorbis`  
-
-### Cloning with Submodules
-Clone the repository **with** submodules:  
-```bash
-git clone --recursive https://github.com/tnt-coders/wwise-audio-tools
-```
-
-If you already cloned without `--recursive`:  
-```bash
-git submodule update --init --recursive
-```
-
-This ensures all dependencies are present before building.
+- CMake 3.27 or higher
+- C++23 compatible compiler
+- [Conan 2](https://conan.io/) package manager
 
 ## Building
 
-### From Command Line
 ```bash
-cd wwise-audio-tools
-cmake -S . -B build
-cmake --build build --config=Release
+# Install dependencies and generate build files
+conan install . --build=missing
+cmake --preset conan-default     # or conan-release / conan-debug
+
+# Build
+cmake --build --preset conan-release
+
+# Run tests
+cmake --build --preset conan-release --target tests
+./build/Release/tests
 ```
 
-This will create:  
-- Command-line tool: `build/bin/wwtools` (or `wwtools.exe` on Windows)  
-- Static library: `build/lib/libwwtools.a` (or `wwtools.lib` on Windows)  
-- Shared library: `build/lib/libwwtools.so` (or `wwtools.dll` on Windows)  
+### CMake Options
 
-### With Qt Creator IDE
-Open the main `CMakeLists.txt` file as a project; Qt Creator will handle the rest.
+| Option | Default | Description |
+|--------|---------|-------------|
+| `BUILD_CLI` | `ON` | Build the `wwtools` command-line tool |
+| `PACKED_CODEBOOKS_AOTUV` | `ON` | Use aoTuV 603 codebook data (recommended) |
+| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Enable Doxygen documentation target |
+| `PROJECT_CONFIG_ENABLE_CLANG_TIDY` | `ON` | Enable clang-tidy lint targets |
+
+### Linting
+
+```bash
+cmake --build --preset conan-release --target clang-tidy       # check only
+cmake --build --preset conan-release --target clang-tidy-fix   # auto-fix
+```
 
 ## Usage
 
-### Command Line Tool
-```bash
-./wwtools [NAME].wem
-```
-This generates `[NAME].ogg` in the same directory, no need for `revorb` or `packed_codebooks.bin`.
+### Command-Line Tool
 
-Advanced usage:
 ```bash
-# Convert all WEM files in current directory
+# Convert all WEM files in the current directory
 ./wwtools
 
-# Convert a specific WEM file
+# Convert a specific WEM file to OGG
 ./wwtools wem input.wem
 
-# Get WEM file information
+# Get WEM file metadata
 ./wwtools wem input.wem --info
 
-# Extract WEM files from a BNK
+# Extract and convert WEMs from a BNK soundbank
 ./wwtools bnk extract soundbank.bnk
 
-# Extract WEM without converting to OGG
+# Extract raw WEMs without converting to OGG
 ./wwtools bnk extract soundbank.bnk --no-convert
 
-# Get BNK information
+# Get BNK soundbank info (version, embedded WEM IDs)
 ./wwtools bnk extract soundbank.bnk --info
 
-# Find event information in a BNK file
-./wwtools bnk event soundbank.bnk <event_id>
-
-# Work with Witcher 3 cache files
-./wwtools cache read soundcache.cache
-./wwtools cache write /path/to/directory
-./wwtools cache read soundcache.cache --info
+# Show event-to-WEM mappings (all events or a specific event ID)
+./wwtools bnk event soundbank.bnk
+./wwtools bnk event soundbank.bnk 12345
 ```
+
+When extracting from a BNK, streamed WEMs (those not fully embedded) require the corresponding `<id>.wem` file to be present in the same directory as the BNK.
 
 ### Library Integration
-The library provides both static and shared builds (`wwtools-static-lib` and `wwtools-shared-lib`). Public APIs are in `wwtools`, `wwtools::bnk`, `wwtools::w3sc`, and `ww2ogg` namespaces.
 
-#### Approach 1: Submodule (Recommended for Development)
-```bash
-git submodule add --recursive https://github.com/tnt-coders/wwise-audio-tools external/wwise-audio-tools
+The library is distributed as a Conan 2 package. The CMake target is `WwiseAudioTools::WwiseAudioTools`.
+
+#### As a Conan Dependency
+
+In your `conanfile.py`:
+```python
+def requirements(self):
+    self.requires("wwise-audio-tools/1.0.0")
 ```
 
-In `CMakeLists.txt`:
+In your `CMakeLists.txt`:
 ```cmake
-add_subdirectory(external/wwise-audio-tools)
-target_link_libraries(your_target PRIVATE wwtools::static)
+find_package(WwiseAudioTools REQUIRED)
+target_link_libraries(your_target PRIVATE WwiseAudioTools::WwiseAudioTools)
 ```
 
-##### Using FetchContent Alternative
-```cmake
-include(FetchContent)
+### Library API
 
-FetchContent_Declare(
-    wwise-audio-tools
-    GIT_REPOSITORY https://github.com/tnt-coders/wwise-audio-tools
-    GIT_TAG master
-    GIT_SUBMODULES_RECURSE ON
-)
+The public API is defined in a single header: `wwtools/wwtools.h`
 
-FetchContent_MakeAvailable(wwise-audio-tools)
-target_link_libraries(your_target PRIVATE wwtools::static)
-```
-
-#### Approach 2: Installed Library (Recommended for Production)
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config=Release
-cmake --install build --prefix /path/to/install
-```
-
-In your project:
-```cmake
-find_package(wwtools REQUIRED)
-target_link_libraries(my_app PRIVATE wwtools::static)
-```
-
-Use `CMAKE_PREFIX_PATH` or `wwtools_DIR` if installed in a custom location:
-```bash
-cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/install
-# or
-cmake -S . -B build -Dwwtools_DIR=/path/to/install/lib/cmake/wwtools
-```
-
-**Available Targets:**  
-- `wwtools::static` (recommended)  
-- `wwtools::shared`  
-- Legacy names `wwtools-static-lib` and `wwtools-shared-lib` also work
-
-### Library API Examples
-
-**Basic WEM to OGG Conversion:**
+**WEM to OGG conversion:**
 ```cpp
-#include "wwtools/wwtools.hpp"
+#include "wwtools/wwtools.h"
 #include <fstream>
 #include <sstream>
 
+// Read WEM file
 std::ifstream input("audio.wem", std::ios::binary);
 std::stringstream buffer;
 buffer << input.rdbuf();
-std::string wem_data = buffer.str();
 
-std::string ogg_data = wwtools::WemToOgg(wem_data);
+// Convert to OGG (throws on failure)
+std::string ogg_data = wwtools::Wem2Ogg(buffer.str());
 
 std::ofstream output("audio.ogg", std::ios::binary);
 output << ogg_data;
 ```
 
-**Working with Soundbank (BNK) Files:**
+**Extracting WEMs from a BNK soundbank:**
 ```cpp
-#include "wwtools/bnk.hpp"
+#include "wwtools/wwtools.h"
 #include <fstream>
 #include <sstream>
-#include <vector>
 
+// Read BNK file
 std::ifstream input("soundbank.bnk", std::ios::binary);
 std::stringstream buffer;
 buffer << input.rdbuf();
-std::string bnk_data = buffer.str();
 
-std::vector<std::string> wem_files;
-wwtools::bnk::extract(bnk_data, wem_files);
+// Extract all WEMs with their IDs and streaming status
+std::vector<wwtools::BnkEntry> wems = wwtools::BnkExtract(buffer.str());
 
-for (size_t i = 0; i < wem_files.size(); i++) {
-    std::string ogg_data = wwtools::WemToOgg(wem_files[i]);
-    std::string wem_id = wwtools::bnk::GetWemIdAtIndex(bnk_data, i);
-    std::ofstream output(wem_id + ".ogg", std::ios::binary);
+for (const auto& wem : wems) {
+    if (wem.streamed) {
+        // Load full audio from external <wem.id>.wem file
+        continue;
+    }
+
+    // Convert embedded WEM data to OGG
+    std::string ogg_data = wwtools::Wem2Ogg(wem.data);
+
+    std::ofstream output(std::to_string(wem.id) + ".ogg", std::ios::binary);
     output << ogg_data;
 }
-
-std::cout << wwtools::bnk::GetInfo(bnk_data) << std::endl;
-std::cout << wwtools::bnk::GetEventIdInfo(bnk_data, "12345") << std::endl;
 ```
 
-**Working with Sound Cache (W3SC) Files:**
-```cpp
-#include "wwtools/w3sc.hpp"
-#include <fstream>
-#include <sstream>
-#include <vector>
+## License
 
-std::ifstream input("soundcache.cache", std::ios::binary);
-std::stringstream buffer;
-buffer << input.rdbuf();
-std::string cache_data = buffer.str();
-
-std::cout << wwtools::w3sc::get_info(cache_data) << std::endl;
-
-std::vector<std::pair<std::string, std::string>> files;
-files.push_back({"file1.bnk", file1_data});
-files.push_back({"file2.wem", file2_data});
-
-std::ofstream output("newcache.cache", std::ios::binary);
-wwtools::w3sc::create(files, output);
-```
-
-**Low-level WW2OGG API:**
-```cpp
-#include "ww2ogg/ww2ogg.h"
-#include <fstream>
-#include <sstream>
-
-std::ifstream input("audio.wem", std::ios::binary);
-std::stringstream buffer;
-buffer << input.rdbuf();
-std::string wem_data = buffer.str();
-
-std::stringstream ogg_output;
-bool success = ww2ogg::Ww2Ogg(wem_data, ogg_output);
-
-if (success) {
-    std::ofstream output("audio.ogg", std::ios::binary);
-    output << ogg_output.str();
-}
-
-std::cout << ww2ogg::WemInfo(wem_data) << std::endl;
-```
-
+[MIT](LICENSE)
