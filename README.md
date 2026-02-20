@@ -16,17 +16,17 @@ Wwise encodes audio as `.wem` files using a modified Vorbis format with stripped
 
 ## Building
 
+Dependencies are installed automatically via [cmake-conan](https://github.com/tnt-coders/cmake-conan) during the CMake configure step.
+
 ```bash
-# Install dependencies and generate build files
-conan install . --build=missing
-cmake --preset conan-default     # or conan-release / conan-debug
+# Configure (automatically installs Conan dependencies)
+cmake --preset release
 
 # Build
-cmake --build --preset conan-release
+cmake --build --preset release
 
 # Run tests
-cmake --build --preset conan-release --target tests
-./build/Release/tests
+ctest --preset release
 ```
 
 ### CMake Options
@@ -35,14 +35,24 @@ cmake --build --preset conan-release --target tests
 |--------|---------|-------------|
 | `BUILD_CLI` | `ON` | Build the `wwtools` command-line tool |
 | `PACKED_CODEBOOKS_AOTUV` | `ON` | Use aoTuV 603 codebook data (recommended) |
-| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Enable Doxygen documentation target |
-| `PROJECT_CONFIG_ENABLE_CLANG_TIDY` | `ON` | Enable clang-tidy lint targets |
+| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Enable Doxygen documentation target (requires Doxygen) |
+| `PROJECT_CONFIG_ENABLE_CLANG_TIDY` | `ON` | Enable clang-tidy lint targets (requires clang-tidy) |
 
 ### Linting
 
+Requires [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) and `run-clang-tidy` to be installed (typically from an LLVM/Clang package). The targets are only available when `run-clang-tidy` is found on `PATH`.
+
 ```bash
-cmake --build --preset conan-release --target clang-tidy       # check only
-cmake --build --preset conan-release --target clang-tidy-fix   # auto-fix
+cmake --build --preset release --target clang-tidy       # check only
+cmake --build --preset release --target clang-tidy-fix   # auto-fix
+```
+
+### Documentation
+
+Requires [Doxygen](https://www.doxygen.nl/) to be installed. The target is only available when Doxygen is found on `PATH`.
+
+```bash
+cmake --build --preset release --target docs
 ```
 
 ## Usage
@@ -77,15 +87,15 @@ When extracting from a BNK, streamed WEMs (those not fully embedded) require the
 
 ### Library Integration
 
-The library is distributed as a Conan 2 package. The CMake target is `WwiseAudioTools::WwiseAudioTools`.
+This package is not on Conan Center. To consume it as a dependency, use the [tnt-coders fork of cmake-conan](https://github.com/tnt-coders/cmake-conan) which supports building packages from source via a `#recipe:` annotation.
 
-#### As a Conan Dependency
-
-In your `conanfile.py`:
+In your `conanfile.py`, add the `#recipe:` comment pointing to the Git repository:
 ```python
 def requirements(self):
-    self.requires("wwise-audio-tools/1.0.0")
+    self.requires("wwise-audio-tools/1.0.0") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 ```
+
+The cmake-conan provider will automatically clone the repository, run `conan create`, and cache the package. No manual steps are needed.
 
 In your `CMakeLists.txt`:
 ```cmake
@@ -142,7 +152,3 @@ for (const auto& wem : wems) {
     output << ogg_data;
 }
 ```
-
-## License
-
-[MIT](LICENSE)
