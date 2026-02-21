@@ -8,59 +8,29 @@ A C++ library and command-line tool for converting Wwise WEM audio files to OGG 
 
 Wwise encodes audio as `.wem` files using a modified Vorbis format with stripped headers, custom packet framing, and external codebooks. The traditional approach to decoding these requires chaining two separate tools (`ww2ogg` + `revorb`) with manual codebook management. This project combines both into a single library with a clean API and a CLI tool that handles everything automatically.
 
-## Requirements
+## Installation
 
-- CMake 3.27 or higher
-- C++23 compatible compiler
-- [Conan 2](https://conan.io/) package manager
+### Prebuilt CLI Binaries
 
-## Building
+Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page. Download the appropriate archive for your platform and add the binary to your `PATH`.
 
-Dependencies are installed automatically via [cmake-conan](https://github.com/tnt-coders/cmake-conan) during the CMake configure step.
+### Library Integration
 
-```bash
-# Configure (automatically installs Conan dependencies)
-cmake --preset release
+This package is not on Conan Center. To consume it as a dependency, use the [tnt-coders fork of cmake-conan](https://github.com/tnt-coders/cmake-conan) which supports building packages from source via a `#recipe:` annotation.
 
-# Build
-cmake --build --preset release
-
-# Run tests
-ctest --preset release
+In your `conanfile.py`, add the `#recipe:` comment pointing to the Git repository:
+```python
+def requirements(self):
+    self.requires("wwise-audio-tools/1.0.0") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 ```
 
-### CMake Options
+The cmake-conan provider will automatically clone the repository, run `conan create`, and cache the package. No manual steps are needed.
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `BUILD_CLI` | `ON` | Build the `wwtools` command-line tool |
-| `PACKED_CODEBOOKS_AOTUV` | `ON` | Use aoTuV 603 codebook data (recommended) |
-| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Enable Doxygen documentation target (requires Doxygen) |
-| `PROJECT_CONFIG_ENABLE_CLANG_TIDY` | `ON` | Enable clang-tidy lint targets (requires clang-tidy) |
-
-### Linting
-
-Requires [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) and `run-clang-tidy` to be installed (typically from an LLVM/Clang package). The targets are only available when `run-clang-tidy` is found on `PATH`.
-
-```bash
-cmake --build --preset release --target clang-tidy       # check only
-cmake --build --preset release --target clang-tidy-fix   # auto-fix
+In your `CMakeLists.txt`:
+```cmake
+find_package(WwiseAudioTools REQUIRED)
+target_link_libraries(your_target PRIVATE WwiseAudioTools::WwiseAudioTools)
 ```
-
-### Documentation
-
-API documentation for the latest stable release is hosted on GitHub Pages at:
-https://tnt-coders.github.io/wwise-audio-tools/
-
-To build the documentation locally for a specific release or branch, you need [Doxygen](https://www.doxygen.nl/) installed and on `PATH`. Optionally, install [Graphviz](https://graphviz.org/) to enable DOT graph generation (dependency diagrams, call graphs, etc.).
-
-```bash
-git checkout <tag-or-branch>
-cmake --preset release
-cmake --build --preset release --target docs
-```
-
-The generated HTML will be in `build/release/docs/html/`.
 
 ## Usage
 
@@ -91,24 +61,6 @@ The generated HTML will be in `build/release/docs/html/`.
 ```
 
 When extracting from a BNK, streamed WEMs (those not fully embedded) require the corresponding `<id>.wem` file to be present in the same directory as the BNK.
-
-### Library Integration
-
-This package is not on Conan Center. To consume it as a dependency, use the [tnt-coders fork of cmake-conan](https://github.com/tnt-coders/cmake-conan) which supports building packages from source via a `#recipe:` annotation.
-
-In your `conanfile.py`, add the `#recipe:` comment pointing to the Git repository:
-```python
-def requirements(self):
-    self.requires("wwise-audio-tools/1.0.0") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
-```
-
-The cmake-conan provider will automatically clone the repository, run `conan create`, and cache the package. No manual steps are needed.
-
-In your `CMakeLists.txt`:
-```cmake
-find_package(WwiseAudioTools REQUIRED)
-target_link_libraries(your_target PRIVATE WwiseAudioTools::WwiseAudioTools)
-```
 
 ### Library API
 
@@ -159,3 +111,57 @@ for (const auto& wem : wems) {
     output << ogg_data;
 }
 ```
+
+## Building from Source
+
+### Requirements
+
+- CMake 3.27 or higher
+- C++23 compatible compiler
+- [Conan 2](https://conan.io/) package manager
+
+Dependencies are installed automatically via [cmake-conan](https://github.com/tnt-coders/cmake-conan) during the CMake configure step.
+
+```bash
+# Configure (automatically installs Conan dependencies)
+cmake --preset release
+
+# Build
+cmake --build --preset release
+
+# Run tests
+ctest --preset release
+```
+
+### CMake Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `BUILD_CLI` | `ON` | Build the `wwtools` command-line tool |
+| `PACKED_CODEBOOKS_AOTUV` | `ON` | Use aoTuV 603 codebook data (recommended) |
+| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Enable Doxygen documentation target (requires Doxygen) |
+| `PROJECT_CONFIG_ENABLE_CLANG_TIDY` | `ON` | Enable clang-tidy lint targets (requires clang-tidy) |
+
+### Linting
+
+Requires [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) and `run-clang-tidy` to be installed (typically from an LLVM/Clang package). The targets are only available when `run-clang-tidy` is found on `PATH`.
+
+```bash
+cmake --build --preset release --target clang-tidy       # check only
+cmake --build --preset release --target clang-tidy-fix   # auto-fix
+```
+
+### Documentation
+
+API documentation for the latest stable release is hosted on GitHub Pages at:
+https://tnt-coders.github.io/wwise-audio-tools/
+
+To build the documentation locally for a specific release or branch, you need [Doxygen](https://www.doxygen.nl/) installed and on `PATH`. Optionally, install [Graphviz](https://graphviz.org/) to enable DOT graph generation (dependency diagrams, call graphs, etc.).
+
+```bash
+git checkout <tag-or-branch>
+cmake --preset release
+cmake --build --preset release --target docs
+```
+
+The generated HTML will be in `build/release/docs/html/`.
