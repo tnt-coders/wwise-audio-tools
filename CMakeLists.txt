@@ -75,6 +75,9 @@ endif()
 # Install the package
 package_install()
 
+# Enable CPack for packaging
+include(CPack)
+
 # Add tests
 include(CTest)
 if(BUILD_TESTING)
