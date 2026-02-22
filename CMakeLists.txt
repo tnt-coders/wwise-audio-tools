@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.27)
 project(
     WwiseAudioTools
     VERSION 1.0.0
+    DESCRIPTION "Tools to assist with CMake/C++ package development"
     LANGUAGES C CXX)
 
 # CMAKE_CXX_STANDARD must be set explicitly for Conan to detect it

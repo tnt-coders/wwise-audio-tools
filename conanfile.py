@@ -21,7 +21,7 @@ class WwiseAudioToolsConan(ConanFile):
         "fPIC": True,
         "packed_codebooks_aotuv": True,
     }
-    exports_sources = "CMakeLists.txt", "project-config/*", "src/*", "include/*"
+    exports_sources = "CMakeLists.txt", "project-config/*", "src/*", "include/*", "LICENSE"
 
     def config_options(self):
         if self.settings.os == "Windows":

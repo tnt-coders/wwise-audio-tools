@@ -18,11 +18,15 @@ jobs:
     uses: tnt-coders/ci-workflows/.github/workflows/cpp-cmake-conan-build.yml@master
   lint:
     uses: tnt-coders/ci-workflows/.github/workflows/cpp-cmake-conan-lint.yml@master
-  package:
-    uses: tnt-coders/ci-workflows/.github/workflows/cpp-cmake-conan-package.yml@master
+  test-package:
+    uses: tnt-coders/ci-workflows/.github/workflows/cpp-cmake-conan-test-package.yml@master
   docs:
     uses: tnt-coders/ci-workflows/.github/workflows/cpp-cmake-conan-docs.yml@master
+  release:
+    if: github.event_name == 'push'
+    needs: [pre-commit, build, lint, test-package, docs]
+    uses: tnt-coders/ci-workflows/.github/workflows/cpp-cmake-conan-release.yml@master
     permissions:
-      contents: read
+      contents: write
       pages: write
       id-token: write
