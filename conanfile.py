@@ -21,7 +21,7 @@ class WwiseAudioToolsConan(ConanFile):
         "fPIC": True,
         "packed_codebooks_aotuv": True,
     }
-    exports_sources = "CMakeLists.txt", "project-config/*", "src/*", "include/*", "LICENSE"
+    exports_sources = "CMakeLists.txt", "src/*", "include/*", "LICENSE"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -47,8 +47,7 @@ class WwiseAudioToolsConan(ConanFile):
         tc = CMakeToolchain(self)
         tc.variables["BUILD_CLI"] = False
         tc.variables["BUILD_TESTING"] = False
-        tc.variables["PROJECT_CONFIG_ENABLE_DOCS"] = False
-        tc.variables["PROJECT_CONFIG_ENABLE_CLANG_TIDY"] = False
+        tc.variables["INCLUDE_PROJECT_CONFIG"] = False
         tc.variables["PACKED_CODEBOOKS_AOTUV"] = self.options.packed_codebooks_aotuv
         tc.generate()
 

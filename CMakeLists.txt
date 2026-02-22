@@ -3,23 +3,27 @@ cmake_minimum_required(VERSION 3.27)
 project(
     WwiseAudioTools
     VERSION 1.0.0
-    DESCRIPTION "Tools to assist with CMake/C++ package development"
+    DESCRIPTION "Tools for working with Wwise file types"
     LANGUAGES C CXX)
 
 # CMAKE_CXX_STANDARD must be set explicitly for Conan to detect it
 set(CMAKE_CXX_STANDARD 23)
 
 option(BUILD_CLI "Build command-line interface" ON)
-option(PROJECT_CONFIG_ENABLE_DOCS
-       "Enable docs target generation from project-config when Doxygen is available" ON)
-option(PROJECT_CONFIG_ENABLE_CLANG_TIDY
-       "Enable clang-tidy target generation from project-config when run-clang-tidy is available"
-       ON)
 option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
-# Add project configuration
-add_subdirectory(project-config)
+# Add project configuration (disabled for Conan builds where project-config is not exported)
+option(INCLUDE_PROJECT_CONFIG "Include project-config for docs, linting, and CMake presets" ON)
+if(INCLUDE_PROJECT_CONFIG)
+
+    # Set project-config specific options
+    option(PROJECT_CONFIG_ENABLE_DOCS "Enable docs target when Doxygen is available" ON)
+    option(PROJECT_CONFIG_ENABLE_CLANG_TIDY
+           "Enable clang-tidy target when run-clang-tidy is available" ON)
+
+    add_subdirectory(project-config)
+endif()
 
 find_package(PackageBuilder REQUIRED)
 find_package(kaitai_struct_cpp_stl_runtime REQUIRED)
