@@ -14,7 +14,6 @@ class WwiseAudioToolsTestConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.blocks.remove("cppstd")
         tc.generate()
 
         deps = CMakeDeps(self)
