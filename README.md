@@ -49,11 +49,11 @@ target_link_libraries(your_target PRIVATE WwiseAudioTools::WwiseAudioTools)
 # Extract and convert WEMs from a BNK soundbank
 ./wwtools bnk extract soundbank.bnk
 
-# Extract raw WEMs without converting to OGG
+# Extract raw WEMs without converting to OGG (written to a soundbank/ subdirectory)
 ./wwtools bnk extract soundbank.bnk --no-convert
 
 # Get BNK soundbank info (version, embedded WEM IDs)
-./wwtools bnk extract soundbank.bnk --info
+./wwtools bnk soundbank.bnk --info
 
 # Show event-to-WEM mappings (all events or a specific event ID)
 ./wwtools bnk event soundbank.bnk

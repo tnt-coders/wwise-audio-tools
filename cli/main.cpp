@@ -216,6 +216,20 @@ try
     // BNK command handling
     if (command == "bnk")
     {
+        // --info only needs the BNK path, no subcommand required
+        if (argc == 3 && HasFlag(flags, "info"))
+        {
+            const fs::path bnk_path = args[2];
+            const auto indata = ReadFile(bnk_path);
+            if (indata.empty())
+            {
+                std::println(stderr, "Failed to read {}", bnk_path.string());
+                return EXIT_FAILURE;
+            }
+            std::print("{}", wwtools::bnk::GetInfo(indata));
+            return EXIT_SUCCESS;
+        }
+
         if (argc < 4)
         {
             PrintHelp("You must specify whether to extract or find an event as well as the input!",
@@ -231,12 +245,6 @@ try
         {
             std::println(stderr, "Failed to read {}", bnk_path.string());
             return EXIT_FAILURE;
-        }
-
-        if (HasFlag(flags, "info"))
-        {
-            std::print("{}", wwtools::bnk::GetInfo(indata));
-            return EXIT_SUCCESS;
         }
 
         if (subcommand != "event" && subcommand != "extract")
