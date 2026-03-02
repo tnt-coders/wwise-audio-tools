@@ -93,7 +93,7 @@ class WwiseRiffVorbis
     uint16_t (*m_read_16)(std::istream& is) = nullptr;
     uint32_t (*m_read_32)(std::istream& is) = nullptr;
 
-  public:
+public:
     // Parses the entire RIFF structure and validates chunks.  Throws ParseError on malformed input.
     WwiseRiffVorbis(const std::string& indata, std::string codebooks_data, bool inline_codebooks,
                     bool full_setup, ForcePacketFormat force_packet_format);

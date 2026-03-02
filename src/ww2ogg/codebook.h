@@ -71,7 +71,7 @@ class CodebookLibrary
     CodebookLibrary(const CodebookLibrary&) = delete;
     CodebookLibrary& operator=(const CodebookLibrary&) = delete;
 
-  public:
+public:
     // Movable
     CodebookLibrary(CodebookLibrary&&) = default;
     CodebookLibrary& operator=(CodebookLibrary&&) = default;

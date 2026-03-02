@@ -168,7 +168,7 @@ class Bitstream
     unsigned int m_bits_left{0};   // unconsumed bits remaining in m_bit_buffer
     unsigned long m_total_bits_read{0};
 
-  public:
+public:
     class WeirdCharSize
     {
     };
@@ -233,7 +233,7 @@ class Bitoggstream
     uint32_t m_granule{0}; // granule position for current page
     uint32_t m_seqno{0};   // incrementing page sequence number
 
-  public:
+public:
     class WeirdCharSize
     {
     };
@@ -366,7 +366,7 @@ template <unsigned int BitSize> class BitUint
 {
     unsigned int m_total;
 
-  public:
+public:
     class TooManyBits
     {
     };
@@ -429,7 +429,7 @@ class BitUintv
     unsigned int m_size; // number of bits
     unsigned int m_total;
 
-  public:
+public:
     class TooManyBits
     {
     };
@@ -496,7 +496,7 @@ class ArrayStreambuf : public std::streambuf
 
     std::vector<char> m_arr;
 
-  public:
+public:
     ArrayStreambuf(const char* const a, const int l) : m_arr(a, a + l)
     {
         setg(m_arr.data(), m_arr.data(), m_arr.data() + m_arr.size());

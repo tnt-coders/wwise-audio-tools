@@ -15,7 +15,7 @@ namespace ww2ogg
 
 class ArgumentError : public std::runtime_error
 {
-  public:
+public:
     explicit ArgumentError(std::string_view str)
         : std::runtime_error(std::format("Argument error: {}", str))
     {
@@ -24,7 +24,7 @@ class ArgumentError : public std::runtime_error
 
 class FileOpenError : public std::runtime_error
 {
-  public:
+public:
     explicit FileOpenError(std::string_view name)
         : std::runtime_error(std::format("Error opening {}", name))
     {
@@ -33,7 +33,7 @@ class FileOpenError : public std::runtime_error
 
 class ParseError : public std::runtime_error
 {
-  public:
+public:
     ParseError() : std::runtime_error("Parse error: unspecified")
     {
     }
@@ -45,7 +45,7 @@ class ParseError : public std::runtime_error
 
 class ParseErrorStr : public ParseError
 {
-  public:
+public:
     explicit ParseErrorStr(std::string_view s) : ParseError(s)
     {
     }
@@ -53,7 +53,7 @@ class ParseErrorStr : public ParseError
 
 class SizeMismatch : public ParseError
 {
-  public:
+public:
     SizeMismatch(std::size_t real_s, std::size_t read_s)
         : ParseError(std::format("expected {} bits, read {}", real_s, read_s))
     {
@@ -64,7 +64,7 @@ class InvalidId : public ParseError
 {
     int m_id;
 
-  public:
+public:
     explicit InvalidId(int i)
         : ParseError(std::format("invalid codebook id {}, try --inline-codebooks", i)), m_id(i)
     {

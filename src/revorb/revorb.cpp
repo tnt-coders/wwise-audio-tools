@@ -15,7 +15,7 @@ class OggStreamGuard
     ogg_stream_state* m_stream;
     bool m_initialized{false};
 
-  public:
+public:
     explicit OggStreamGuard(ogg_stream_state* const stream) : m_stream(stream)
     {
     }
@@ -53,7 +53,7 @@ class VorbisCommentGuard
     vorbis_comment* m_vc;
     bool m_initialized{false};
 
-  public:
+public:
     explicit VorbisCommentGuard(vorbis_comment* const vc) : m_vc(vc)
     {
     }

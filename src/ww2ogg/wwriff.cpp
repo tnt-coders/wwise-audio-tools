@@ -24,7 +24,7 @@ class Packet
     uint32_t m_absolute_granule{0};
     bool m_no_granule;
 
-  public:
+public:
     Packet(std::stringstream& i, const long o, const bool little_endian,
            const bool no_granule = false)
         : m_offset(o), m_no_granule(no_granule)
@@ -80,7 +80,7 @@ class Packet8
     uint32_t m_size{0};
     uint32_t m_absolute_granule{0};
 
-  public:
+public:
     Packet8(std::stringstream& i, const long o, const bool little_endian) : m_offset(o)
     {
         i.seekg(m_offset);
@@ -127,7 +127,7 @@ class VorbisPacketHeader
 
     static constexpr std::array<char, 6> g_vorbis_str = {'v', 'o', 'r', 'b', 'i', 's'};
 
-  public:
+public:
     explicit VorbisPacketHeader(const uint8_t t) : m_type(t)
     {
     }
