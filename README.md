@@ -18,7 +18,19 @@ Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [
 
 This package is not on Conan Center. To consume it as a dependency, use the [tnt-coders fork of cmake-conan](https://github.com/tnt-coders/cmake-conan) which supports building packages from source via a `#recipe:` annotation.
 
-In your `conanfile.py`, add the `#recipe:` comment pointing to the Git repository:
+In your `conanfile.txt`:
+
+```ini
+[requires]
+wwise-audio-tools/1.0.0 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+
+[generators]
+CMakeDeps
+CMakeToolchain
+```
+
+Or in your `conanfile.py`:
+
 ```python
 def requirements(self):
     self.requires("wwise-audio-tools/1.0.0") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
