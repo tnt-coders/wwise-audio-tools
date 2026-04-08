@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 
 project(
     WwiseAudioTools
-    VERSION 1.0.0
+    VERSION 1.0.1
     DESCRIPTION "Tools for working with Wwise file types"
     LANGUAGES C CXX)
 
