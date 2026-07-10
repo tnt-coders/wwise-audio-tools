@@ -1,6 +1,9 @@
 # Wwise Audio Tools
 
-[![Build](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build.yml)
+[![Build - Windows](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build-windows.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build-windows.yml)
+[![Build - Linux](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build-linux.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build-linux.yml)
+[![Build - macOS](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build-macos.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/build-macos.yml)
+[![Docs](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/docs.yml/badge.svg)](https://github.com/tnt-coders/wwise-audio-tools/actions/workflows/docs.yml)
 
 A C++ library and command-line tool for converting Wwise WEM audio files to OGG Vorbis format and extracting WEM files from BNK soundbanks.
 
