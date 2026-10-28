@@ -38,7 +38,7 @@ find_package(Vorbis REQUIRED)
 include(PackageBuilder)
 
 # Create the package.
-package_create(VENDOR "TNT Music Studios" DISPLAY_NAME "Wwise Audio Tools")
+package_create(VENDOR "TNT Coders" DISPLAY_NAME "Wwise Audio Tools")
 
 # The KaitaiStructs library is a private implementation detail of this package. Consumers should not
 # link to it.

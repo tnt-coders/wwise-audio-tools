@@ -15,7 +15,7 @@ Wwise encodes audio as `.wem` files using a modified Vorbis format with stripped
 
 ### Prebuilt CLI Binaries
 
-Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page: a ZIP archive for each platform, plus a Windows installer, a Linux `.deb` package and a macOS disk image. Each holds `wwtools` in a `bin` folder (on Windows beside the Microsoft C++ runtime it needs); add that folder to your `PATH`. The Windows installer installs to `Program Files\TNT Music Studios\Wwise Audio Tools`.
+Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page: a ZIP archive for each platform, plus a Windows installer, a Linux `.deb` package and a macOS disk image. Each holds `wwtools` in a `bin` folder (on Windows beside the Microsoft C++ runtime it needs); add that folder to your `PATH`. The Windows installer installs to `Program Files\TNT Coders\Wwise Audio Tools`.
 
 ### Library Integration
 
