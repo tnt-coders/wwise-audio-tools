@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 
 project(
     WwiseAudioTools
-    VERSION 1.0.3
+    VERSION 1.0.4
     DESCRIPTION "Tools for working with Wwise file types"
     LANGUAGES C CXX)
 
@@ -38,7 +38,9 @@ find_package(Vorbis REQUIRED)
 include(PackageBuilder)
 
 # Create the package.
-package_create(VENDOR "TNT Coders" DISPLAY_NAME "Wwise Audio Tools")
+package_create(DISPLAY_NAME "Wwise Audio Tools")
+# The package names no publisher; a Debian package still needs a maintainer.
+set(CPACK_PACKAGE_CONTACT "TNT Coders <tnt-coders@googlegroups.com>")
 
 # The KaitaiStructs library is a private implementation detail of this package. Consumers should not
 # link to it.
