@@ -116,15 +116,17 @@ try
         return EXIT_FAILURE;
     }
 
+    const std::span positional = args.first(args.size() - flags.size());
+
     if (HasFlag(flags, "help"))
     {
         PrintHelp();
         return EXIT_SUCCESS;
     }
 
-    if (argc < 2)
+    if (args.size() < 2)
     {
-        // If there is no input file, convert all WEM files in the current directory
+        // With no arguments at all, convert every WEM file in the current directory
         bool wem_exists = false;
 
         for (const auto& entry : fs::directory_iterator(fs::current_path()))
@@ -164,18 +166,18 @@ try
         return EXIT_SUCCESS;
     }
 
-    if (argc < 3)
+    if (positional.size() < 3)
     {
         PrintHelp("Missing arguments!", args[0]);
         return EXIT_FAILURE;
     }
 
-    const std::string_view command = args[1];
+    const std::string_view command = positional[1];
 
     // WEM command handling
     if (command == "wem")
     {
-        const fs::path path = args[2];
+        const fs::path path = positional[2];
         const auto indata = ReadFile(path);
 
         if (indata.empty())
@@ -216,10 +218,9 @@ try
     // BNK command handling
     if (command == "bnk")
     {
-        // --info only needs the BNK path, no subcommand required
-        if (argc == 3 && HasFlag(flags, "info"))
+        if (positional.size() == 3 && HasFlag(flags, "info"))
         {
-            const fs::path bnk_path = args[2];
+            const fs::path bnk_path = positional[2];
             const auto indata = ReadFile(bnk_path);
             if (indata.empty())
             {
@@ -230,15 +231,15 @@ try
             return EXIT_SUCCESS;
         }
 
-        if (argc < 4)
+        if (positional.size() < 4)
         {
             PrintHelp("You must specify whether to extract or find an event as well as the input!",
                       args[0]);
             return EXIT_FAILURE;
         }
 
-        const std::string_view subcommand = args[2];
-        const fs::path bnk_path = args[3];
+        const std::string_view subcommand = positional[2];
+        const fs::path bnk_path = positional[3];
 
         const auto indata = ReadFile(bnk_path);
         if (indata.empty())
@@ -256,9 +257,9 @@ try
         if (subcommand == "event")
         {
             std::string in_event_id;
-            if (argc >= 5)
+            if (positional.size() >= 5)
             {
-                in_event_id = args[4];
+                in_event_id = positional[4];
             }
 
             std::print("{}", wwtools::bnk::GetEventIdInfo(indata, in_event_id));

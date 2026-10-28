@@ -51,7 +51,7 @@ struct BnkEntry
  * must load the full audio from an external `<id>.wem` file.
  *
  * @param indata BNK file data
- * @return vector of BnkWem structs
+ * @return one BnkEntry per WEM in the soundbank
  */
 [[nodiscard]] std::vector<BnkEntry> BnkExtract(std::string_view indata);
 

@@ -15,7 +15,7 @@ Wwise encodes audio as `.wem` files using a modified Vorbis format with stripped
 
 ### Prebuilt CLI Binaries
 
-Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page. Download the appropriate archive for your platform and add the binary to your `PATH`.
+Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page: a ZIP archive for each platform, plus a Windows installer, a Linux `.deb` package and a macOS disk image. Each holds `wwtools` in a `bin` folder (on Windows beside the Microsoft C++ runtime it needs); add that folder to your `PATH`. The Windows installer installs to `Program Files\TNT Music Studios\Wwise Audio Tools`.
 
 ### Library Integration
 
@@ -25,7 +25,7 @@ In your `conanfile.txt`:
 
 ```ini
 [requires]
-wwise-audio-tools/1.0.0 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+wwise-audio-tools/1.0.3 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 
 [generators]
 CMakeDeps
@@ -36,7 +36,7 @@ Or in your `conanfile.py`:
 
 ```python
 def requirements(self):
-    self.requires("wwise-audio-tools/1.0.0") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+    self.requires("wwise-audio-tools/1.0.3") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 ```
 
 The cmake-conan provider will automatically clone the repository, run `conan create`, and cache the package. No manual steps are needed.
@@ -132,10 +132,15 @@ for (const auto& wem : wems) {
 ### Requirements
 
 - CMake 3.27 or higher
+- [Ninja](https://ninja-build.org/), the presets' generator
 - C++23 compatible compiler
-- [Conan 2](https://conan.io/) package manager
+- [Conan](https://conan.io/) 2.0.5 or higher, and Git
 
-Dependencies are installed automatically via [cmake-conan](https://github.com/tnt-coders/cmake-conan) during the CMake configure step.
+Dependencies are installed automatically via [cmake-conan](https://github.com/tnt-coders/cmake-conan) during the CMake configure step. It lives in the `project-config` submodule, so check that out, with its own submodules, first:
+
+```bash
+git submodule update --init --recursive
+```
 
 ```bash
 # Configure (automatically installs Conan dependencies)
@@ -154,7 +159,8 @@ ctest --preset release
 |--------|---------|-------------|
 | `BUILD_CLI` | `ON` | Build the `wwtools` command-line tool |
 | `PACKED_CODEBOOKS_AOTUV` | `ON` | Use aoTuV 603 codebook data (recommended) |
-| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Enable Doxygen documentation target (requires Doxygen) |
+| `BUILD_TESTING` | `ON` | Build the unit tests |
+| `PROJECT_CONFIG_ENABLE_DOCS` | `ON` | Build the documentation with every build (requires Doxygen) |
 | `PROJECT_CONFIG_ENABLE_CLANG_TIDY` | `ON` | Enable clang-tidy lint targets (requires clang-tidy) |
 
 ### Linting
@@ -171,7 +177,7 @@ cmake --build --preset release --target clang-tidy-fix   # auto-fix
 API documentation for the latest stable release is hosted on GitHub Pages at:
 https://tnt-coders.github.io/wwise-audio-tools/
 
-To build the documentation locally for a specific release or branch, you need [Doxygen](https://www.doxygen.nl/) installed and on `PATH`. Optionally, install [Graphviz](https://graphviz.org/) to enable DOT graph generation (dependency diagrams, call graphs, etc.).
+To build the documentation locally for a specific release or branch, you need [Doxygen](https://www.doxygen.nl/) 1.9.6 or higher on `PATH`, and Python 3. When Doxygen is found, every build generates the documentation; the `docs` target builds it alone:
 
 ```bash
 git checkout <tag-or-branch>

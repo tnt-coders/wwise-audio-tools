@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 
 project(
     WwiseAudioTools
-    VERSION 1.0.2
+    VERSION 1.0.3
     DESCRIPTION "Tools for working with Wwise file types"
     LANGUAGES C CXX)
 
@@ -13,14 +13,18 @@ option(BUILD_CLI "Build command-line interface" ON)
 option(PACKED_CODEBOOKS_AOTUV
        "Use data from packed_codebooks_aoTuV_603.bin instead of regular packed_codebooks.bin" ON)
 
-# Add project configuration (disabled for Conan builds where project-config is not exported)
+# Add project configuration (disabled for Conan builds, where project-config is not exported, and
+# when another project adds this one as a subproject)
 option(INCLUDE_PROJECT_CONFIG "Include project-config for docs, linting, and CMake presets" ON)
-if(INCLUDE_PROJECT_CONFIG)
+if(PROJECT_IS_TOP_LEVEL AND INCLUDE_PROJECT_CONFIG)
 
     # Set project-config specific options
     option(PROJECT_CONFIG_ENABLE_DOCS "Enable docs target when Doxygen is available" ON)
     option(PROJECT_CONFIG_ENABLE_CLANG_TIDY
            "Enable clang-tidy target when run-clang-tidy is available" ON)
+
+    # The docs cover the README and the public API
+    set(PROJECT_CONFIG_DOCS_INPUT README.md include)
 
     add_subdirectory(project-config)
 endif()
@@ -33,8 +37,8 @@ find_package(Vorbis REQUIRED)
 
 include(PackageBuilder)
 
-# Create the package
-package_create()
+# Create the package.
+package_create(VENDOR "TNT Music Studios" DISPLAY_NAME "Wwise Audio Tools")
 
 # The KaitaiStructs library is a private implementation detail of this package. Consumers should not
 # link to it.
