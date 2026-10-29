@@ -46,7 +46,7 @@ uint32_t Checksum(unsigned char* data, int bytes)
     int i = 0;
 
     for (i = 0; i < bytes; ++i)
-        crc_reg = (crc_reg << 8) ^ g_crc_lookup[((crc_reg >> 24) & 0xff) ^ data[i]];
+        crc_reg = (crc_reg << 8u) ^ g_crc_lookup[((crc_reg >> 24u) & 0xffu) ^ data[i]];
 
     return crc_reg;
 }

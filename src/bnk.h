@@ -19,10 +19,6 @@ void Extract(std::string_view indata, std::vector<std::string>& outdata);
 // Returns an empty string when the HIRC section is missing.
 [[nodiscard]] std::string GetEventIdInfo(std::string_view indata, std::string_view in_event_id);
 
-// Compatibility stub kept for older callers; currently always returns empty string.
-// Use GetEventIdInfo(...) for event-name lookup based on BNK STID data.
-[[nodiscard]] std::string GetEventNameFromId(std::uint32_t event_id);
-
 // Returns all WEM IDs referenced by the BNK DIDX section (empty when DIDX is missing).
 [[nodiscard]] std::vector<std::uint32_t> GetWemIds(std::string_view indata);
 

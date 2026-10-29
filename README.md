@@ -25,7 +25,7 @@ In your `conanfile.txt`:
 
 ```ini
 [requires]
-wwise-audio-tools/1.0.5 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+wwise-audio-tools/1.0.6 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 
 [generators]
 CMakeDeps
@@ -36,7 +36,7 @@ Or in your `conanfile.py`:
 
 ```python
 def requirements(self):
-    self.requires("wwise-audio-tools/1.0.5") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+    self.requires("wwise-audio-tools/1.0.6") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 ```
 
 The cmake-conan provider will automatically clone the repository, run `conan create`, and cache the package. No manual steps are needed.

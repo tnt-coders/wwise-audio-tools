@@ -18,7 +18,7 @@ namespace
 // than being directly referenced by the event action's game_object_id.
 struct EventSFX
 {
-    bnk_t::action_type_t m_action_type{};
+    bnk_t::action_type_t m_action_type;
     bnk_t::sound_effect_or_voice_t* m_sfx = nullptr;
     bool m_is_child = false;
 };
@@ -302,15 +302,6 @@ void Extract(const std::string_view indata, std::vector<std::string>& outdata)
     }
 
     return result;
-}
-
-[[nodiscard]] std::string GetEventNameFromId([[maybe_unused]] const std::uint32_t event_id)
-{
-    // This function signature is maintained for API compatibility, but it cannot
-    // look up event names without the BNK file data. Event name lookup is now
-    // performed within get_event_id_info() using the STID section.
-    // If you need event name lookup, use get_event_id_info() instead.
-    return {};
 }
 
 [[nodiscard]] std::vector<std::uint32_t> GetWemIds(const std::string_view indata)

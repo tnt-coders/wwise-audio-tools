@@ -908,7 +908,7 @@ void WwiseRiffVorbis::GenerateOggHeader(Bitoggstream& os, std::vector<bool>& mod
                 {
                     for (unsigned int k = 0; k < 8; ++k)
                     {
-                        if ((residue_cascade[j] & (1 << k)) != 0)
+                        if ((residue_cascade[j] & (1u << k)) != 0)
                         {
                             BitUint<8> residue_book;
                             ss >> residue_book;

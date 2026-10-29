@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 // Converts WEM data to OGG and writes the result to outpath.
 void Convert(const std::string_view indata, const fs::path& outpath)
 {
-    const auto outdata = wwtools::Wem2Ogg(std::string{indata});
+    const auto outdata = wwtools::Wem2Ogg(indata);
 
     std::ofstream fout(outpath, std::ios::binary);
     if (!fout)
