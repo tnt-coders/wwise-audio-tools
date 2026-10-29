@@ -15,7 +15,7 @@ Wwise encodes audio as `.wem` files using a modified Vorbis format with stripped
 
 ### Prebuilt CLI Binaries
 
-Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page: a ZIP archive for each platform, plus a Windows installer, a Linux `.deb` package and a macOS disk image. Each holds `wwtools` in a `bin` folder (on Windows beside the Microsoft C++ runtime it needs); add that folder to your `PATH`. The Windows installer installs to `Program Files\Wwise Audio Tools`.
+Prebuilt `wwtools` binaries for Windows, macOS, and Linux are available on the [GitHub Releases](https://github.com/tnt-coders/wwise-audio-tools/releases) page: a ZIP archive for each platform, plus a Windows installer, a Linux `.deb` package and a macOS disk image. Each holds `wwtools` in a `bin` folder (on Windows beside the Microsoft C++ runtime it needs). The Windows installer installs to `Program Files\Wwise Audio Tools` and adds that folder to the system `PATH`; with a ZIP archive, add it to your `PATH` yourself.
 
 ### Library Integration
 
@@ -25,7 +25,7 @@ In your `conanfile.txt`:
 
 ```ini
 [requires]
-wwise-audio-tools/1.0.4 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+wwise-audio-tools/1.0.5 #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 
 [generators]
 CMakeDeps
@@ -36,7 +36,7 @@ Or in your `conanfile.py`:
 
 ```python
 def requirements(self):
-    self.requires("wwise-audio-tools/1.0.4") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
+    self.requires("wwise-audio-tools/1.0.5") #recipe: https://github.com/tnt-coders/wwise-audio-tools.git
 ```
 
 The cmake-conan provider will automatically clone the repository, run `conan create`, and cache the package. No manual steps are needed.
